@@ -1,0 +1,14 @@
+{
+  "C_Cpp.errorSquiggles": "disabled",
+  "idf.portWin": "COM3",
+  "files.associations": {
+    "user_encoder_bsp.h": "c",
+    "lcd_touch_bsp.h": "c",
+    "iot_knob.h": "c",
+    "bidi_switch_knob.h": "c",
+    "user_config.h": "c"
+  },
+  "idf.espIdfPathWin": "e:\\v5_3_2\\v5.3.2\\esp-idf",
+  "idf.toolsPathWin": "e:\\v5_3_2\\Espressif",
+  "idf.pythonInstallPath": "/Users/paultindall/.platformio/penv/bin/python"
+}
