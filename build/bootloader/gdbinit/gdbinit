@@ -1,0 +1,2 @@
+source /Users/paultindall/Documents/code/LVGL_Dev/build/bootloader/gdbinit/symbols
+source /Users/paultindall/Documents/code/LVGL_Dev/build/bootloader/gdbinit/connect

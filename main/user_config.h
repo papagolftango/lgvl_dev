@@ -1,3 +1,9 @@
+
+#if CONFIG_LV_COLOR_DEPTH == 32
+#define LCD_BIT_PER_PIXEL       (24)
+#elif CONFIG_LV_COLOR_DEPTH == 16
+#define LCD_BIT_PER_PIXEL       (16)
+#endif
 #ifndef USER_CONFIG_H
 #define USER_CONFIG_H
 
@@ -12,9 +18,10 @@
 
 //  DISP
 // The pixel number in horizontal and vertical
-#define EXAMPLE_LCD_H_RES              360 
-#define EXAMPLE_LCD_V_RES              360
-#define EXAMPLE_LVGL_BUF_HEIGHT        (EXAMPLE_LCD_V_RES / 10) 
+// Display resolution and LVGL buffer
+#define LCD_H_RES              360 
+#define LCD_V_RES              360
+#define LVGL_BUF_HEIGHT        (LCD_V_RES / 10) 
 
 #define EXAMPLE_PIN_NUM_LCD_CS      (gpio_num_t)14
 #define EXAMPLE_PIN_NUM_LCD_PCLK    (gpio_num_t)13
@@ -30,11 +37,12 @@
 #define EXAMPLE_PIN_NUM_TOUCH_INT         (gpio_num_t)9
 
 
-#define EXAMPLE_LVGL_TICK_PERIOD_MS    2
-#define EXAMPLE_LVGL_TASK_MAX_DELAY_MS 500
-#define EXAMPLE_LVGL_TASK_MIN_DELAY_MS 5
-#define EXAMPLE_LVGL_TASK_STACK_SIZE   (4 * 1024)
-#define EXAMPLE_LVGL_TASK_PRIORITY     2
+// LVGL timing/task config
+#define LVGL_TICK_PERIOD_MS    2
+#define LVGL_TASK_MAX_DELAY_MS 500
+#define LVGL_TASK_MIN_DELAY_MS 5
+#define LVGL_TASK_STACK_SIZE   (4 * 1024)
+#define LVGL_TASK_PRIORITY     2
 
 #define EXAMPLE_USE_TOUCH  1 //Without tp ---- Touch off
 

@@ -1,0 +1,13 @@
+# Target labels
+ bootloader
+# Source files and their labels
+/Users/paultindall/Documents/code/LVGL_Dev/build/CMakeFiles/bootloader
+/Users/paultindall/Documents/code/LVGL_Dev/build/CMakeFiles/bootloader.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/CMakeFiles/bootloader-complete.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-build.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-configure.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-download.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-install.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-mkdir.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-patch.rule
+/Users/paultindall/Documents/code/LVGL_Dev/build/bootloader-prefix/src/bootloader-stamp/bootloader-update.rule
