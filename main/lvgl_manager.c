@@ -1,4 +1,27 @@
 
+#include "esp_log.h"
+#include "lvgl_manager.h"
+#include "lvgl.h"
+#include <string.h>
+
+lv_obj_t *vrms_label = NULL;
+lv_obj_t *vrms_value_label = NULL;
+
+void lvgl_manager_set_vrms(const char *vrms) {
+    ESP_LOGI("lvgl_manager", "lvgl_manager_set_vrms called with: '%s'", vrms ? vrms : "(null)");
+    lvgl_manager_lock();
+    if (vrms_value_label && vrms) {
+        // Format to 1 decimal place
+        float value = atof(vrms);
+        char buf[16];
+        snprintf(buf, sizeof(buf), "%.1f", value);
+        lv_label_set_text(vrms_value_label, buf);
+    } else {
+        ESP_LOGW("lvgl_manager", "vrms_value_label is NULL or vrms is NULL");
+    }
+    lvgl_manager_unlock();
+}
+
 #include <stdint.h>
 #include <stddef.h>
 #include "freertos/FreeRTOS.h"
@@ -90,6 +113,7 @@ void lvgl_manager_start_task(void)
 }
 
 lv_disp_t *lvgl_manager_init(esp_lcd_panel_handle_t panel_handle) {
+
     lv_init();
 
     // Allocate draw buffers used by LVGL
@@ -107,11 +131,51 @@ lv_disp_t *lvgl_manager_init(esp_lcd_panel_handle_t panel_handle) {
     disp_drv.rounder_cb = display_driver_rounder_cb;
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
+
     lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+
+    // Set the screen background to black for dark theme (must be after disp is registered)
+    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x000000), 0);
+    lv_obj_set_style_bg_opa(lv_scr_act(), LV_OPA_COVER, 0);
 
     // Create mutex for LVGL locking
     lvgl_mux = xSemaphoreCreateMutex();
     assert(lvgl_mux);
+
+
+    // Place both labels directly on the screen, stacked and centered
+    // Use the largest available font for both labels
+        /* Create the VRMS label */
+        vrms_label = lv_label_create(lv_scr_act());
+        lv_label_set_text(vrms_label, "VRMS");
+        lv_obj_set_style_text_color(vrms_label, lv_color_white(), 0);
+        /* Use a medium font for the label */
+    #if LV_FONT_MONTSERRAT_24
+        lv_obj_set_style_text_font(vrms_label, &lv_font_montserrat_24, 0);
+    #elif LV_FONT_MONTSERRAT_16
+        lv_obj_set_style_text_font(vrms_label, &lv_font_montserrat_16, 0);
+    #endif
+        /* Center the label near the top */
+        lv_obj_align(vrms_label, LV_ALIGN_TOP_MID, 0, 40);
+
+        /* Create the VRMS value label */
+        vrms_value_label = lv_label_create(lv_scr_act());
+        lv_label_set_text(vrms_value_label, "0.0");
+        lv_obj_set_style_text_color(vrms_value_label, lv_color_white(), 0);
+        /* Use the largest font for the value */
+    #if LV_FONT_MONTSERRAT_48
+        lv_obj_set_style_text_font(vrms_value_label, &lv_font_montserrat_48, 0);
+    #elif LV_FONT_MONTSERRAT_24
+        lv_obj_set_style_text_font(vrms_value_label, &lv_font_montserrat_24, 0);
+    #elif LV_FONT_MONTSERRAT_16
+        lv_obj_set_style_text_font(vrms_value_label, &lv_font_montserrat_16, 0);
+    #endif
+        /* Center the value label and make it take up 1/4 of the screen height */
+        lv_obj_align(vrms_value_label, LV_ALIGN_CENTER, 0, 40);
+        lv_obj_set_width(vrms_value_label, lv_pct(100));
+        lv_obj_set_style_text_align(vrms_value_label, LV_TEXT_ALIGN_CENTER, 0);
+        /* Optionally, set a minimum height to ensure it takes up space */
+        lv_obj_set_height(vrms_value_label, lv_pct(25));
 
     return disp;
 }

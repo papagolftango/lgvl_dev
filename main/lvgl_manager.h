@@ -5,6 +5,16 @@ void lvgl_manager_start_tick_timer(void);
 #include "lvgl.h"
 #include "esp_lcd_panel_io.h"
 
+#include "lvgl.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Global labels for VRMS display
+extern lv_obj_t *vrms_label;
+extern lv_obj_t *vrms_value_label;
+void lvgl_manager_set_vrms(const char *vrms);
+
 #ifdef __cplusplus
 extern "C" {
 #endif

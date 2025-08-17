@@ -52,6 +52,8 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                 payload[dlen] = '\0';
                 if (strcmp(topic, "emon/emontx3/vrms") == 0) {
                     ESP_LOGI("mqtt_manager", "Received vrms: %s", payload);
+                    extern void lvgl_manager_set_vrms(const char *vrms);
+                    lvgl_manager_set_vrms(payload);
                 }
             }
             break;

@@ -28,17 +28,6 @@ static void local_init_credentials(void) {
     wifi_manager_set_credentials(wifi_ssid, wifi_pass);
     mqtt_manager_set_credentials(mqtt_host, mqtt_user, mqtt_pass);
 }
-// Touch event handler to toggle color (file scope, not inside app_main)
-void label_touch_event_cb(lv_event_t *e) {
-    static bool is_red = true;
-    lv_obj_t *label = lv_event_get_target(e);
-    if (is_red) {
-        lv_obj_set_style_text_color(label, lv_color_hex(0x00FF00), 0); // Green
-    } else {
-        lv_obj_set_style_text_color(label, lv_color_hex(0xFF0000), 0); // Red
-    }
-    is_red = !is_red;
-}
 static const char *TAG = "example";
 
 
