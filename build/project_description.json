@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "LVGL_Test",
-    "project_version":    "c2e1731-dirty",
+    "project_version":    "3c41950-dirty",
     "project_path":       "/Users/paultindall/Documents/code/LVGL_Dev",
     "idf_path":           "/Users/paultindall/esp/v5.5/esp-idf",
     "build_dir":          "/Users/paultindall/Documents/code/LVGL_Dev/build",
@@ -1315,8 +1315,8 @@
             "managed_reqs": [ "espressif__esp_lcd_sh8601", "lvgl__lvgl" ],
             "managed_priv_reqs": [],
             "file": "/Users/paultindall/Documents/code/LVGL_Dev/build/esp-idf/main/libmain.a",
-            "sources": [ "/Users/paultindall/Documents/code/LVGL_Dev/main/lvgl_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/display_driver.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/main.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/touch_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/wifi_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/mqtt_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/provisioning_server.c", "/Users/paultindall/Documents/code/LVGL_Dev/ui/ui.c" ],
-            "include_dirs": [ ".", "../ui", "../components/i2c_bsp" ]
+            "sources": [ "/Users/paultindall/Documents/code/LVGL_Dev/main/lvgl_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/display_driver.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/main.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/touch_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/wifi_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/mqtt_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/provisioning_server.c", "/Users/paultindall/Documents/code/LVGL_Dev/ui/ui.c", "/Users/paultindall/Documents/code/LVGL_Dev/main/app_manager.c", "/Users/paultindall/Documents/code/LVGL_Dev/app/energy_app.c", "/Users/paultindall/Documents/code/LVGL_Dev/app/home_app.c", "/Users/paultindall/Documents/code/LVGL_Dev/app/weather_app.c", "/Users/paultindall/Documents/code/LVGL_Dev/app/clock_app.c", "/Users/paultindall/Documents/code/LVGL_Dev/app/settings_app.c" ],
+            "include_dirs": [ ".", "../app", ".", "../ui", "../components/i2c_bsp" ]
         },
         "mbedtls": {
             "alias": "idf::mbedtls",
@@ -3016,7 +3016,7 @@
             "priv_reqs": [ "lcd_touch_bsp", "lcd_bl_pwm_bsp" ],
             "managed_reqs": [ "espressif__esp_lcd_sh8601", "lvgl__lvgl" ],
             "managed_priv_reqs": [],
-            "include_dirs": [ ".", "../ui", "../components/i2c_bsp" ]
+            "include_dirs": [ ".", "../app", ".", "../ui", "../components/i2c_bsp" ]
         },
         "i2c_bsp": {
             "alias": "idf::i2c_bsp",
