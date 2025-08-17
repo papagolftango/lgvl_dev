@@ -1,3 +1,4 @@
+#include <float.h>
 #include <string.h>
 #include "esp_log.h"
 // Store credentials in static variables for now
@@ -32,13 +33,28 @@ bool mqtt_manager_is_provisioned(void) {
 
 static esp_mqtt_client_handle_t s_mqtt_client = NULL;
 
+// Track max values for solar and used
+static float max_solar = -FLT_MAX;
+static float max_used = -FLT_MAX;
+
+void mqtt_manager_reset_max_solar(void) {
+    max_solar = -FLT_MAX;
+}
+
+void mqtt_manager_reset_max_used(void) {
+    max_used = -FLT_MAX;
+}
+
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;
     switch (event_id) {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI("mqtt_manager", "MQTT connected");
-            // Subscribe to the topic on connect
+            // Subscribe to the topics on connect
             esp_mqtt_client_subscribe(event->client, "emon/emontx3/vrms", 0);
+            esp_mqtt_client_subscribe(event->client, "emon/emontx3/solar", 0);
+            esp_mqtt_client_subscribe(event->client, "emon/emontx3/used", 0);
+            esp_mqtt_client_subscribe(event->client, "emon/emontx3/balance", 0);
             break;
         case MQTT_EVENT_DATA:
             if (event->topic_len && event->data_len) {
@@ -54,6 +70,23 @@ static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_
                     ESP_LOGI("mqtt_manager", "Received vrms: %s", payload);
                     extern void lvgl_manager_set_vrms(const char *vrms);
                     lvgl_manager_set_vrms(payload);
+                } else if (strcmp(topic, "emon/emontx3/solar") == 0) {
+                    float value = strtof(payload, NULL);
+                    ESP_LOGI("mqtt_manager", "Processed solar: %.2f", value);
+                    if (value > max_solar) {
+                        max_solar = value;
+                        ESP_LOGI("mqtt_manager", "New max solar: %.2f", max_solar);
+                    }
+                } else if (strcmp(topic, "emon/emontx3/used") == 0) {
+                    float value = strtof(payload, NULL);
+                    ESP_LOGI("mqtt_manager", "Processed used: %.2f", value);
+                    if (value > max_used) {
+                        max_used = value;
+                        ESP_LOGI("mqtt_manager", "New max used: %.2f", max_used);
+                    }
+                } else if (strcmp(topic, "emon/emontx3/balance") == 0) {
+                    float value = strtof(payload, NULL);
+                    ESP_LOGI("mqtt_manager", "Processed balance: %.2f", value);
                 }
             }
             break;

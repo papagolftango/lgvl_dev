@@ -1,3 +1,13 @@
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+void mqtt_manager_reset_max_solar(void);
+void mqtt_manager_reset_max_used(void);
+
+#ifdef __cplusplus
+}
+#endif
 #ifndef MQTT_MANAGER_H
 #define MQTT_MANAGER_H
 
