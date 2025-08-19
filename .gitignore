@@ -1,0 +1,36 @@
+# Ignore build artifacts and IDE files
+build/
+*.o
+*.obj
+*.elf
+*.bin
+*.map
+*.pyc
+*.log
+*.swp
+.DS_Store
+.vscode/
+.idea/
+__pycache__/
+# Ignore build artifacts and binaries
+build/
+*.bin
+*.elf
+*.map
+*.pyc
+*.o
+*.obj
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+*.DS_Store
+__pycache__/
+# ESP-IDF specific
+sdkconfig.old
+sdkconfig
+sdkconfig.defaults
+partitions.csv
+# VSCode
+.vscode/
