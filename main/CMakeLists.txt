@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "main.c" "../managers/lvgl_manager.c" "../drivers/display_driver.c" "../drivers/bidi_switch_knob.c" "../managers/touch_manager.c" "../managers/wifi_manager.c" "../managers/mqtt_manager.c" "../managers/provisioning_server.c" "../ui/ui.c" "../managers/app_manager.c" "../app/energy_app.c" "../app/home_app.c" "../app/weather_app.c" "../app/clock_app.c" "../app/settings_app.c"
+    SRCS "main.c" "../managers/lvgl_manager.c" "../drivers/display_driver.c" "../drivers/bidi_switch_knob.c" "../managers/touch_manager.c" "../managers/wifi_manager.c" "../managers/mqtt_manager.c" "../managers/provisioning_server.c" "../ui/ui.c" "../managers/app_manager.c" "../managers/time_manager.c" "../app/energy_app.c" "../app/home_app.c" "../app/weather_app.c" "../app/clock_app.c" "../app/settings_app.c"
     INCLUDE_DIRS "." "../app" "../ui" "../components/i2c_bsp" "../managers" "../drivers"
     REQUIRES esp_netif esp_event nvs_flash esp_wifi esp_http_server mqtt
     PRIV_REQUIRES lcd_touch_bsp lcd_bl_pwm_bsp
