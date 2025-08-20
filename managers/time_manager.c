@@ -17,11 +17,12 @@ static void time_sync_notification_cb(struct timeval *tv) {
 void time_manager_init(void) {
     if (sntp_started) return;
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
-    sntp_setservername(0, "pool.ntp.org");
+    sntp_set_sync_interval(86400000); // 24 hours in ms
+    sntp_setservername(0, "time.google.com");
     sntp_set_time_sync_notification_cb(time_sync_notification_cb);
     sntp_init();
     sntp_started = true;
-    ESP_LOGI(TAG, "SNTP started");
+    ESP_LOGI(TAG, "SNTP started (interval: 24h)");
 }
 
 time_t time_manager_now(void) {

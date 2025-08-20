@@ -1,5 +1,5 @@
 #include "energy_app.h"
-#include "managers/mqtt_manager.h"
+#include "mqtt_manager.h"
 #include "lvgl_manager.h"
 #include <stdio.h>
 #include <string.h>

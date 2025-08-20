@@ -27,6 +27,9 @@ void energy_app_init(void) {
         printf("[energy_app] Screen already exists, skipping init.\n");
         return;
     }
+    // Register MQTT event handler and subscribe to topics
+    extern void energy_app_mqtt_init(void);
+    energy_app_mqtt_init();
     printf("[energy_app] Creating screen...\n");
     energy_screen = lv_obj_create(NULL);
     lv_obj_set_style_bg_color(energy_screen, lv_color_black(), 0);

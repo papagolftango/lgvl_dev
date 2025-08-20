@@ -1,3 +1,36 @@
+#include "mqtt_client.h"
+#include "esp_log.h"
+
+// Extra MQTT event debug logging
+static void mqtt_debug_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
+    esp_mqtt_event_handle_t event = event_data;
+    switch (event_id) {
+        case MQTT_EVENT_CONNECTED:
+            ESP_LOGI("mqtt_debug", "MQTT_EVENT_CONNECTED");
+            break;
+        case MQTT_EVENT_DISCONNECTED:
+            ESP_LOGW("mqtt_debug", "MQTT_EVENT_DISCONNECTED");
+            break;
+        case MQTT_EVENT_ERROR:
+            ESP_LOGE("mqtt_debug", "MQTT_EVENT_ERROR: error_type=%d", event->error_handle->error_type);
+            break;
+        case MQTT_EVENT_SUBSCRIBED:
+            ESP_LOGI("mqtt_debug", "MQTT_EVENT_SUBSCRIBED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_UNSUBSCRIBED:
+            ESP_LOGI("mqtt_debug", "MQTT_EVENT_UNSUBSCRIBED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_PUBLISHED:
+            ESP_LOGI("mqtt_debug", "MQTT_EVENT_PUBLISHED, msg_id=%d", event->msg_id);
+            break;
+        case MQTT_EVENT_DATA:
+            ESP_LOGI("mqtt_debug", "MQTT_EVENT_DATA: topic=%.*s, data=%.*s", event->topic_len, event->topic, event->data_len, event->data);
+            break;
+        default:
+            ESP_LOGI("mqtt_debug", "MQTT_EVENT id=%d", event_id);
+            break;
+    }
+}
 #include <float.h>
 #include <stdio.h>
 #include <string.h>
@@ -83,6 +116,8 @@ void mqtt_manager_connect(void) {
         ESP_LOGE("mqtt_manager", "Failed to create MQTT client");
         return;
     }
+    // Register both the app handler and debug handler
     esp_mqtt_client_register_event(s_mqtt_client, ESP_EVENT_ANY_ID, mqtt_event_handler, NULL);
+    esp_mqtt_client_register_event(s_mqtt_client, ESP_EVENT_ANY_ID, mqtt_debug_event_handler, NULL);
     esp_mqtt_client_start(s_mqtt_client);
 }

@@ -85,7 +85,9 @@ static void handle_provisioning(void) {
 }
 
 void app_main(void)
+
 {
+
     // --- Encoder initialization ---
     knob_config_t cfg;
     cfg.gpio_encoder_a = EXAMPLE_ENCODER_ECA_PIN;
@@ -94,16 +96,25 @@ void app_main(void)
     iot_knob_register_cb(knob, KNOB_LEFT, knob_left_cb, NULL);
     iot_knob_register_cb(knob, KNOB_RIGHT, knob_right_cb, NULL);
 
+
+
     // Set hardcoded WiFi credentials (for development only)
+    
      wifi_manager_set_credentials("","");
 
     // Set hardcoded MQTT credentials (for development only)
     mqtt_manager_set_credentials("192.168.68.66", "emonpi", "emonpimqtt2016");
 
+
     // Initialize TCP/IP stack and event loop (required before WiFi/HTTP server)
-    ESP_ERROR_CHECK(esp_netif_init());    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
     // Create default WiFi AP netif (enables DHCP server for AP mode)
     esp_netif_create_default_wifi_ap();
+
+    // --- Time manager initialization ---
+    #include "../managers/time_manager.h"
+    time_manager_init();
 
     // Initialize NVS (required for WiFi, provisioning, etc)
     esp_err_t ret = nvs_flash_init();
@@ -152,10 +163,19 @@ void app_main(void)
     app_manager_set_active(apps[0]->name); // Start with first app
 
 
+    bool last_synced = false;
     while (1) {
         app_manager_tick();
         vTaskDelay(pdMS_TO_TICKS(50));
         // Touch events are now handled by the touch manager and app logic
+
+        // Only log SNTP sync status when it changes
+        extern bool time_manager_is_synced(void);
+        bool now_synced = time_manager_is_synced();
+        if (now_synced != last_synced) {
+            ESP_LOGI("main", "SNTP synced: %s", now_synced ? "YES" : "NO");
+            last_synced = now_synced;
+        }
     }
 
 }
