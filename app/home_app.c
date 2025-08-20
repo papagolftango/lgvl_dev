@@ -4,6 +4,7 @@
 #include "touch_manager.h"
 #include "home_app.h"
 #include "app_manager.h"
+#include "time_manager.h"
 
 
 
@@ -34,6 +35,7 @@ static bool show_garden_bin_icon = false;
 // Forward declarations
 static void process_bin_touch(void);
 static void home_app_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data);
+static void daily_actions_cb(void);
 
 // Touch callback for home app
 static void home_app_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data) {
@@ -70,6 +72,8 @@ void home_app_init(void) {
     screen_active = true;
     // Register home app's touch callback
     touch_manager_register_user_cb(home_app_touch_cb);
+        // Register daily callback
+        time_manager_register_day_callback(daily_actions_cb);
 }
 
 void home_app_tick(void) {
@@ -95,6 +99,10 @@ void home_app_cleanup(void) {
 
 // Internal function to process bin touch (for testing)
 static void process_bin_touch(void) {
+}
+
+static void daily_actions_cb(void) {
+
     static int day = 1;
     if (day > 365) day = 1;
     int week = ((day - 1) / 7) + 1; // 1-based week number

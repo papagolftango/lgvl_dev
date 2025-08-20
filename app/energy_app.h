@@ -4,6 +4,18 @@
 extern "C" {
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+// Energy app data variables (shared with MQTT handler)
+extern float energy_vrms;
+extern float energy_solar;
+extern float energy_used;
+extern float energy_balance;
+extern float energy_peak_solar;
+extern float energy_peak_used;
+
 void energy_app_init(void);
 void energy_app_tick(void);
 void energy_app_cleanup(void);

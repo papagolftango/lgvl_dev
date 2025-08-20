@@ -23,6 +23,15 @@ void time_manager_get_timestr(char *buf, size_t bufsize);
 // Check if time is synchronized (NTP)
 bool time_manager_is_synced(void);
 
+// --- Event callback system ---
+typedef void (*time_manager_day_cb_t)(void);
+typedef void (*time_manager_hour_cb_t)(void);
+
+void time_manager_register_day_callback(time_manager_day_cb_t cb);
+void time_manager_unregister_day_callback(time_manager_day_cb_t cb);
+void time_manager_register_hour_callback(time_manager_hour_cb_t cb);
+void time_manager_unregister_hour_callback(time_manager_hour_cb_t cb);
+
 #ifdef __cplusplus
 }
 #endif

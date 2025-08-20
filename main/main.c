@@ -100,8 +100,9 @@ void app_main(void)
 
     // Set hardcoded WiFi credentials (for development only)
     
-     wifi_manager_set_credentials("","");
+    // wifi_manager_set_credentials("","");
 
+     wifi_manager_set_credentials("","");
     // Set hardcoded MQTT credentials (for development only)
     mqtt_manager_set_credentials("192.168.68.66", "emonpi", "emonpimqtt2016");
 

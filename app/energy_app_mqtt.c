@@ -6,7 +6,9 @@
 #include <stdlib.h>
 #include "esp_log.h"
 
+
 #define TAG "energy_app"
+#include "energy_app.h"
 
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;
@@ -30,18 +32,30 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                 payload[dlen] = '\0';
                 if (strcmp(topic, "emon/emontx3/vrms") == 0) {
                     ESP_LOGI(TAG, "Received vrms: %s", payload);
+                    energy_vrms = strtof(payload, NULL);
                     lvgl_manager_set_vrms(payload);
                 } else if (strcmp(topic, "emon/emontx3/solar") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed solar: %.2f", value);
+                    energy_solar = value;
+                    if (value > energy_peak_solar) {
+                        energy_peak_solar = value;
+                        ESP_LOGI(TAG, "New peak solar: %.2f", energy_peak_solar);
+                    }
                     // TODO: update UI with solar value
                 } else if (strcmp(topic, "emon/emontx3/used") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed used: %.2f", value);
+                    energy_used = value;
+                    if (value > energy_peak_used) {
+                        energy_peak_used = value;
+                        ESP_LOGI(TAG, "New peak used: %.2f", energy_peak_used);
+                    }
                     // TODO: update UI with used value
                 } else if (strcmp(topic, "emon/emontx3/balance") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed balance: %.2f", value);
+                    energy_balance = value;
                     // TODO: update UI with balance value
                 }
             }
