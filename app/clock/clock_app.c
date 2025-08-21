@@ -28,9 +28,7 @@ void clock_app_tick(void) {
     extern lv_obj_t *uic_time;
     if (uic_time) {
         char buf[32];
-        // Example: format and set the time string
-        // snprintf(buf, sizeof(buf), "%02d:%02d:%02d", hour, min, sec);
-        snprintf(buf, sizeof(buf), "12:34:56"); // Replace with real time
+        time_manager_get_timestr(buf, sizeof(buf));
         lv_label_set_text(uic_time, buf);
     }
 }

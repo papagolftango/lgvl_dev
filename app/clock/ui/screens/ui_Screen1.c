@@ -13,8 +13,10 @@ lv_obj_t *ui_Screen1 = NULL;lv_obj_t *ui_time = NULL;
 
 void ui_Screen1_screen_init(void)
 {
+
 ui_Screen1 = lv_obj_create(NULL);
 lv_obj_clear_flag( ui_Screen1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_Screen1, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);
 
 ui_time = lv_label_create(ui_Screen1);
 lv_obj_set_width( ui_time, LV_SIZE_CONTENT);  /// 1
