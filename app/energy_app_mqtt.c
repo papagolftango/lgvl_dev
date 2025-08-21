@@ -1,6 +1,10 @@
 #include "energy_app.h"
 #include "mqtt_manager.h"
 #include "lvgl_manager.h"
+// This file has been removed. See app/energy/energy_app_mqtt.c
+#include "energy_app.h"
+#include "mqtt_manager.h"
+#include "lvgl_manager.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>

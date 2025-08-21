@@ -51,3 +51,5 @@ void settings_app_cleanup(void) {
 void settings_app_touch(void) {
     app_manager_next_app();
 }
+
+// This file has been removed. See app/settings/settings_app.c

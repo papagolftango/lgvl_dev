@@ -1,10 +1,4 @@
-// home_app.c - Home app logic
-#include <stdio.h>
-#include "lvgl.h"
-#include "touch_manager.h"
-#include "home_app.h"
-#include "app_manager.h"
-#include "time_manager.h"
+// This file has been removed. See app/home/home_app.c
 
 
 
