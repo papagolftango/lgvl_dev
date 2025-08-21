@@ -1,17 +1,15 @@
+
 #include <stdio.h>
 #include <lvgl.h>
 #include "weather_app.h"
 #include "app_manager.h"
-
 
 // Static/global variables
 static lv_obj_t *weather_screen = NULL;
 static lv_obj_t *label = NULL;
 static bool screen_active = false;
 
-
 void weather_app_process(void) {}
-
 
 void weather_app_init(void) {
     if (weather_screen) {
@@ -30,12 +28,10 @@ void weather_app_init(void) {
     screen_active = true;
 }
 
-
 void weather_app_tick(void) {
     if (!weather_screen || !label) return;
     lv_label_set_text(label, "Weather");
 }
-
 
 void weather_app_cleanup(void) {
     if (weather_screen) {

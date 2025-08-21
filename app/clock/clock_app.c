@@ -1,10 +1,10 @@
 #include "tz_utils.h"
+
 #include <stdio.h>
 #include <lvgl.h>
 #include "clock_app.h"
 #include "app_manager.h"
 #include "time_manager.h"
-
 
 // Static/global variables
 static lv_obj_t *clock_screen = NULL;
@@ -13,9 +13,7 @@ static lv_obj_t *time_box = NULL;
 static lv_obj_t *time_label = NULL;
 static bool screen_active = false;
 
-
 void clock_app_process(void) {}
-
 
 void clock_app_init(void) {
     if (clock_screen) {
@@ -53,7 +51,6 @@ void clock_app_init(void) {
     screen_active = true;
 }
 
-
 void clock_app_tick(void) {
     if (!clock_screen || !label || !time_label) return;
     lv_label_set_text(label, "Clock");
@@ -76,7 +73,6 @@ void clock_app_tick(void) {
     }
     lv_label_set_text(time_label, displaybuf);
 }
-
 
 void clock_app_cleanup(void) {
     if (clock_screen) {

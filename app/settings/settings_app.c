@@ -1,17 +1,15 @@
+
 #include <stdio.h>
 #include <lvgl.h>
 #include "settings_app.h"
 #include "app_manager.h"
-
 
 // Static/global variables
 static lv_obj_t *settings_screen = NULL;
 static lv_obj_t *label = NULL;
 static bool screen_active = false;
 
-
 void settings_app_process(void) {}
-
 
 void settings_app_init(void) {
     if (settings_screen) {
@@ -30,12 +28,10 @@ void settings_app_init(void) {
     screen_active = true;
 }
 
-
 void settings_app_tick(void) {
     if (!settings_screen || !label) return;
     lv_label_set_text(label, "Settings");
 }
-
 
 void settings_app_cleanup(void) {
     if (settings_screen) {

@@ -1,6 +1,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 // Bin state machine
 typedef enum {
 	BIN_STATE_IDLE,        // Bin is in normal/idle state

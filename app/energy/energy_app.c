@@ -30,12 +30,6 @@ static void energy_daily_actions_cb(void) {
     ESP_LOGI(TAG, "Daily reset: peak_solar and peak_used cleared.");
 }
 
-#include <stdio.h>
-#include <lvgl.h>
-#include "energy_app.h"
-#include "app_manager.h"
-
-
 // Called always, even when not active
 void energy_app_process(void) {
     // Example: update latest_vrms from MQTT or other source
@@ -45,7 +39,7 @@ void energy_app_process(void) {
 
 void energy_app_init(void) {
     if (energy_screen) {
-    ESP_LOGI(TAG, "Screen already exists, skipping init.");
+        ESP_LOGI(TAG, "Screen already exists, skipping init.");
         return;
     }
     // Register MQTT event handler and subscribe to topics
@@ -65,9 +59,7 @@ void energy_app_init(void) {
     screen_active = true;
 }
 
-
 // Called only when this app is active (for UI updates)
-
 void energy_app_tick(void) {
     if (!energy_screen || !label) return;
     // Update UI with latest data
@@ -75,17 +67,15 @@ void energy_app_tick(void) {
     lv_label_set_text(label, "Energy");
 }
 
-
-
 void energy_app_cleanup(void) {
     if (energy_screen) {
-    ESP_LOGI(TAG, "Cleanup: not deleting screen, just clearing pointers.");
+        ESP_LOGI(TAG, "Cleanup: not deleting screen, just clearing pointers.");
         // Do NOT call lv_obj_del on a screen loaded with lv_scr_load!
         energy_screen = NULL;
         label = NULL;
         screen_active = false;
     } else {
-    ESP_LOGI(TAG, "Cleanup called but screen is already NULL.");
+        ESP_LOGI(TAG, "Cleanup called but screen is already NULL.");
     }
 }
 
