@@ -1,3 +1,5 @@
+#include "../managers/power_manager.h"
+#include "nvs_flash.h"
 
 
 #include <stdio.h>
@@ -5,7 +7,7 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "esp_err.h"
-#include "nvs_flash.h"
+#include "../managers/persistent_data_manager.h"
 #include "esp_system.h"
 #include "esp_netif.h"
 #include "esp_event.h"
@@ -35,7 +37,6 @@ static void switch_to_next_app(void);
 
 static void knob_left_cb(void *arg, void *data) {
     ESP_LOGI("encoder", "Knob turned LEFT");
-    // Optionally implement previous app logic here
 }
 
 static void knob_right_cb(void *arg, void *data) {
@@ -85,8 +86,9 @@ static void handle_provisioning(void) {
 }
 
 void app_main(void)
-
 {
+    // Initialize power manager
+    power_manager_init();
 
     // --- Encoder initialization ---
     knob_config_t cfg;
@@ -117,13 +119,8 @@ void app_main(void)
     #include "../managers/time_manager.h"
     time_manager_init();
 
-    // Initialize NVS (required for WiFi, provisioning, etc)
-    esp_err_t ret = nvs_flash_init();
-    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
-        ESP_ERROR_CHECK(nvs_flash_erase());
-        ret = nvs_flash_init();
-    }
-    ESP_ERROR_CHECK(ret);
+    // Initialize persistent data manager (handles NVS)
+    persistent_data_manager_init();
     // ...existing code...
 
 
