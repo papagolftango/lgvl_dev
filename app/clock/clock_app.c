@@ -13,14 +13,8 @@
 void clock_app_process(void) {}
 
 void clock_app_init(void) {
-    static bool initialized = false;
-    if (initialized) {
-        printf("[clock_app] UI already initialized, skipping.\n");
-        return;
-    }
     printf("[clock_app] Initializing SquareLine UI...\n");
     ui_init();
-    initialized = true;
 }
 
 void clock_app_tick(void) {
@@ -29,12 +23,18 @@ void clock_app_tick(void) {
     if (uic_time) {
         char buf[32];
         time_manager_get_timestr(buf, sizeof(buf));
-        lv_label_set_text(uic_time, buf);
+        // Expecting buf = "YYYY-MM-DD HH:MM:SS"; extract HH:MM:SS
+        char time_only[16] = "--:--:--";
+        if (strlen(buf) >= 19 && buf[10] == ' ') {
+            strncpy(time_only, buf + 11, 8);
+            time_only[8] = '\0';
+        }
+        lv_label_set_text(uic_time, time_only);
     }
 }
 
 void clock_app_cleanup(void) {
-    // No cleanup needed for SquareLine UI (handled by LVGL framework)
+    ui_destroy();
 }
 
 void clock_app_touch(void) {

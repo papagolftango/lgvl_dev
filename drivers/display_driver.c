@@ -273,8 +273,26 @@ void display_driver_flush_cb(lv_disp_drv_t *drv, const lv_area_t *area, lv_color
 	int32_t y2 = area->y2;
 	int32_t w = x2 - x1 + 1;
 	int32_t h = y2 - y1 + 1;
-	// Flush the area to the display
+
+#if LV_COLOR_DEPTH == 16 && LV_COLOR_16_SWAP == 0
+	// Swap bytes in color_map for RGB565 if needed
+	size_t px_count = w * h;
+	uint16_t *src = (uint16_t *)color_map;
+	static uint16_t *swap_buf = NULL;
+	static size_t swap_buf_size = 0;
+	if (swap_buf_size < px_count) {
+		if (swap_buf) free(swap_buf);
+		swap_buf = malloc(px_count * sizeof(uint16_t));
+		swap_buf_size = px_count;
+	}
+	for (size_t i = 0; i < px_count; ++i) {
+		uint16_t c = src[i];
+		swap_buf[i] = (c >> 8) | (c << 8);
+	}
+	esp_lcd_panel_draw_bitmap(panel_handle, x1, y1, x2 + 1, y2 + 1, swap_buf);
+#else
 	esp_lcd_panel_draw_bitmap(panel_handle, x1, y1, x2 + 1, y2 + 1, color_map);
+#endif
 	lv_disp_flush_ready(drv);
 }
 
