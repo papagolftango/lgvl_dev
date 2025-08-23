@@ -27,6 +27,7 @@
 #include "settings/settings_app.h"
 #include "wifi_manager.h"
 #include "../managers/mqtt_manager.h"
+#include "../managers/touch_manager.h"
 #include "../managers/wifi_manager.h"
 #include "../managers/mqtt_manager.h"
 #include "../managers/provisioning_server.h"

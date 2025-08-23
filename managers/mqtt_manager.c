@@ -44,6 +44,7 @@ static char s_mqtt_pass[64] = {0};
 void mqtt_manager_set_credentials(const char *host, const char *user, const char *pass) {
     // If host does not start with mqtt:// or mqtts://, prepend mqtt://
     if (strncmp(host, "mqtt://", 7) != 0 && strncmp(host, "mqtts://", 8) != 0) {
+            #include <stdint.h>
         snprintf(s_mqtt_host, sizeof(s_mqtt_host), "mqtt://%s", host);
     } else {
         strncpy(s_mqtt_host, host, sizeof(s_mqtt_host) - 1);

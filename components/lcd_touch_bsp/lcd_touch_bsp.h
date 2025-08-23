@@ -1,3 +1,4 @@
+#include <stdint.h>
 #ifndef LCD_TOUCH_BSP_H
 #define LCD_TOUCH_BSP_H
 

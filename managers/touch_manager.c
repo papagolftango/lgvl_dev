@@ -9,7 +9,6 @@ typedef struct {
     lv_indev_drv_t indev_drv;
 } touch_manager_t;
 
-
 static touch_user_cb_t user_cb = NULL;
 static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
 {
@@ -28,7 +27,7 @@ static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
         if (data->point.y > LCD_V_RES) data->point.y = LCD_V_RES;
         data->state = LV_INDEV_STATE_PRESSED;
         ESP_LOGI("TP", "Touch detected: (%d, %d)", data->point.x, data->point.y);
-        if (user_cb) user_cb(drv, data);
+    if (user_cb) user_cb(drv, data);
     } else {
         data->state = LV_INDEV_STATE_RELEASED;
     }

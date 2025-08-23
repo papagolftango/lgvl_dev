@@ -1,3 +1,4 @@
+
 #include "energy_app.h"
 #include "mqtt_manager.h"
 #include "lvgl_manager.h"
@@ -5,9 +6,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include "esp_log.h"
+#include "esp_event.h"
+#include "mqtt_client.h" // For esp_mqtt_event_handle_t, MQTT_EVENT_*, esp_mqtt_client_subscribe
 
 #define TAG "energy_app"
-#include "energy_app.h"
 
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;
