@@ -1,3 +1,5 @@
+
+#include <time.h>
 #include "../managers/power_manager.h"
 #include "nvs_flash.h"
 

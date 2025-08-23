@@ -19,8 +19,10 @@ lv_obj_clear_flag( ui_Screen1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 lv_obj_set_style_bg_color(ui_Screen1, lv_color_black(), LV_PART_MAIN | LV_STATE_DEFAULT);
 
    ui_time = lv_label_create(ui_Screen1);
-   // Set fixed width for 8 characters ("88:88:88") at large font size
-   lv_obj_set_width(ui_time, 8 * 28); // 8 chars * 28px (adjust as needed for your font)
+   // Set fixed width for 8 characters ("88:88:88") at lv_font_montserrat_48
+   // Each '8' is about 34px wide in lv_font_montserrat_48, ':' is about 14px
+   // So: 6 digits * 34 + 2 colons * 14 = 204 + 28 = 232px
+   lv_obj_set_width(ui_time, 232); // Stable width for '88:88:88' in lv_font_montserrat_48
    lv_obj_set_height(ui_time, LV_SIZE_CONTENT);
    lv_obj_set_align(ui_time, LV_ALIGN_CENTER);
    lv_obj_set_style_text_align(ui_time, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN | LV_STATE_DEFAULT);

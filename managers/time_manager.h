@@ -1,3 +1,9 @@
+#include <time.h>
+#include <stddef.h>
+#include <stdbool.h>
+
+// Set timezone to UK (GMT/BST with DST rules)
+void time_manager_set_timezone_uk(void);
 
 #pragma once
 #include <time.h>

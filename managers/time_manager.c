@@ -1,3 +1,12 @@
+
+
+#include <stdlib.h>
+#include <time.h>
+
+void time_manager_set_timezone_uk(void) {
+    setenv("TZ", "GMT0BST,M3.5.0/1,M10.5.0/2", 1); // UK: GMT, DST starts last Sunday in March at 1am, ends last Sunday in October at 2am
+    tzset();
+}
 #include "time_manager.h"
 #include <time.h>
 #include <stdbool.h>
@@ -28,6 +37,8 @@ static void time_sync_notification_cb(struct timeval *tv) {
 
 void time_manager_init(void) {
     if (sntp_started) return;
+    // Set timezone to UK (GMT/BST with DST)
+    time_manager_set_timezone_uk();
     sntp_setoperatingmode(SNTP_OPMODE_POLL);
     sntp_set_sync_interval(86400000); // 24 hours in ms
     sntp_setservername(0, "time.google.com");
