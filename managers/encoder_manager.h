@@ -6,6 +6,3 @@ extern "C" {
 
 void encoder_manager_init(void);
 
-#ifdef __cplusplus
-}
-#endif

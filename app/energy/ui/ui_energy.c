@@ -5,6 +5,7 @@
 #include "../../managed_components/lvgl__lvgl/src/extra/widgets/meter/lv_meter.h"
 #include <stdio.h>
 #include <math.h>
+#include <inttypes.h>
 
 // UI handles
 static lv_obj_t *energy_meter = NULL;
@@ -50,10 +51,10 @@ void ui_energy_create(lv_obj_t *parent, float initial_balance, float initial_pea
         int32_t watt = min_watt + i * (max_watt - min_watt) / (major_tick_count - 1);
         int32_t kw = watt / 1000;
         char buf[8];
-        snprintf(buf, sizeof(buf), "%d", kw);
-        // Angle for this tick (LVGL: 0 deg is right, 90 is bottom, 180 is left, 270 is top)
-        int32_t angle = 135 + (270 * i) / (major_tick_count - 1); // 135 to 405 deg
-        float rad = angle * 3.14159265f / 180.0f;
+        snprintf(buf, sizeof(buf), "%" PRId32, kw);
+        // Calculate angle for this tick
+        float angle = 135 + (270.0f * i) / (major_tick_count - 1);
+    float rad = angle * (M_PI / 180.0f);
         int x = center_x + (int)(radius * cosf(rad));
         int y = center_y + (int)(radius * sinf(rad));
         lv_obj_t *lbl = lv_label_create(energy_meter);

@@ -5,6 +5,7 @@
 #include "esp_http_server.h"
 #include "nvs_flash.h"
 #include <string.h>
+#include <ctype.h>
 
 static const char *TAG = "provisioning_server";
 static httpd_handle_t server = NULL;
@@ -40,10 +41,52 @@ static esp_err_t submit_post_handler(httpd_req_t *req) {
     }
     buf[ret] = '\0';
 
-    // Parse form data (very basic, not robust)
+    // URL decode helper
+    char decoded[512];
+    int di = 0;
+    for (int si = 0; buf[si] && di < (int)sizeof(decoded) - 1; ++si) {
+        if (buf[si] == '%') {
+            if (isxdigit((unsigned char)buf[si+1]) && isxdigit((unsigned char)buf[si+2])) {
+                char hex[3] = { buf[si+1], buf[si+2], 0 };
+                decoded[di++] = (char)strtol(hex, NULL, 16);
+                si += 2;
+            }
+        } else if (buf[si] == '+') {
+            decoded[di++] = ' ';
+        } else {
+            decoded[di++] = buf[si];
+        }
+    }
+    decoded[di] = '\0';
+
+    // Robust key-value parsing for each field
     char ssid[64] = "", password[64] = "", mqtt_host[64] = "", mqtt_user[64] = "", mqtt_pass[64] = "";
-    sscanf(buf, "ssid=%63[^&]&password=%63[^&]&mqtt_host=%63[^&]&mqtt_user=%63[^&]&mqtt_pass=%63s", ssid, password, mqtt_host, mqtt_user, mqtt_pass);
-    ESP_LOGI(TAG, "Received: SSID=%s, PASS=%s, MQTT_HOST=%s, MQTT_USER=%s, MQTT_PASS=%s", ssid, password, mqtt_host, mqtt_user, mqtt_pass);
+    char *p, *end;
+
+    // Helper macro to extract value for a key
+#define EXTRACT_FIELD(key, buf, out, maxlen) \
+    if ((p = strstr(buf, key "="))) { \
+        p += strlen(key) + 1; \
+        end = strchr(p, '&'); \
+        size_t len = end ? (size_t)(end - p) : strlen(p); \
+        if (len >= maxlen) len = maxlen - 1; \
+        strncpy(out, p, len); \
+        out[len] = '\0'; \
+    }
+
+    EXTRACT_FIELD("ssid", decoded, ssid, sizeof(ssid));
+    EXTRACT_FIELD("password", decoded, password, sizeof(password));
+    EXTRACT_FIELD("mqtt_host", decoded, mqtt_host, sizeof(mqtt_host));
+    EXTRACT_FIELD("mqtt_user", decoded, mqtt_user, sizeof(mqtt_user));
+    EXTRACT_FIELD("mqtt_pass", decoded, mqtt_pass, sizeof(mqtt_pass));
+
+    ESP_LOGI(TAG, "Parsed fields:");
+    ESP_LOGI(TAG, "  SSID: '%s'", ssid);
+    ESP_LOGI(TAG, "  WiFi PASS: '%s'", password);
+    ESP_LOGI(TAG, "  MQTT HOST: '%s'", mqtt_host);
+    ESP_LOGI(TAG, "  MQTT USER: '%s'", mqtt_user);
+    ESP_LOGI(TAG, "  MQTT PASS: '%s'", mqtt_pass);
+
     if (credentials_cb) credentials_cb(ssid, password, mqtt_host, mqtt_user, mqtt_pass);
     httpd_resp_sendstr(req, "<html><body><h2>Provisioning Complete</h2><p>You may now disconnect.</p></body></html>");
     return ESP_OK;

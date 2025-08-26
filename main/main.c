@@ -1,54 +1,39 @@
-
 #include <time.h>
-#include "../managers/power_manager.h"
-#include "nvs_flash.h"
-
-
 #include <stdio.h>
+#include "nvs_flash.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "esp_err.h"
-#include "../managers/persistent_data_manager.h"
 #include "esp_system.h"
 #include "esp_netif.h"
 #include "esp_event.h"
 #include "esp_wifi.h"
+
 #include "../drivers/user_config.h"
 #include "../drivers/display_driver.h"
+#include "../drivers/bidi_switch_knob.h"
 #include "lcd_bl_pwm_bsp.h"
+
+#include "../managers/power_manager.h"
+#include "../managers/persistent_data_manager.h"
 #include "../managers/lvgl_manager.h"
 #include "../managers/touch_manager.h"
 #include "../managers/app_manager.h"
+#include "../managers/mqtt_manager.h"
+#include "../managers/wifi_manager.h"
+#include "../managers/provisioning_server.h"
+#include "../managers/time_manager.h"
+#include "../managers/encoder_manager.h"
+
 #include "energy/energy_app.h"
 #include "home/home_app.h"
 #include "weather/weather_app.h"
 #include "clock/clock_app.h"
 #include "settings/settings_app.h"
 #include "wifi_manager.h"
-#include "../managers/mqtt_manager.h"
-#include "../managers/touch_manager.h"
-#include "../managers/wifi_manager.h"
-#include "../managers/mqtt_manager.h"
-#include "../managers/provisioning_server.h"
-#include "../drivers/bidi_switch_knob.h"
 
 
-
-// Forward declaration for app switching
-static void switch_to_next_app(void);
-
-static void knob_left_cb(void *arg, void *data) {
-    ESP_LOGI("encoder", "Knob turned LEFT");
-}
-
-static void knob_right_cb(void *arg, void *data) {
-    ESP_LOGI("encoder", "Knob turned RIGHT");
-    switch_to_next_app();
-}
-
-
-// Encoder callbacks
 
 // For development: Erase NVS and restart to force provisioning
 void erase_nvs_and_restart() {
@@ -82,10 +67,29 @@ static const char *TAG = "example";
 
 // --- Provisioning and WiFi/MQTT setup implementation ---
 
-// For development: Always use hardcoded credentials, skip provisioning
-static void handle_provisioning(void) {
-    ESP_LOGI(TAG, "[DEV] Skipping provisioning, using hardcoded WiFi credentials");
+
+// Provisioning callback: called when credentials are received from the web form
+static void provisioning_credentials_cb(const char* ssid, const char* password, const char* mqtt_host, const char* mqtt_user, const char* mqtt_pass) {
+    ESP_LOGI(TAG, "Provisioning callback: received SSID='%s', PASS='%s', MQTT_HOST='%s', MQTT_USER='%s', MQTT_PASS='%s'", ssid, password, mqtt_host, mqtt_user, mqtt_pass);
+    wifi_manager_set_credentials(ssid, password);
+    mqtt_manager_set_credentials(mqtt_host, mqtt_user, mqtt_pass);
+    provisioning_server_stop();
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_start());
     wifi_manager_connect();
+    // mqtt_manager_connect(); // Uncomment if your MQTT manager requires manual connect
+}
+
+// Preferred provisioning: start web server and set callback
+static void handle_provisioning(void) {
+    if (wifi_manager_is_provisioned()) {
+        // Credentials exist, connect as STA
+        wifi_manager_connect();
+    } else {
+        // No credentials, start provisioning
+        provisioning_server_set_callback(provisioning_credentials_cb);
+        provisioning_server_start();
+    }
 }
 
 void app_main(void)
@@ -93,24 +97,9 @@ void app_main(void)
     // Initialize power manager
     power_manager_init();
 
-    // --- Encoder initialization ---
-    knob_config_t cfg;
-    cfg.gpio_encoder_a = EXAMPLE_ENCODER_ECA_PIN;
-    cfg.gpio_encoder_b = EXAMPLE_ENCODER_ECB_PIN;
-    knob_handle_t knob = iot_knob_create(&cfg);
-    iot_knob_register_cb(knob, KNOB_LEFT, knob_left_cb, NULL);
-    iot_knob_register_cb(knob, KNOB_RIGHT, knob_right_cb, NULL);
-
-
-
-    // Set hardcoded WiFi credentials (for development only)
-    
-    // wifi_manager_set_credentials("","");
-
-     wifi_manager_set_credentials("","");
-    // Set hardcoded MQTT credentials (for development only)
-    mqtt_manager_set_credentials("192.168.68.66", "emonpi", "emonpimqtt2016");
-
+    // TEMP: Erase NVS and restart to force provisioning on next boot
+   //erase_nvs_and_restart();
+   //  WiFi/MQTT credentials will be set via provisioning web server
 
     // Initialize TCP/IP stack and event loop (required before WiFi/HTTP server)
     ESP_ERROR_CHECK(esp_netif_init());
@@ -119,7 +108,7 @@ void app_main(void)
     esp_netif_create_default_wifi_ap();
 
     // --- Time manager initialization ---
-    #include "../managers/time_manager.h"
+
     time_manager_init();
 
     // Initialize persistent data manager (handles NVS)
@@ -128,6 +117,8 @@ void app_main(void)
 
 
     // --- WiFi/MQTT provisioning and connection ---
+    wifi_manager_load_credentials();
+    mqtt_manager_load_credentials();
     handle_provisioning();
 
     // For development only: Uncomment to force hardcoded credentials
@@ -152,6 +143,7 @@ void app_main(void)
 
     // Register touch input device
     touch_manager_init(disp);
+    encoder_manager_init();
 
     // LVGL mutex is now managed by lvgl_manager
     lvgl_manager_start_task();

@@ -1,6 +1,46 @@
 #include "mqtt_client.h"
 #include "esp_log.h"
 
+
+#include <float.h>
+#include <stdio.h>
+#include <string.h>
+#include "esp_log.h"
+#include "nvs_flash.h"
+#include "nvs.h"
+
+#include "mqtt_manager.h"
+#include "provisioning_server.h"
+
+#define MQTT_NVS_NAMESPACE "mqtt_cfg"
+#define MQTT_NVS_KEY_HOST "host"
+#define MQTT_NVS_KEY_USER "user"
+#define MQTT_NVS_KEY_PASS "pass"
+static char s_mqtt_host[128] = {0};
+static char s_mqtt_user[64] = {0};
+static char s_mqtt_pass[64] = {0};
+static esp_err_t mqtt_manager_save_credentials_to_nvs(const char *host, const char *user, const char *pass) {
+    nvs_handle_t nvs_handle;
+    esp_err_t err = nvs_open(MQTT_NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
+    if (err != ESP_OK) return err;
+    err = nvs_set_str(nvs_handle, MQTT_NVS_KEY_HOST, host);
+    if (err == ESP_OK) err = nvs_set_str(nvs_handle, MQTT_NVS_KEY_USER, user);
+    if (err == ESP_OK) err = nvs_set_str(nvs_handle, MQTT_NVS_KEY_PASS, pass);
+    if (err == ESP_OK) err = nvs_commit(nvs_handle);
+    nvs_close(nvs_handle);
+    return err;
+}
+static esp_err_t mqtt_manager_load_credentials_from_nvs(char *host, size_t host_len, char *user, size_t user_len, char *pass, size_t pass_len) {
+    nvs_handle_t nvs_handle;
+    esp_err_t err = nvs_open(MQTT_NVS_NAMESPACE, NVS_READONLY, &nvs_handle);
+    if (err != ESP_OK) return err;
+    err = nvs_get_str(nvs_handle, MQTT_NVS_KEY_HOST, host, &host_len);
+    if (err == ESP_OK) err = nvs_get_str(nvs_handle, MQTT_NVS_KEY_USER, user, &user_len);
+    if (err == ESP_OK) err = nvs_get_str(nvs_handle, MQTT_NVS_KEY_PASS, pass, &pass_len);
+    nvs_close(nvs_handle);
+    return err;
+}
+
 // Extra MQTT event debug logging
 static void mqtt_debug_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;
@@ -31,20 +71,9 @@ static void mqtt_debug_event_handler(void *handler_args, esp_event_base_t base, 
             break;
     }
 }
-#include <float.h>
-#include <stdio.h>
-#include <string.h>
-#include "esp_log.h"
-
-// Store credentials in static variables for now
-static char s_mqtt_host[128] = {0};
-static char s_mqtt_user[64] = {0};
-static char s_mqtt_pass[64] = {0};
-
 void mqtt_manager_set_credentials(const char *host, const char *user, const char *pass) {
     // If host does not start with mqtt:// or mqtts://, prepend mqtt://
     if (strncmp(host, "mqtt://", 7) != 0 && strncmp(host, "mqtts://", 8) != 0) {
-            #include <stdint.h>
         snprintf(s_mqtt_host, sizeof(s_mqtt_host), "mqtt://%s", host);
     } else {
         strncpy(s_mqtt_host, host, sizeof(s_mqtt_host) - 1);
@@ -54,9 +83,9 @@ void mqtt_manager_set_credentials(const char *host, const char *user, const char
     s_mqtt_user[sizeof(s_mqtt_user) - 1] = '\0';
     strncpy(s_mqtt_pass, pass, sizeof(s_mqtt_pass) - 1);
     s_mqtt_pass[sizeof(s_mqtt_pass) - 1] = '\0';
+    mqtt_manager_save_credentials_to_nvs(s_mqtt_host, s_mqtt_user, s_mqtt_pass);
 }
-#include "mqtt_manager.h"
-#include "provisioning_server.h"
+
 
 void mqtt_manager_start_provisioning(void) {
     // Start provisioning web server for MQTT credentials
@@ -64,8 +93,26 @@ void mqtt_manager_start_provisioning(void) {
 }
 
 bool mqtt_manager_is_provisioned(void) {
-    // TODO: Check NVS for stored MQTT credentials
-    return false;
+    char nvs_host[128] = {0};
+    char nvs_user[64] = {0};
+    char nvs_pass[64] = {0};
+    esp_err_t nvs_err = mqtt_manager_load_credentials_from_nvs(nvs_host, sizeof(nvs_host), nvs_user, sizeof(nvs_user), nvs_pass, sizeof(nvs_pass));
+    return (nvs_err == ESP_OK && strlen(nvs_host) > 0);
+}
+
+void mqtt_manager_load_credentials(void) {
+    char nvs_host[128] = {0};
+    char nvs_user[64] = {0};
+    char nvs_pass[64] = {0};
+    esp_err_t nvs_err = mqtt_manager_load_credentials_from_nvs(nvs_host, sizeof(nvs_host), nvs_user, sizeof(nvs_user), nvs_pass, sizeof(nvs_pass));
+    if (nvs_err == ESP_OK) {
+        strncpy(s_mqtt_host, nvs_host, sizeof(s_mqtt_host) - 1);
+        s_mqtt_host[sizeof(s_mqtt_host) - 1] = '\0';
+        strncpy(s_mqtt_user, nvs_user, sizeof(s_mqtt_user) - 1);
+        s_mqtt_user[sizeof(s_mqtt_user) - 1] = '\0';
+        strncpy(s_mqtt_pass, nvs_pass, sizeof(s_mqtt_pass) - 1);
+        s_mqtt_pass[sizeof(s_mqtt_pass) - 1] = '\0';
+    }
 }
 
 

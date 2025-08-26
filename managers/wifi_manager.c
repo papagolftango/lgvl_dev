@@ -1,3 +1,31 @@
+
+#include <string.h>
+#include "esp_err.h"
+#include "nvs_flash.h"
+#include "nvs.h"
+
+// Forward declaration for static function
+static esp_err_t wifi_manager_load_credentials_from_nvs(char *ssid, size_t ssid_len, char *password, size_t pass_len);
+
+// Ensure these are declared somewhere in the file (adjust as needed)
+static char s_wifi_ssid[32] = {0};
+static char s_wifi_pass[64] = {0};
+
+// ...existing code...
+
+// If the function is at the end, ensure it is not redeclared static if already declared above
+void wifi_manager_load_credentials(void) {
+    char nvs_ssid[64] = {0};
+    char nvs_pass[64] = {0};
+    esp_err_t nvs_err = wifi_manager_load_credentials_from_nvs(nvs_ssid, sizeof(nvs_ssid), nvs_pass, sizeof(nvs_pass));
+    if (nvs_err == ESP_OK) {
+        strncpy(s_wifi_ssid, nvs_ssid, sizeof(s_wifi_ssid) - 1);
+        s_wifi_ssid[sizeof(s_wifi_ssid) - 1] = '\0';
+        strncpy(s_wifi_pass, nvs_pass, sizeof(s_wifi_pass) - 1);
+        s_wifi_pass[sizeof(s_wifi_pass) - 1] = '\0';
+    }
+}
+#include <string.h>
 #include <string.h>
 #include "esp_log.h"
 // For esp_ip4addr_ntoa
@@ -10,8 +38,7 @@
 #define WIFI_NVS_KEY_SSID "ssid"
 #define WIFI_NVS_KEY_PASS "pass"
 
-static char s_wifi_ssid[64] = {0};
-static char s_wifi_pass[64] = {0};
+
 
 static esp_err_t wifi_manager_save_credentials_to_nvs(const char *ssid, const char *password) {
     nvs_handle_t nvs_handle;
