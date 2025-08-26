@@ -1,19 +1,35 @@
 
+// Standard C
 #include <string.h>
+
+// ESP-IDF
 #include "esp_err.h"
+#include "esp_log.h"
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "esp_wifi.h"
+#include "esp_event.h"
+#include "esp_netif.h"
+#include "esp_netif_ip_addr.h"
+
+// Project headers
+#include "wifi_manager.h"
+#include "provisioning_server.h"
+
+// Defines
+#define WIFI_NVS_NAMESPACE "wifi_cfg"
+#define WIFI_NVS_KEY_SSID "ssid"
+#define WIFI_NVS_KEY_PASS "pass"
+
+// Static/global variables
+static char s_wifi_ssid[32] = {0};
+static char s_wifi_pass[64] = {0};
 
 // Forward declaration for static function
 static esp_err_t wifi_manager_load_credentials_from_nvs(char *ssid, size_t ssid_len, char *password, size_t pass_len);
 
-// Ensure these are declared somewhere in the file (adjust as needed)
-static char s_wifi_ssid[32] = {0};
-static char s_wifi_pass[64] = {0};
 
-// ...existing code...
-
-// If the function is at the end, ensure it is not redeclared static if already declared above
+// Public function implementations
 void wifi_manager_load_credentials(void) {
     char nvs_ssid[64] = {0};
     char nvs_pass[64] = {0};
@@ -25,21 +41,8 @@ void wifi_manager_load_credentials(void) {
         s_wifi_pass[sizeof(s_wifi_pass) - 1] = '\0';
     }
 }
-#include <string.h>
-#include <string.h>
-#include "esp_log.h"
-// For esp_ip4addr_ntoa
-#include "esp_netif_ip_addr.h"
 
-#include "nvs_flash.h"
-#include "nvs.h"
-
-#define WIFI_NVS_NAMESPACE "wifi_cfg"
-#define WIFI_NVS_KEY_SSID "ssid"
-#define WIFI_NVS_KEY_PASS "pass"
-
-
-
+// Private function implementations
 static esp_err_t wifi_manager_save_credentials_to_nvs(const char *ssid, const char *password) {
     nvs_handle_t nvs_handle;
     esp_err_t err = nvs_open(WIFI_NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
@@ -74,8 +77,6 @@ void wifi_manager_set_credentials(const char *ssid, const char *password) {
     s_wifi_pass[sizeof(s_wifi_pass) - 1] = '\0';
     wifi_manager_save_credentials_to_nvs(ssid, password);
 }
-#include "wifi_manager.h"
-#include "provisioning_server.h"
 
 void wifi_manager_start_provisioning(void) {
     // Start WiFi AP and provisioning web server
@@ -88,11 +89,6 @@ bool wifi_manager_is_provisioned(void) {
     esp_err_t nvs_err = wifi_manager_load_credentials_from_nvs(nvs_ssid, sizeof(nvs_ssid), nvs_pass, sizeof(nvs_pass));
     return (nvs_err == ESP_OK && strlen(nvs_ssid) > 0);
 }
-
-
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_netif.h"
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                               int32_t event_id, void* event_data) {

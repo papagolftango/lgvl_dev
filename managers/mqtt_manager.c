@@ -1,14 +1,16 @@
-#include "mqtt_client.h"
-#include "esp_log.h"
 
-
+// Standard C
 #include <float.h>
 #include <stdio.h>
 #include <string.h>
+
+// ESP-IDF
 #include "esp_log.h"
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "mqtt_client.h"
 
+// Project headers
 #include "mqtt_manager.h"
 #include "provisioning_server.h"
 
@@ -16,9 +18,11 @@
 #define MQTT_NVS_KEY_HOST "host"
 #define MQTT_NVS_KEY_USER "user"
 #define MQTT_NVS_KEY_PASS "pass"
+
 static char s_mqtt_host[128] = {0};
 static char s_mqtt_user[64] = {0};
 static char s_mqtt_pass[64] = {0};
+
 static esp_err_t mqtt_manager_save_credentials_to_nvs(const char *host, const char *user, const char *pass) {
     nvs_handle_t nvs_handle;
     esp_err_t err = nvs_open(MQTT_NVS_NAMESPACE, NVS_READWRITE, &nvs_handle);
@@ -118,7 +122,7 @@ void mqtt_manager_load_credentials(void) {
 
 
 
-#include "mqtt_client.h"
+
 
 static esp_mqtt_client_handle_t s_mqtt_client = NULL;
 
