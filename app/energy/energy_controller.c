@@ -1,5 +1,11 @@
+#include "ui/ui_Energy.h"
+// Forward declaration for marker update
+void ui_update_bar1_peak_marker(float peak_val);
 
-#include "energy_app.h"
+#include "lvgl.h"
+#include <math.h>
+#include "energy_app.h" // for balance variable, if needed
+#include "ui/ui_Energy.h"
 #include "mqtt_manager.h"
 #include "lvgl_manager.h"
 #include <stdio.h>
@@ -7,10 +13,65 @@
 #include <stdlib.h>
 #include "esp_log.h"
 #include "esp_event.h"
+
+#include <math.h>
 #include "mqtt_client.h" // For esp_mqtt_event_handle_t, MQTT_EVENT_*, esp_mqtt_client_subscribe
 
 #define TAG "energy_app"
 
+
+// Set the arc range and update its value
+void energy_controller_update_balance(int balance) {
+    if (ui_balance) {
+        lv_arc_set_range(ui_balance, -4000, 6000);
+        lv_arc_set_value(ui_balance, balance);
+    }
+}
+
+// Update all UI elements from the model (tick)
+void energy_controller_tick(void) {
+    extern float energy_balance, energy_solar, energy_used;
+    
+    // Update peak marker for Bar2 (used)
+    ui_update_bar2_peak_marker(energy_peak_used);
+    // Update peak marker for Bar1 (solar)
+    ui_update_bar1_peak_marker(energy_peak_solar);
+
+    if (!energy_app_is_screen_active()) {
+        ESP_LOGW(TAG, "energy_controller_tick called but screen_active is false. Skipping UI update.");
+        return;
+    }
+    ESP_LOGD(TAG, "energy_controller_tick: ui_balance=%p ui_Bar1=%p ui_Bar2=%p", ui_balance, ui_Bar1, ui_Bar2);
+    ESP_LOGD(TAG, "energy_controller_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
+    if (ui_balance) {
+        ESP_LOGD(TAG, "Updating ui_balance arc (sqrt scale)");
+        // Square root scale: preserve sign, compress extremes
+        float abs_val = fabsf(energy_balance);
+        float scaled = sqrtf(abs_val);
+        float max_in = 6000.0f;
+        float max_out = sqrtf(max_in);
+        float arc_val = (energy_balance >= 0) ? (scaled * max_in / max_out) : -(scaled * max_in / max_out);
+        lv_arc_set_value(ui_balance, (int)arc_val);
+    }
+    if (ui_Bar1) {
+        ESP_LOGD(TAG, "Updating ui_Bar1 bar (sqrt scale)");
+        float abs_val = fabsf(energy_solar);
+        float scaled = sqrtf(abs_val);
+        float max_in = 4000.0f;
+        float max_out = sqrtf(max_in);
+        float bar_val = scaled * max_in / max_out;
+        lv_bar_set_value(ui_Bar1, (int)bar_val, LV_ANIM_OFF);
+    }
+    if (ui_Bar2) {
+        ESP_LOGD(TAG, "Updating ui_Bar2 bar (sqrt scale)");
+        float abs_val = fabsf(energy_used);
+        float scaled = sqrtf(abs_val);
+        float max_in = 6000.0f;
+        float max_out = sqrtf(max_in);
+        float bar_val = scaled * max_in / max_out;
+        lv_bar_set_value(ui_Bar2, (int)bar_val, LV_ANIM_OFF);
+    }
+}
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;
     switch (event_id) {
@@ -57,7 +118,8 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed balance: %.2f", value);
                     energy_balance = value;
-                    // TODO: update UI with balance value
+                    // Update UI arc via controller
+                    energy_controller_update_balance((int)value);
                 }
             }
             break;

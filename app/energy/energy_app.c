@@ -30,29 +30,19 @@ static void energy_daily_actions_cb(void) {
     ESP_LOGI(TAG, "Daily reset: peak_solar and peak_used cleared.");
 }
 
-// Called only when this app is active (for UI updates)
+
+// Getter for screen_active (for controller)
+bool energy_app_is_screen_active(void) {
+    return screen_active;
+}
 
 
 
+
+// Forward declaration for controller tick
+#include "energy_controller.h"
 void energy_app_tick(void) {
-    if (!screen_active) {
-        ESP_LOGW(TAG, "energy_app_tick called but screen_active is false. Skipping UI update.");
-        return;
-    }
-    ESP_LOGD(TAG, "energy_app_tick: ui_balance=%p ui_Bar1=%p ui_Bar2=%p", ui_balance, ui_Bar1, ui_Bar2);
-    ESP_LOGD(TAG, "energy_app_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
-    if (ui_balance) {
-        ESP_LOGD(TAG, "Updating ui_balance arc");
-        lv_arc_set_value(ui_balance, (int)energy_balance);
-    }
-    if (ui_Bar1) {
-        ESP_LOGD(TAG, "Updating ui_Bar1 bar");
-        lv_bar_set_value(ui_Bar1, (int)energy_solar, LV_ANIM_OFF);
-    }
-    if (ui_Bar2) {
-        ESP_LOGD(TAG, "Updating ui_Bar2 bar");
-        lv_bar_set_value(ui_Bar2, (int)energy_used, LV_ANIM_OFF);
-    }
+    energy_controller_tick();
 }
 
 void energy_app_process(void) {
@@ -64,6 +54,8 @@ void energy_app_process(void) {
 
 void energy_app_init(void) {
     ESP_LOGI(TAG, "energy_app_init: begin");
+    // Ensure DEBUG logs are visible for this tag
+    esp_log_level_set(TAG, ESP_LOG_DEBUG);
     // Register MQTT event handler and subscribe to topics
     energy_app_mqtt_init();
 

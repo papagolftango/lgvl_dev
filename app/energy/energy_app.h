@@ -1,3 +1,4 @@
+
 #pragma once
 
 #ifdef __cplusplus
@@ -22,6 +23,8 @@ void energy_app_set_vrms(const char *vrms);
 void energy_app_set_solar(float value);
 void energy_app_set_used(float value);
 void energy_app_set_balance(float value);
+// Getter for screen_active
+bool energy_app_is_screen_active(void);
 
 #ifdef __cplusplus
 }
