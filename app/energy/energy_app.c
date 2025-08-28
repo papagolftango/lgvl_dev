@@ -6,10 +6,9 @@ static const char *TAG = "energy_app";
 #include "energy_app.h"
 #include "app_manager.h"
 #include "time_manager.h"
-#include "ui/ui_energy.h"
+#include "ui/ui_Energy.h"
 
 // Static/global variables
-static lv_obj_t *energy_screen = NULL;
 static bool screen_active = false;
 
 // Energy data variables (shared with MQTT handler)
@@ -22,6 +21,7 @@ float energy_peak_used = 0.0f;
 
 // Forward declarations
 static void energy_daily_actions_cb(void);
+extern void energy_app_mqtt_init(void);
 
 // Daily callback to clear peaks
 static void energy_daily_actions_cb(void) {
@@ -31,8 +31,28 @@ static void energy_daily_actions_cb(void) {
 }
 
 // Called only when this app is active (for UI updates)
+
+
+
 void energy_app_tick(void) {
-    ui_energy_update(energy_balance, energy_peak_used);
+    if (!screen_active) {
+        ESP_LOGW(TAG, "energy_app_tick called but screen_active is false. Skipping UI update.");
+        return;
+    }
+    ESP_LOGD(TAG, "energy_app_tick: ui_balance=%p ui_Bar1=%p ui_Bar2=%p", ui_balance, ui_Bar1, ui_Bar2);
+    ESP_LOGD(TAG, "energy_app_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
+    if (ui_balance) {
+        ESP_LOGD(TAG, "Updating ui_balance arc");
+        lv_arc_set_value(ui_balance, (int)energy_balance);
+    }
+    if (ui_Bar1) {
+        ESP_LOGD(TAG, "Updating ui_Bar1 bar");
+        lv_bar_set_value(ui_Bar1, (int)energy_solar, LV_ANIM_OFF);
+    }
+    if (ui_Bar2) {
+        ESP_LOGD(TAG, "Updating ui_Bar2 bar");
+        lv_bar_set_value(ui_Bar2, (int)energy_used, LV_ANIM_OFF);
+    }
 }
 
 void energy_app_process(void) {
@@ -41,38 +61,33 @@ void energy_app_process(void) {
     // Do NOT touch LVGL objects here!
 }
 
+
 void energy_app_init(void) {
-    if (energy_screen) {
-        ESP_LOGI(TAG, "Screen already exists, skipping init.");
-        return;
-    }
+    ESP_LOGI(TAG, "energy_app_init: begin");
     // Register MQTT event handler and subscribe to topics
-    extern void energy_app_mqtt_init(void);
     energy_app_mqtt_init();
+
     // Register daily callback to clear peaks
     time_manager_register_day_callback(energy_daily_actions_cb);
-    ESP_LOGI(TAG, "Creating screen...");
-    
-    energy_screen = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(energy_screen, lv_color_black(), 0);
-    ui_energy_create(energy_screen, energy_balance, energy_peak_used);
-    lv_scr_load(energy_screen);
-    screen_active = true;
+    ESP_LOGI(TAG, "Creating SquareLine screen...");
 
+    ui_Energy_screen_init();
+    ESP_LOGI(TAG, "ui_Energy_screen_init done, ui_Energy=%p", ui_Energy);
+    lv_scr_load(ui_Energy);
+    ESP_LOGI(TAG, "lv_scr_load done");
+    screen_active = true;
+    ESP_LOGI(TAG, "energy_app_init: end");
 }
 
 
 
+
 void energy_app_cleanup(void) {
-    if (energy_screen) {
-        ESP_LOGI(TAG, "Cleanup: clearing pointers and UI (do not delete screen).");
-        // Do NOT call lv_obj_del on a screen loaded with lv_scr_load!
-        energy_screen = NULL;
-        ui_energy_destroy();
-        screen_active = false;
-    } else {
-        ESP_LOGI(TAG, "Cleanup called but screen is already NULL.");
-    }
+    ESP_LOGI(TAG, "energy_app_cleanup: begin");
+    ui_Energy_screen_destroy();
+    ESP_LOGI(TAG, "ui_Energy_screen_destroy called");
+    screen_active = false;
+    ESP_LOGI(TAG, "energy_app_cleanup: end");
 }
 
 void energy_app_touch(void) {

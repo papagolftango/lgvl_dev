@@ -34,7 +34,7 @@ void clock_app_tick(void) {
 }
 
 void clock_app_cleanup(void) {
-    ui_destroy();
+   // ui_destroy();
 }
 
 void clock_app_touch(void) {

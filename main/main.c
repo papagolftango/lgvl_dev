@@ -98,6 +98,7 @@ void app_main(void)
     power_manager_init();
 
     // TEMP: Erase NVS and restart to force provisioning on next boot
+   // yes
    //erase_nvs_and_restart();
    //  WiFi/MQTT credentials will be set via provisioning web server
 

@@ -4,7 +4,9 @@
 #include "touch_manager.h"
 #include "home_app.h"
 #include "app_manager.h"
+
 #include "time_manager.h"
+#include "ui/ui_Screen1.h"
 
 // Static/global variables
 static lv_obj_t *home_screen = NULL;
@@ -48,21 +50,13 @@ void home_app_process(void) {
 }
 
 void home_app_init(void) {
-    if (home_screen) {
-        printf("[home_app] Screen already exists, skipping init.\n");
-        return;
-    }
-    printf("[home_app] Creating screen...\n");
-    home_screen = lv_obj_create(NULL);
-    lv_obj_set_style_bg_color(home_screen, lv_color_black(), 0);
-    label = lv_label_create(home_screen);
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Home %d", home_counter);
-    lv_label_set_text(label, buf);
-    lv_obj_set_style_text_color(label, lv_color_white(), 0);
-    lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
-    printf("[home_app] Loading screen...\n");
-    lv_scr_load(home_screen);
+    // Use SquareLine Studio generated screen
+    printf("[home_app] Creating SquareLine screen...\n");
+    ui_Screen1_screen_init();
+    printf("[home_app] Loading SquareLine screen...\n");
+    lv_scr_load(ui_Screen1);
+    // Assign label pointer to the LVGL label object
+    label = ui_Screen1_Label1;
     screen_active = true;
     // Register home app's touch callback
     touch_manager_register_user_cb(home_app_touch_cb);
@@ -78,15 +72,9 @@ void home_app_tick(void) {
 }
 
 void home_app_cleanup(void) {
-    if (home_screen) {
-        printf("[home_app] Cleanup: not deleting screen, just clearing pointers.\n");
-        // Do NOT call lv_obj_del on a screen loaded with lv_scr_load!
-        home_screen = NULL;
-        label = NULL;
-        screen_active = false;
-    } else {
-        printf("[home_app] Cleanup called but screen is already NULL.\n");
-    }
+    printf("[home_app] Cleanup: destroying SquareLine screen.\n");
+  //  ui_Screen1_screen_destroy();
+    screen_active = false;
     // Unregister home app's touch callback
     touch_manager_unregister_user_cb();
 }

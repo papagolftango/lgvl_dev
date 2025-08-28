@@ -7,5 +7,6 @@ idf_component_register(SRCS
     "ui/ui_energy.h"
     "ui/ui.h"
     
-    INCLUDE_DIRS "." "ui"
+        "energy_controller.c"
+        INCLUDE_DIRS "." "ui"
 )

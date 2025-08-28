@@ -34,14 +34,7 @@ void settings_app_tick(void) {
 }
 
 void settings_app_cleanup(void) {
-    if (settings_screen) {
-        printf("[settings_app] Cleanup: not deleting screen, just clearing pointers.\n");
-        settings_screen = NULL;
-        label = NULL;
-        screen_active = false;
-    } else {
-        printf("[settings_app] Cleanup called but screen is already NULL.\n");
-    }
+ 
 }
 
 void settings_app_touch(void) {
