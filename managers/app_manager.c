@@ -64,6 +64,8 @@ void app_manager_destroy(void) {
 static app_id_t current_app = APP_ID_ENERGY;
 
 void app_manager_init(void) {
+    // Initialize UI (only once, before any app)
+    ui_init();
     // Initialize all apps (model/controller/view)
     for (int i = 0; i < APP_ID_COUNT; ++i) {
         if (app_table[i].app_init)

@@ -6,7 +6,7 @@
 #include "app_manager.h"
 #include "time_manager.h"
 #include "clock_controller.h"
-#include "ui/ui.h"
+// #include "ui/ui.h" // UI is now initialized by app_manager
 
 
 
@@ -16,7 +16,7 @@ void clock_app_process(void) {
 
 void clock_app_init(void) {
     printf("[clock_app] Initializing SquareLine UI...\n");
-    ui_init();
+    // ui_init() is now called by app_manager_init()
     clock_controller_init();
 }
 

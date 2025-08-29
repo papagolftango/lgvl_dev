@@ -1,13 +1,12 @@
 #include "esp_log.h"
-static const char *TAG = "energy_app";
-
 #include <stdio.h>
 #include <lvgl.h>
 #include "energy_app.h"
 #include "app_manager.h"
 #include "time_manager.h"
-#include "ui/ui_energy.h"
+#include "ui/ui_Energy.h"
 
+static const char *TAG = "energy_app";
 // Static/global variables
 static bool screen_active = false;
 
@@ -74,7 +73,7 @@ void ui_Energy_screen_load(void) {
     lv_scr_load(ui_Energy);
     screen_active = true;
 }
-
+extern lv_obj_t *ui_Energy;
 
 
 

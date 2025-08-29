@@ -27,7 +27,7 @@ lv_obj_set_align( ui_settingName, LV_ALIGN_CENTER );
 lv_label_set_text(ui_settingName,"Settings");
 lv_obj_set_style_text_color(ui_settingName, lv_color_hex(0xB7C11D), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_settingName, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_text_font(ui_settingName, &lv_font_montserrat_42, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_settingName, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
 
 uic_settingName = ui_settingName;
 

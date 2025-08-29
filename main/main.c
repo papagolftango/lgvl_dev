@@ -31,8 +31,6 @@
 #include "weather/weather_app.h"
 #include "clock/clock_app.h"
 #include "settings/settings_app.h"
-#include "wifi_manager.h"
-
 
 
 // For development: Erase NVS and restart to force provisioning
@@ -47,18 +45,13 @@ void erase_nvs_and_restart() {
 
 
 // --- App definitions (move to a separate file if desired) ---
-static const app_t energy_app = { "Energy", energy_app_init, energy_app_tick, energy_app_cleanup, energy_app_process };
-static const app_t home_app = { "Home", home_app_init, home_app_tick, home_app_cleanup, home_app_process };
-static const app_t weather_app = { "Weather", weather_app_init, weather_app_tick, weather_app_cleanup, weather_app_process };
-static const app_t clock_app = { "Clock", clock_app_init, clock_app_tick, clock_app_cleanup, clock_app_process };
-static const app_t settings_app = { "Settings", settings_app_init, settings_app_tick, settings_app_cleanup, settings_app_process };
+// No need for local app_t/app_descriptor_t instances; use static table in app_manager
 
-static const app_t *apps[] = { &energy_app, &home_app, &weather_app, &clock_app, &settings_app };
-static const int num_apps = sizeof(apps) / sizeof(apps[0]);
+static const int num_apps = APP_ID_COUNT;
 static int current_app = 0; // File-scope for shared access
 static void switch_to_next_app(void) {
     current_app = (current_app + 1) % num_apps;
-    app_manager_set_active(apps[current_app]->name);
+    app_manager_set_active((app_id_t)current_app);
 }
 
 
@@ -150,12 +143,11 @@ void app_main(void)
     lvgl_manager_start_task();
 
 
-    // Register and start apps
-    for (int i = 0; i < num_apps; ++i) {
-        app_manager_register_app(apps[i]);
-    }
-    app_manager_set_active(apps[0]->name); // Start with first app
-
+    // Register and start apps (no longer needed)
+    // for (int i = 0; i < num_apps; ++i) {
+    //     app_manager_register_app(apps[i]);
+    // }
+    app_manager_set_active((app_id_t)0); // Start with first app (Energy)
 
     bool last_synced = false;
     while (1) {

@@ -26,7 +26,7 @@ lv_obj_set_align( ui_weatherName, LV_ALIGN_CENTER );
 lv_label_set_text(ui_weatherName,"Weather");
 lv_obj_set_style_text_color(ui_weatherName, lv_color_hex(0x2DD227), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_weatherName, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_text_font(ui_weatherName, &lv_font_montserrat_42, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_weatherName, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
 
 uic_Weather = ui_Weather;
 uic_weatherName = ui_weatherName;

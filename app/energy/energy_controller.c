@@ -1,5 +1,6 @@
 
-#include "ui/ui_energy.h"
+#include "ui/ui_Energy.h"
+#include "energy_controller.h"
 #include "lvgl.h"
 #include <math.h>
 #include "energy_app.h" // for balance variable, if needed
@@ -13,6 +14,24 @@
 #include "mqtt_client.h" // For esp_mqtt_event_handle_t, MQTT_EVENT_*, esp_mqtt_client_subscribe
 
 #define TAG "energy_app"
+
+// Extern declarations for SquareLine-generated UI objects
+extern lv_obj_t *ui_balance;
+extern lv_obj_t *ui_Bar1;
+extern lv_obj_t *ui_Bar2;
+
+// Local helpers to update peak markers for the bars
+static void ui_update_bar2_peak_marker(float peak_value) {
+    // TODO: Implement actual peak marker update for Bar2 (used)
+    // Example: set a custom indicator or annotation on ui_Bar2
+    ESP_LOGD(TAG, "ui_update_bar2_peak_marker: peak=%.2f", peak_value);
+}
+
+static void ui_update_bar1_peak_marker(float peak_value) {
+    // TODO: Implement actual peak marker update for Bar1 (solar)
+    // Example: set a custom indicator or annotation on ui_Bar1
+    ESP_LOGD(TAG, "ui_update_bar1_peak_marker: peak=%.2f", peak_value);
+}
 
 
 // Update all UI elements from the model (tick)
@@ -130,3 +149,12 @@ void energy_controller_cleanup(void) {
     extern bool screen_active;
     screen_active = false;
 }
+
+// Update the UI arc to reflect the current balance value
+void energy_controller_update_balance(int balance) {
+    if (ui_balance) {
+        lv_arc_set_value(ui_balance, balance);
+        ESP_LOGD(TAG, "energy_controller_update_balance: set ui_balance to %d", balance);
+    }
+}
+
