@@ -79,6 +79,14 @@ void home_app_cleanup(void) {
     touch_manager_unregister_user_cb();
 }
 
+void home_app_destroy(void) {
+    // Clean up model/controller/view state if needed
+    home_screen = NULL;
+    label = NULL;
+    screen_active = false;
+    // If you dynamically allocated any LVGL objects, delete them here
+}
+
 // Stub implementations to resolve linker errors
 static void process_bin_touch(void) {}
 static void daily_actions_cb(void) {}

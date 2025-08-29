@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <lvgl.h>
 #include "settings_app.h"
@@ -37,6 +36,10 @@ void settings_app_cleanup(void) {
  
 }
 
-void settings_app_touch(void) {
-    app_manager_next_app();
+void settings_app_destroy(void) {
+    // Clean up model/controller/view state if needed
+    settings_screen = NULL;
+    label = NULL;
+    screen_active = false;
+    // If you dynamically allocated any LVGL objects, delete them here
 }

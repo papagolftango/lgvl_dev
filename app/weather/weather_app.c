@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <lvgl.h>
 #include "weather_app.h"
@@ -44,6 +43,10 @@ void weather_app_cleanup(void) {
     }
 }
 
-void weather_app_touch(void) {
-    app_manager_next_app();
+void weather_app_destroy(void) {
+    // Clean up model/controller/view state if needed
+    weather_screen = NULL;
+    label = NULL;
+    screen_active = false;
+    // If you dynamically allocated any LVGL objects, delete them here
 }

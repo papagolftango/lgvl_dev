@@ -1,11 +1,8 @@
-#include "ui/ui_Energy.h"
-// Forward declaration for marker update
-void ui_update_bar1_peak_marker(float peak_val);
 
+#include "ui/ui_energy.h"
 #include "lvgl.h"
 #include <math.h>
 #include "energy_app.h" // for balance variable, if needed
-#include "ui/ui_Energy.h"
 #include "mqtt_manager.h"
 #include "lvgl_manager.h"
 #include <stdio.h>
@@ -13,20 +10,10 @@ void ui_update_bar1_peak_marker(float peak_val);
 #include <stdlib.h>
 #include "esp_log.h"
 #include "esp_event.h"
-
-#include <math.h>
 #include "mqtt_client.h" // For esp_mqtt_event_handle_t, MQTT_EVENT_*, esp_mqtt_client_subscribe
 
 #define TAG "energy_app"
 
-
-// Set the arc range and update its value
-void energy_controller_update_balance(int balance) {
-    if (ui_balance) {
-        lv_arc_set_range(ui_balance, -4000, 6000);
-        lv_arc_set_value(ui_balance, balance);
-    }
-}
 
 // Update all UI elements from the model (tick)
 void energy_controller_tick(void) {
@@ -130,4 +117,16 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
 
 void energy_app_mqtt_init(void) {
     mqtt_manager_register_app_event_handler(energy_app_mqtt_event_handler, NULL);
+}
+
+void energy_controller_init(void) {
+    // Start controller logic, timers, event handlers, etc.
+    // (Implement as needed)
+}
+
+void energy_controller_cleanup(void) {
+    // Stop controller logic, timers, event handlers, etc.
+    // (Implement as needed)
+    extern bool screen_active;
+    screen_active = false;
 }

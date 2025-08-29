@@ -1,4 +1,3 @@
-
 #pragma once
 #ifdef __cplusplus
 extern "C" {
@@ -11,6 +10,9 @@ void energy_controller_update_balance(int balance);
 
 // Call this to update all UI elements from the model (tick)
 void energy_controller_tick(void);
+
+void energy_controller_init(void);
+void energy_controller_cleanup(void);
 
 #ifdef __cplusplus
 }

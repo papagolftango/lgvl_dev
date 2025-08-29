@@ -25,7 +25,7 @@ lv_obj_set_align( ui_Label4, LV_ALIGN_CENTER );
 lv_label_set_text(ui_Label4,"00:00:00");
 lv_obj_set_style_text_color(ui_Label4, lv_color_hex(0x19BDD8), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_Label4, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_text_font(ui_Label4, &lv_font_montserrat_42, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_Label4, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
 
 uic_clock = ui_clock;
 

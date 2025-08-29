@@ -6,7 +6,7 @@ static const char *TAG = "energy_app";
 #include "energy_app.h"
 #include "app_manager.h"
 #include "time_manager.h"
-#include "ui/ui_Energy.h"
+#include "ui/ui_energy.h"
 
 // Static/global variables
 static bool screen_active = false;
@@ -39,7 +39,7 @@ bool energy_app_is_screen_active(void) {
 
 
 
-// Forward declaration for controller tick
+
 #include "energy_controller.h"
 void energy_app_tick(void) {
     energy_controller_tick();
@@ -65,11 +65,16 @@ void energy_app_init(void) {
 
     ui_Energy_screen_init();
     ESP_LOGI(TAG, "ui_Energy_screen_init done, ui_Energy=%p", ui_Energy);
-    lv_scr_load(ui_Energy);
-    ESP_LOGI(TAG, "lv_scr_load done");
-    screen_active = true;
+    // Do not load the screen here; app_manager will handle it
+    screen_active = false;
     ESP_LOGI(TAG, "energy_app_init: end");
 }
+
+void ui_Energy_screen_load(void) {
+    lv_scr_load(ui_Energy);
+    screen_active = true;
+}
+
 
 
 
@@ -80,6 +85,20 @@ void energy_app_cleanup(void) {
     ESP_LOGI(TAG, "ui_Energy_screen_destroy called");
     screen_active = false;
     ESP_LOGI(TAG, "energy_app_cleanup: end");
+}
+
+void energy_app_destroy(void) {
+    // Clean up model/controller/view state if needed
+    // Example: set pointers to NULL, free memory, etc.
+    energy_vrms = 0.0f;
+    energy_solar = 0.0f;
+    energy_used = 0.0f;
+    energy_balance = 0.0f;
+    energy_peak_solar = 0.0f;
+    energy_peak_used = 0.0f;
+    screen_active = false;
+    // If you dynamically allocated any LVGL objects, delete them here
+    // (LVGL objects created with SquareLine are usually managed elsewhere)
 }
 
 void energy_app_touch(void) {

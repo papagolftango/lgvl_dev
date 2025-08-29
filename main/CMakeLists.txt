@@ -1,9 +1,39 @@
-
 idf_component_register(
-    SRCS "main.c" "../drivers/display_driver.c" "../drivers/bidi_switch_knob.c" "../ui/ui.c" "../app/energy/energy_app.c" "../app/energy/energy_controller.c" "../app/energy/ui/ui.c" "../app/energy/ui/ui_energy.c" "../app/home/home_app.c" "../app/home/home_controller.c" "../app/home/ui/ui.c" "../app/home/ui/ui_Screen1.c" "../app/weather/weather_app.c" "../app/weather/weather_controller.c" "../app/weather/ui/ui.c" "../app/clock/clock_app.c" "../app/clock/clock_controller.c" "../app/clock/ui/ui.c" "../app/clock/ui/screens/ui_ClockScreen.c" "../app/settings/settings_app.c" "../app/settings/settings_controller.c" "../app/settings/ui/ui.c" 
-        SRCS "main.c" "../drivers/display_driver.c" "../drivers/bidi_switch_knob.c" "../ui/ui.c" "../app/energy/energy_app.c" "../app/energy/energy_controller.c" "../app/energy/ui/ui.c" "../app/energy/ui/ui_energy.c" "../app/home/home_app.c" "../app/home/home_controller.c" "../app/home/ui/ui.c" "../app/home/ui/ui_Screen1.c" "../app/weather/weather_app.c" "../app/weather/weather_controller.c" "../app/weather/ui/ui.c" "../app/clock/clock_app.c" "../app/clock/clock_controller.c" "../app/clock/ui/ui.c" "../app/clock/ui/screens/ui_ClockScreen.c" "../app/settings/settings_app.c" "../app/settings/settings_controller.c" "../app/settings/ui/ui.c" 
-    "../managers/encoder_manager.c" "../managers/app_manager.c" "../managers/lvgl_manager.c" "../managers/mqtt_manager.c" "../managers/persistent_data_manager.c" "../managers/power_manager.c" "../managers/provisioning_server.c" "../managers/time_manager.c" "../managers/touch_manager.c" "../managers/wifi_manager.c"
-    INCLUDE_DIRS "." "../app" "../ui" "../components/i2c_bsp" "../managers" "../drivers"
+    SRCS "main.c"
+        "../drivers/display_driver.c"
+        "../drivers/bidi_switch_knob.c"
+        # Shared UI sources
+        "../app/ui/ui.c"
+        "../app/ui/ui_Energy.c"
+        "../app/ui/ui_Home.c"
+        "../app/ui/ui_Settings.c"
+        "../app/ui/ui_Weather.c"
+        "../app/ui/ui_clock.c"
+        "../app/ui/ui_comp_hook.c"
+        "../app/ui/ui_helpers.c"
+        # App and controller sources
+        "../app/energy/energy_app.c"
+        "../app/energy/energy_controller.c"
+        "../app/home/home_app.c"
+        "../app/home/home_controller.c"
+        "../app/weather/weather_app.c"
+        "../app/weather/weather_controller.c"
+        "../app/clock/clock_app.c"
+        "../app/clock/clock_controller.c"
+        "../app/settings/settings_app.c"
+        "../app/settings/settings_controller.c"
+        # Managers
+        "../managers/encoder_manager.c"
+        "../managers/app_manager.c"
+        "../managers/lvgl_manager.c"
+        "../managers/mqtt_manager.c"
+        "../managers/persistent_data_manager.c"
+        "../managers/power_manager.c"
+        "../managers/provisioning_server.c"
+        "../managers/time_manager.c"
+        "../managers/touch_manager.c"
+        "../managers/wifi_manager.c"
+    INCLUDE_DIRS "." "../app" "../app/ui" "../components/i2c_bsp" "../managers" "../drivers"
     REQUIRES esp_netif esp_event nvs_flash esp_wifi esp_http_server mqtt
     PRIV_REQUIRES lcd_touch_bsp lcd_bl_pwm_bsp
 )
