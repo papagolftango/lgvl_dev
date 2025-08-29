@@ -1,4 +1,8 @@
 SET(SOURCES ui_Energy.c
+    ui_Home.c
+    ui_Settings.c
+    ui_Weather.c
+    ui_clock.c
     ui.c
     ui_comp_hook.c
     ui_helpers.c)

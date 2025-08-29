@@ -27,6 +27,10 @@ extern "C" {
 
 ///////////////////// SCREENS ////////////////////
 #include "ui_Energy.h"
+#include "ui_Home.h"
+#include "ui_Settings.h"
+#include "ui_Weather.h"
+#include "ui_clock.h"
 
 ///////////////////// VARIABLES ////////////////////
 
