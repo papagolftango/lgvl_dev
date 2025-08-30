@@ -31,7 +31,24 @@ static void ui_update_bar1_peak_marker(float peak_value) {
 
 
 // Update all UI elements from the model (tick)
+
+#define ARC_COLOR_GREEN  0x40FF6D
+#define ARC_COLOR_RED    0xFF4040
+#define ARC_COLOR_ORANGE 0xFFA500
+
 void energy_controller_tick(void) {
+    extern void draw_pointer_for_balance(float energy_balance);
+    draw_pointer_for_balance(energy_balance);
+        // Set arc color based on balance
+        lv_color_t arc_color;
+        if (energy_balance < 0) {
+            arc_color = lv_color_hex(ARC_COLOR_GREEN);
+        } else if (energy_balance > 1000) {
+            arc_color = lv_color_hex(ARC_COLOR_RED);
+        } else {
+            arc_color = lv_color_hex(ARC_COLOR_ORANGE);
+        }
+        // Set both main and indicator arc colors so the whole arc is the same color
     extern float energy_balance, energy_solar, energy_used;
     
     // Update peak marker for Bar2 (used)
@@ -43,18 +60,9 @@ void energy_controller_tick(void) {
         ESP_LOGW(TAG, "energy_controller_tick called but screen_active is false. Skipping UI update.");
         return;
     }
-    ESP_LOGD(TAG, "energy_controller_tick: ui_balance=%p ui_Bar1=%p ui_Bar2=%p", ui_balance, ui_Bar1, ui_Bar2);
+    ESP_LOGD(TAG, "energy_controller_tick: ui_Bar1=%p ui_Bar2=%p", ui_Bar1, ui_Bar2);
     ESP_LOGD(TAG, "energy_controller_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
-    if (ui_balance) {
-        ESP_LOGD(TAG, "Updating ui_balance arc (sqrt scale)");
-        // Square root scale: preserve sign, compress extremes
-        float abs_val = fabsf(energy_balance);
-        float scaled = sqrtf(abs_val);
-        float max_in = 6000.0f;
-        float max_out = sqrtf(max_in);
-        float arc_val = (energy_balance >= 0) ? (scaled * max_in / max_out) : -(scaled * max_in / max_out);
-        lv_arc_set_value(ui_balance, (int)arc_val);
-    }
+    // (ui_balance removed: now handled by draw_pointer_for_balance)
     if (ui_Bar1) {
         ESP_LOGD(TAG, "Updating ui_Bar1 bar (sqrt scale)");
         float abs_val = fabsf(energy_solar);
@@ -147,9 +155,6 @@ void energy_controller_cleanup(void) {
 
 // Update the UI arc to reflect the current balance value
 void energy_controller_update_balance(int balance) {
-    if (ui_balance) {
-        lv_arc_set_value(ui_balance, balance);
-        ESP_LOGD(TAG, "energy_controller_update_balance: set ui_balance to %d", balance);
-    }
+    // (ui_balance removed: now handled by draw_pointer_for_balance)
 }
 

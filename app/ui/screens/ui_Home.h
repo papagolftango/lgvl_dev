@@ -14,9 +14,11 @@ extern "C" {
 extern void ui_Home_screen_init(void);
 extern void ui_Home_screen_destroy(void);
 extern lv_obj_t *ui_Home;
+extern lv_obj_t *ui_backImage;
 extern lv_obj_t *ui_homeName;
 // CUSTOM VARIABLES
 extern lv_obj_t *uic_Home;
+extern lv_obj_t *uic_backImage;
 extern lv_obj_t *uic_homeName;
 
 #ifdef __cplusplus

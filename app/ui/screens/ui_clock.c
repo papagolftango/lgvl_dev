@@ -6,28 +6,28 @@
 #include "../ui.h"
 
 lv_obj_t *uic_clock;
-lv_obj_t *ui_clock = NULL;
+lv_obj_t *ui_Clock = NULL;
 // event funtions
 
 // build funtions
 
-void ui_clock_screen_init(void)
+void ui_Clock_screen_init(void)
 {
-ui_clock = lv_obj_create(NULL);
-lv_obj_clear_flag( ui_clock, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_clock, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_clock, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_Clock = lv_obj_create(NULL);
+lv_obj_clear_flag( ui_Clock, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_Clock, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_Clock, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-uic_clock = ui_clock;
+uic_clock = ui_Clock;
 
 }
 
-void ui_clock_screen_destroy(void)
+void ui_Clock_screen_destroy(void)
 {
-   if (ui_clock) lv_obj_del(ui_clock);
+   if (ui_Clock) lv_obj_del(ui_Clock);
 
 // NULL screen variables
 uic_clock= NULL;
-ui_clock= NULL;
+ui_Clock= NULL;
 
 }

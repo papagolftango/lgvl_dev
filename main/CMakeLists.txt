@@ -11,8 +11,10 @@
             "../app/ui/screens/ui_Home.c"
             "../app/ui/screens/ui_Settings.c"
             "../app/ui/screens/ui_Weather.c"
+            "../app/ui/screens/ui_Clock.c"
             "../app/ui/ui_comp_hook.c"
             "../app/ui/ui_custom_load.c"
+            "../app/ui/images/ui_img_black_circle_360_png.c"
             # App and controller sources
             "../app/energy/energy_app.c"
             "../app/energy/energy_controller.c"

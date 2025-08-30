@@ -17,15 +17,18 @@ extern "C" {
 
 ///////////////////// SCREENS ////////////////////
 #include "screens/ui_Energy.h"
-#include "screens/ui_Home.h"
-#include "screens/ui_Settings.h"
 #include "screens/ui_Weather.h"
-#include "screens/ui_clock.h"
+#include "screens/ui_Clock.h"
+#include "screens/ui_Settings.h"
+#include "screens/ui_Home.h"
 
 ///////////////////// VARIABLES ////////////////////
 
 // EVENTS
 extern lv_obj_t *ui____initial_actions0;
+
+// IMAGES AND IMAGE SETS
+LV_IMG_DECLARE( ui_img_black_circle_360_png);   // assets/black_circle_360.png
 
 // UI INIT
 void ui_init(void);

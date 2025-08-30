@@ -10,10 +10,10 @@
 extern "C" {
 #endif
 
-// SCREEN: ui_clock
-extern void ui_clock_screen_init(void);
-extern void ui_clock_screen_destroy(void);
-extern lv_obj_t *ui_clock;
+// SCREEN: ui_Clock
+extern void ui_Clock_screen_init(void);
+extern void ui_Clock_screen_destroy(void);
+extern lv_obj_t *ui_Clock;
 // CUSTOM VARIABLES
 extern lv_obj_t *uic_clock;
 

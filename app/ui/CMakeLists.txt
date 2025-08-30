@@ -1,10 +1,11 @@
 SET(SOURCES screens/ui_Energy.c
-    screens/ui_Home.c
-    screens/ui_Settings.c
     screens/ui_Weather.c
-    screens/ui_clock.c
+    screens/ui_Clock.c
+    screens/ui_Settings.c
+    screens/ui_Home.c
     ui.c
     components/ui_comp_hook.c
-    ui_helpers.c)
+    ui_helpers.c
+    images/ui_img_black_circle_360_png.c)
 
 add_library(ui ${SOURCES})

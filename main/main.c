@@ -133,7 +133,7 @@ void app_main(void)
 
     bool last_synced = false;
     while (1) {
-    //    app_manager_tick();
+    app_manager_tick();
         vTaskDelay(pdMS_TO_TICKS(50));
         // Touch events are now handled by the touch manager and app logic
 

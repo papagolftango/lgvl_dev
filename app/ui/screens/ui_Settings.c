@@ -5,8 +5,9 @@
 
 #include "../ui.h"
 
-lv_obj_t *uic_settingName;
-lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_settingName = NULL;
+lv_obj_t *uic_settingsName;
+lv_obj_t *uic_Settings;
+lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_seetinsName = NULL;
 // event funtions
 
 // build funtions
@@ -15,21 +16,17 @@ void ui_Settings_screen_init(void)
 {
 ui_Settings = lv_obj_create(NULL);
 lv_obj_clear_flag( ui_Settings, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Settings, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Settings, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_settingName = lv_label_create(ui_Settings);
-lv_obj_set_width( ui_settingName, LV_SIZE_CONTENT);  /// 1
-lv_obj_set_height( ui_settingName, LV_SIZE_CONTENT);   /// 1
-lv_obj_set_x( ui_settingName, 0 );
-lv_obj_set_y( ui_settingName, -82 );
-lv_obj_set_align( ui_settingName, LV_ALIGN_CENTER );
-lv_label_set_text(ui_settingName,"Settings");
-lv_obj_set_style_text_color(ui_settingName, lv_color_hex(0xB7C11D), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_text_opa(ui_settingName, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_text_font(ui_settingName, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_seetinsName = lv_label_create(ui_Settings);
+lv_obj_set_width( ui_seetinsName, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_seetinsName, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_seetinsName, 14 );
+lv_obj_set_y( ui_seetinsName, -21 );
+lv_obj_set_align( ui_seetinsName, LV_ALIGN_CENTER );
+lv_label_set_text(ui_seetinsName,"Settings");
 
-uic_settingName = ui_settingName;
+uic_Settings = ui_Settings;
+uic_settingsName = ui_seetinsName;
 
 }
 
@@ -38,8 +35,9 @@ void ui_Settings_screen_destroy(void)
    if (ui_Settings) lv_obj_del(ui_Settings);
 
 // NULL screen variables
+uic_Settings= NULL;
 ui_Settings= NULL;
-uic_settingName= NULL;
-ui_settingName= NULL;
+uic_settingsName= NULL;
+ui_seetinsName= NULL;
 
 }

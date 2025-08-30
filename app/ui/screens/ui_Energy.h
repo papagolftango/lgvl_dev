@@ -14,13 +14,10 @@ extern "C" {
 extern void ui_Energy_screen_init(void);
 extern void ui_Energy_screen_destroy(void);
 extern lv_obj_t *ui_Energy;
-extern lv_obj_t *ui_balance;
 extern lv_obj_t *ui_Bar1;
 extern lv_obj_t *ui_Bar2;
-extern lv_obj_t *ui_Checkbox1;
 // CUSTOM VARIABLES
 extern lv_obj_t *uic_Energy;
-extern lv_obj_t *uic_balance;
 
 #ifdef __cplusplus
 } /*extern "C"*/

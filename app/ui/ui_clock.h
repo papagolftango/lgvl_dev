@@ -12,9 +12,9 @@ extern "C" {
 #endif
 
 // SCREEN: ui_clock
-extern void ui_clock_screen_init(void);
-extern void ui_clock_screen_destroy(void);
-extern lv_obj_t *ui_clock;
+extern void ui_Clock_screen_init(void);
+extern void ui_Clock_screen_destroy(void);
+extern lv_obj_t *ui_Clock;
 extern lv_obj_t *ui_Slider2;
 // CUSTOM VARIABLES
 extern lv_obj_t *uic_clock;

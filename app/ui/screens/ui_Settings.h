@@ -14,9 +14,10 @@ extern "C" {
 extern void ui_Settings_screen_init(void);
 extern void ui_Settings_screen_destroy(void);
 extern lv_obj_t *ui_Settings;
-extern lv_obj_t *ui_settingName;
+extern lv_obj_t *ui_seetinsName;
 // CUSTOM VARIABLES
-extern lv_obj_t *uic_settingName;
+extern lv_obj_t *uic_Settings;
+extern lv_obj_t *uic_settingsName;
 
 #ifdef __cplusplus
 } /*extern "C"*/
