@@ -3,21 +3,19 @@
 // LVGL version: 8.3.11
 // Project name: knob
 
-#ifndef UI_HOME_H
-#define UI_HOME_H
+#ifndef UI_CLOCK_H
+#define UI_CLOCK_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-// SCREEN: ui_Home
-extern void ui_Home_screen_init(void);
-extern void ui_Home_screen_destroy(void);
-extern lv_obj_t *ui_Home;
-extern lv_obj_t *ui_homeName;
+// SCREEN: ui_clock
+extern void ui_clock_screen_init(void);
+extern void ui_clock_screen_destroy(void);
+extern lv_obj_t *ui_clock;
 // CUSTOM VARIABLES
-extern lv_obj_t *uic_Home;
-extern lv_obj_t *uic_homeName;
+extern lv_obj_t *uic_clock;
 
 #ifdef __cplusplus
 } /*extern "C"*/

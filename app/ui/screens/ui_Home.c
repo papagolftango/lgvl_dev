@@ -16,15 +16,18 @@ void ui_Home_screen_init(void)
 {
 ui_Home = lv_obj_create(NULL);
 lv_obj_clear_flag( ui_Home, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Home, lv_color_hex(0x050000), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Home, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_bg_color(ui_Home, lv_color_hex(0x0F0101), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_Home, 192, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+lv_obj_set_style_bg_color(ui_Home, lv_color_hex(0x050101), LV_PART_SCROLLBAR | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_Home, 192, LV_PART_SCROLLBAR| LV_STATE_DEFAULT);
 
 ui_homeName = lv_label_create(ui_Home);
 lv_obj_set_width( ui_homeName, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_homeName, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_homeName, LV_ALIGN_CENTER );
-lv_label_set_text(ui_homeName,"Home");
-lv_obj_set_style_text_color(ui_homeName, lv_color_hex(0xED9515), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_label_set_text(ui_homeName,"Home App");
+lv_obj_set_style_text_color(ui_homeName, lv_color_hex(0xE61E1E), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_homeName, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_homeName, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
 

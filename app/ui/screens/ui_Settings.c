@@ -5,8 +5,8 @@
 
 #include "../ui.h"
 
-lv_obj_t *uic_Settings;
-lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_Panel1 = NULL;lv_obj_t *ui_Switch1 = NULL;
+lv_obj_t *uic_settingName;
+lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_settingName = NULL;
 // event funtions
 
 // build funtions
@@ -15,25 +15,21 @@ void ui_Settings_screen_init(void)
 {
 ui_Settings = lv_obj_create(NULL);
 lv_obj_clear_flag( ui_Settings, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_bg_color(ui_Settings, lv_color_hex(0x5FA3E8), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_bg_opa(ui_Settings, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_bg_color(ui_Settings, lv_color_hex(0xFFFFFF), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_bg_opa(ui_Settings, 0, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Panel1 = lv_obj_create(ui_Settings);
-lv_obj_set_width( ui_Panel1, 300);
-lv_obj_set_height( ui_Panel1, 300);
-lv_obj_set_align( ui_Panel1, LV_ALIGN_CENTER );
-lv_obj_clear_flag( ui_Panel1, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-lv_obj_set_style_border_color(ui_Panel1, lv_color_hex(0xCB1111), LV_PART_MAIN | LV_STATE_DEFAULT );
-lv_obj_set_style_border_opa(ui_Panel1, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_border_width(ui_Panel1, 5, LV_PART_MAIN| LV_STATE_DEFAULT);
-lv_obj_set_style_text_font(ui_Panel1, &lv_font_montserrat_14, LV_PART_MAIN| LV_STATE_DEFAULT);
+ui_settingName = lv_label_create(ui_Settings);
+lv_obj_set_width( ui_settingName, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_settingName, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_settingName, 0 );
+lv_obj_set_y( ui_settingName, -82 );
+lv_obj_set_align( ui_settingName, LV_ALIGN_CENTER );
+lv_label_set_text(ui_settingName,"Settings");
+lv_obj_set_style_text_color(ui_settingName, lv_color_hex(0xB7C11D), LV_PART_MAIN | LV_STATE_DEFAULT );
+lv_obj_set_style_text_opa(ui_settingName, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+lv_obj_set_style_text_font(ui_settingName, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
 
-ui_Switch1 = lv_switch_create(ui_Settings);
-lv_obj_set_width( ui_Switch1, 83);
-lv_obj_set_height( ui_Switch1, 29);
-lv_obj_set_align( ui_Switch1, LV_ALIGN_CENTER );
-
-uic_Settings = ui_Settings;
+uic_settingName = ui_settingName;
 
 }
 
@@ -42,9 +38,8 @@ void ui_Settings_screen_destroy(void)
    if (ui_Settings) lv_obj_del(ui_Settings);
 
 // NULL screen variables
-uic_Settings= NULL;
 ui_Settings= NULL;
-ui_Panel1= NULL;
-ui_Switch1= NULL;
+uic_settingName= NULL;
+ui_settingName= NULL;
 
 }

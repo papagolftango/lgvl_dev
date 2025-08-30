@@ -17,10 +17,10 @@ extern "C" {
 
 ///////////////////// SCREENS ////////////////////
 #include "screens/ui_Energy.h"
+#include "screens/ui_Home.h"
 #include "screens/ui_Settings.h"
 #include "screens/ui_Weather.h"
-
-#include "screens/ui_Home.h"
+#include "screens/ui_clock.h"
 
 ///////////////////// VARIABLES ////////////////////
 
