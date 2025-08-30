@@ -8,7 +8,7 @@ extern "C" {
 typedef enum {
     APP_ID_ENERGY = 0,
     APP_ID_HOME,
-    APP_ID_CLOCK,
+    // APP_ID_CLOCK,
     APP_ID_SETTINGS,
     APP_ID_WEATHER,
     APP_ID_COUNT

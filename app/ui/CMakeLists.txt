@@ -1,10 +1,9 @@
-SET(SOURCES ui_Energy.c
-    ui_Home.c
-    ui_Settings.c
-    ui_Weather.c
-    ui_clock.c
+SET(SOURCES screens/ui_Energy.c
+    screens/ui_Settings.c
+    screens/ui_Weather.c
+    screens/ui_Home.c
     ui.c
-    ui_comp_hook.c
+    components/ui_comp_hook.c
     ui_helpers.c)
 
 add_library(ui ${SOURCES})

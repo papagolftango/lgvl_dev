@@ -2,7 +2,8 @@
 #include <lvgl.h>
 #include "settings_app.h"
 #include "app_manager.h"
-#include "ui/ui_Settings.h"
+#include "ui/screens/ui_Settings.h"
+#include "settings_controller.h"
 
 // Static/global variables
 static bool screen_active = false;
@@ -11,17 +12,11 @@ void settings_app_process(void) {}
 
 void settings_app_init(void) {
     printf("[settings_app] Creating SquareLine screen...\n");
-    ui_Settings_screen_init();
-    printf("[settings_app] Loading SquareLine screen...\n");
-    lv_scr_load(ui_Settings);
     screen_active = true;
+    printf("[settings_app] Screen initialized.\n");
+    settings_controller_init();
 }
 
-void settings_app_tick(void) {
-    if (!ui_Settings || !ui_settingName) return;
-    // Example: update the label if needed
-    lv_label_set_text(ui_settingName, "Settings");
-}
 
 void settings_app_cleanup(void) {
     // Add cleanup logic if needed

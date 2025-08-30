@@ -26,12 +26,6 @@
 #include "../managers/time_manager.h"
 #include "../managers/encoder_manager.h"
 
-#include "energy/energy_app.h"
-#include "home/home_app.h"
-#include "weather/weather_app.h"
-#include "clock/clock_app.h"
-#include "settings/settings_app.h"
-
 
 // For development: Erase NVS and restart to force provisioning
 void erase_nvs_and_restart() {
@@ -44,15 +38,6 @@ void erase_nvs_and_restart() {
 }
 
 
-// --- App definitions (move to a separate file if desired) ---
-// No need for local app_t/app_descriptor_t instances; use static table in app_manager
-
-static const int num_apps = APP_ID_COUNT;
-static int current_app = 0; // File-scope for shared access
-static void switch_to_next_app(void) {
-    current_app = (current_app + 1) % num_apps;
-    app_manager_set_active((app_id_t)current_app);
-}
 
 
 
@@ -143,15 +128,12 @@ void app_main(void)
     lvgl_manager_start_task();
 
 
-    // Register and start apps (no longer needed)
-    // for (int i = 0; i < num_apps; ++i) {
-    //     app_manager_register_app(apps[i]);
-    // }
-    app_manager_set_active((app_id_t)0); // Start with first app (Energy)
+    // Initialize and start the app system (apps, controllers, UI)
+    app_manager_init();
 
     bool last_synced = false;
     while (1) {
-        app_manager_tick();
+    //    app_manager_tick();
         vTaskDelay(pdMS_TO_TICKS(50));
         // Touch events are now handled by the touch manager and app logic
 

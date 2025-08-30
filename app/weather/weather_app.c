@@ -2,7 +2,8 @@
 #include <lvgl.h>
 #include "weather_app.h"
 #include "app_manager.h"
-#include "ui/ui_Weather.h"
+#include "ui/screens/ui_Weather.h"
+#include "weather_controller.h"
 
 // Static/global variables
 static bool screen_active = false;
@@ -11,17 +12,11 @@ void weather_app_process(void) {}
 
 void weather_app_init(void) {
     printf("[weather_app] Creating SquareLine screen...\n");
-    ui_Weather_screen_init();
-    printf("[weather_app] Loading SquareLine screen...\n");
-    lv_scr_load(ui_Weather);
     screen_active = true;
+    printf("[weather_app] Screen initialized.\n");
+    weather_controller_init();
 }
 
-void weather_app_tick(void) {
-    if (!ui_Weather || !ui_weatherName) return;
-    // Example: update the label if needed
-    lv_label_set_text(ui_weatherName, "Weather");
-}
 
 void weather_app_cleanup(void) {
     // Add cleanup logic if needed

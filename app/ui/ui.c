@@ -33,18 +33,16 @@ lv_disp_t *dispp = lv_disp_get_default();
 lv_theme_t *theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), false, LV_FONT_DEFAULT);
 lv_disp_set_theme(dispp, theme);
 ui_Energy_screen_init();
-ui_Home_screen_init();
 ui_Settings_screen_init();
 ui_Weather_screen_init();
-ui_clock_screen_init();
+ui_Home_screen_init();
 ui____initial_actions0 = lv_obj_create(NULL);
 lv_disp_load_scr( ui_Energy);
 }
 
 void ui_destroy( void )
 {ui_Energy_screen_destroy();
-ui_Home_screen_destroy();
 ui_Settings_screen_destroy();
 ui_Weather_screen_destroy();
-ui_clock_screen_destroy();
+ui_Home_screen_destroy();
 }

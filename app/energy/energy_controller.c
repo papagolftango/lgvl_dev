@@ -1,7 +1,6 @@
-
-#include "ui/ui_Energy.h"
+#include <lvgl.h>
+#include "ui/screens/ui_Energy.h"
 #include "energy_controller.h"
-#include "lvgl.h"
 #include <math.h>
 #include "energy_app.h" // for balance variable, if needed
 #include "mqtt_manager.h"
@@ -15,10 +14,7 @@
 
 #define TAG "energy_app"
 
-// Extern declarations for SquareLine-generated UI objects
-extern lv_obj_t *ui_balance;
-extern lv_obj_t *ui_Bar1;
-extern lv_obj_t *ui_Bar2;
+
 
 // Local helpers to update peak markers for the bars
 static void ui_update_bar2_peak_marker(float peak_value) {
@@ -146,8 +142,7 @@ void energy_controller_init(void) {
 void energy_controller_cleanup(void) {
     // Stop controller logic, timers, event handlers, etc.
     // (Implement as needed)
-    extern bool screen_active;
-    screen_active = false;
+    // No need to access screen_active directly; use app destroy/cleanup logic if needed.
 }
 
 // Update the UI arc to reflect the current balance value

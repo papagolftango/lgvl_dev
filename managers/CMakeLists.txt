@@ -1,4 +1,5 @@
 
-# CMakeLists.txt for managers (moved out of components)
+# (Intentionally left blank to avoid interfering with main build)
+
 
 

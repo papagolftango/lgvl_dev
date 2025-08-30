@@ -4,9 +4,9 @@
 #include "touch_manager.h"
 #include "home_app.h"
 #include "app_manager.h"
-
 #include "time_manager.h"
-#include "ui/ui_Home.h"
+#include "ui/screens/ui_Home.h"
+#include "home_controller.h"
 
 // Static/global variables
 static lv_obj_t *home_screen = NULL;
@@ -52,9 +52,6 @@ void home_app_process(void) {
 void home_app_init(void) {
     // Use SquareLine Studio generated screen
     printf("[home_app] Creating SquareLine screen...\n");
-    ui_Home_screen_init();
-    printf("[home_app] Loading SquareLine screen...\n");
-    lv_scr_load(ui_Home);
     // Assign label pointer to the LVGL label object
     label = ui_homeName;
     screen_active = true;
@@ -62,14 +59,9 @@ void home_app_init(void) {
     touch_manager_register_user_cb(home_app_touch_cb);
     // Register daily callback
     time_manager_register_day_callback(daily_actions_cb);
+    home_controller_init();
 }
 
-void home_app_tick(void) {
-    if (!home_screen || !label) return;
-    char buf[32];
-    snprintf(buf, sizeof(buf), "Home %d", home_counter);
-    lv_label_set_text(label, buf);
-}
 
 void home_app_cleanup(void) {
     printf("[home_app] Cleanup: destroying SquareLine screen.\n");

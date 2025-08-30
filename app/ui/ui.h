@@ -10,27 +10,17 @@
 extern "C" {
 #endif
 
-#if defined __has_include
-  #if __has_include("lvgl.h")
     #include "lvgl.h"
-  #elif __has_include("lvgl/lvgl.h")
-    #include "lvgl/lvgl.h"
-  #else
-    #include "lvgl.h"
-  #endif
-#else
-  #include "lvgl.h"
-#endif
 
 #include "ui_helpers.h"
 #include "ui_events.h"
 
 ///////////////////// SCREENS ////////////////////
-#include "ui_Energy.h"
-#include "ui_Home.h"
-#include "ui_Settings.h"
-#include "ui_Weather.h"
-#include "ui_clock.h"
+#include "screens/ui_Energy.h"
+#include "screens/ui_Settings.h"
+#include "screens/ui_Weather.h"
+
+#include "screens/ui_Home.h"
 
 ///////////////////// VARIABLES ////////////////////
 

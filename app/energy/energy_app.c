@@ -4,7 +4,9 @@
 #include "energy_app.h"
 #include "app_manager.h"
 #include "time_manager.h"
-#include "ui/ui_Energy.h"
+
+#include "ui/screens/ui_Energy.h"
+#include "energy_controller.h"
 
 static const char *TAG = "energy_app";
 // Static/global variables
@@ -39,10 +41,6 @@ bool energy_app_is_screen_active(void) {
 
 
 
-#include "energy_controller.h"
-void energy_app_tick(void) {
-    energy_controller_tick();
-}
 
 void energy_app_process(void) {
     // Example: update latest_vrms from MQTT or other source
@@ -60,20 +58,15 @@ void energy_app_init(void) {
 
     // Register daily callback to clear peaks
     time_manager_register_day_callback(energy_daily_actions_cb);
-    ESP_LOGI(TAG, "Creating SquareLine screen...");
-
-    ui_Energy_screen_init();
-    ESP_LOGI(TAG, "ui_Energy_screen_init done, ui_Energy=%p", ui_Energy);
-    // Do not load the screen here; app_manager will handle it
-    screen_active = false;
+    screen_active = true;
     ESP_LOGI(TAG, "energy_app_init: end");
+    energy_controller_init();
 }
 
 void ui_Energy_screen_load(void) {
     lv_scr_load(ui_Energy);
     screen_active = true;
 }
-extern lv_obj_t *ui_Energy;
 
 
 
