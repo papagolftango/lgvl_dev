@@ -2,7 +2,7 @@
 #include <lvgl.h>
 #include "settings_app.h"
 #include "app_manager.h"
-#include "ui/screens/ui_Settings.h"
+#include "screens/ui_Settings.h"
 #include "settings_controller.h"
 
 // Static/global variables

@@ -6,4 +6,4 @@ screens/ui_Home.c
 ui.c
 components/ui_comp_hook.c
 ui_helpers.c
-images/ui_img_black_circle_360_png.c
+images/ui_img_gauge_face_kw_final_png.c

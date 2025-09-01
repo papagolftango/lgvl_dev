@@ -12,4 +12,5 @@ idf_component_register(
         "ui_helpers.c"
         "images/ui_img_gauge_face_kw_final_png.c"
     INCLUDE_DIRS "." "screens" "images" "components"
+    REQUIRES lvgl__lvgl
 )

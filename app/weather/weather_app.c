@@ -2,7 +2,7 @@
 #include <lvgl.h>
 #include "weather_app.h"
 #include "app_manager.h"
-#include "ui/screens/ui_Weather.h"
+#include "screens/ui_Weather.h"
 #include "weather_controller.h"
 
 // Static/global variables

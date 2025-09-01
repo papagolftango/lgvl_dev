@@ -2,6 +2,7 @@
 #include "../drivers/user_config.h"
 #include "lcd_touch_bsp.h"
 #include "esp_log.h"
+#include "haptic_manager.h"
 #include <stdint.h>
 
 // Touch callback for LVGL input device
@@ -27,7 +28,8 @@ static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
         if (data->point.y > LCD_V_RES) data->point.y = LCD_V_RES;
         data->state = LV_INDEV_STATE_PRESSED;
         ESP_LOGI("TP", "Touch detected: (%d, %d)", data->point.x, data->point.y);
-    if (user_cb) user_cb(drv, data);
+        haptic_click();
+        if (user_cb) user_cb(drv, data);
     } else {
         data->state = LV_INDEV_STATE_RELEASED;
     }

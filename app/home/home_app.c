@@ -5,7 +5,7 @@
 #include "home_app.h"
 #include "app_manager.h"
 #include "time_manager.h"
-#include "ui/screens/ui_Home.h"
+#include "screens/ui_Home.h"
 #include "home_controller.h"
 
 // Static/global variables

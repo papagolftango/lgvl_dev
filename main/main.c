@@ -24,7 +24,9 @@
 #include "../managers/wifi_manager.h"
 #include "../managers/provisioning_server.h"
 #include "../managers/time_manager.h"
+
 #include "../managers/encoder_manager.h"
+#include "../managers/haptic_manager.h"
 
 
 // For development: Erase NVS and restart to force provisioning
@@ -104,6 +106,7 @@ void app_main(void)
     // local_init_credentials();
     // wifi_manager_connect();
 
+
     // --- Usual app initialization ---
     ESP_LOGI(TAG, "Calling display_init...");
     esp_lcd_panel_handle_t panel_handle = display_init();
@@ -119,6 +122,10 @@ void app_main(void)
     lv_disp_t *disp = lvgl_manager_init(panel_handle);
     ESP_LOGI(TAG, "Install LVGL tick timer");
     lvgl_manager_start_tick_timer();
+  
+    // Initialize haptic manager (after I2C is up, before app_manager)
+    ESP_LOGI(TAG, "Initialize haptic manager");
+    haptic_manager_init();
 
     // Register touch input device
     touch_manager_init(disp);
@@ -126,6 +133,7 @@ void app_main(void)
 
     // LVGL mutex is now managed by lvgl_manager
     lvgl_manager_start_task();
+
 
 
     // Initialize and start the app system (apps, controllers, UI)

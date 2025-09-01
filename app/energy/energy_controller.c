@@ -1,5 +1,5 @@
 #include <lvgl.h>
-#include "ui/screens/ui_Energy.h"
+#include "screens/ui_Energy.h"
 #include "energy_controller.h"
 #include <math.h>
 #include "energy_app.h" // for balance variable, if needed
@@ -60,27 +60,8 @@ void energy_controller_tick(void) {
         ESP_LOGW(TAG, "energy_controller_tick called but screen_active is false. Skipping UI update.");
         return;
     }
-    ESP_LOGD(TAG, "energy_controller_tick: ui_Bar1=%p ui_Bar2=%p", ui_Bar1, ui_Bar2);
     ESP_LOGD(TAG, "energy_controller_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
     // (ui_balance removed: now handled by draw_pointer_for_balance)
-    if (ui_Bar1) {
-        ESP_LOGD(TAG, "Updating ui_Bar1 bar (sqrt scale)");
-        float abs_val = fabsf(energy_solar);
-        float scaled = sqrtf(abs_val);
-        float max_in = 4000.0f;
-        float max_out = sqrtf(max_in);
-        float bar_val = scaled * max_in / max_out;
-        lv_bar_set_value(ui_Bar1, (int)bar_val, LV_ANIM_OFF);
-    }
-    if (ui_Bar2) {
-        ESP_LOGD(TAG, "Updating ui_Bar2 bar (sqrt scale)");
-        float abs_val = fabsf(energy_used);
-        float scaled = sqrtf(abs_val);
-        float max_in = 6000.0f;
-        float max_out = sqrtf(max_in);
-        float bar_val = scaled * max_in / max_out;
-        lv_bar_set_value(ui_Bar2, (int)bar_val, LV_ANIM_OFF);
-    }
 }
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;

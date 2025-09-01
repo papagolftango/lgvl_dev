@@ -1,23 +1,23 @@
 #include <lvgl.h>
 #include "app_manager.h"
-#include "ui/ui.h"
+#include "ui.h"
 #include "energy/energy_app.h"
 #include "home/home_app.h"
 #include "clock/clock_app.h"
 #include "settings/settings_app.h"
 #include "weather/weather_app.h"
-#include "ui/screens/ui_Energy.h"
-#include "ui/screens/ui_Home.h"
-#include "ui/screens/ui_Settings.h"
-#include "ui/screens/ui_Weather.h"
-#include "ui/ui_custom_load.h"
+#include "screens/ui_Energy.h"
+#include "screens/ui_Home.h"
+#include "screens/ui_Settings.h"
+#include "screens/ui_Weather.h"
+#include "ui_custom_load.h"
 #include "energy/energy_controller.h"
 #include "home/home_controller.h"
 #include "settings/settings_controller.h"
 #include "weather/weather_controller.h"
 #include <stdio.h>
-#include "ui/screens/ui_Settings.h"
-#include "ui/screens/ui_Weather.h"
+#include "screens/ui_Settings.h"
+#include "screens/ui_Weather.h"
 
 
 
@@ -25,7 +25,7 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
         .name = "Energy",
         .app_init = energy_app_init,
-        .screen_load = ui_Energy_screen_load,
+    .screen_load = ui_Energy_screen_init,
         .controller_init = energy_controller_init,
         .controller_cleanup = energy_controller_cleanup,
         .app_destroy = energy_app_destroy,
@@ -35,7 +35,7 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
         .name = "Home",
         .app_init = home_app_init,
-        .screen_load = ui_Home_screen_load,
+    .screen_load = ui_Home_screen_init,
         .controller_init = home_controller_init,
         .controller_cleanup = home_controller_cleanup,
         .app_destroy = home_app_destroy,
@@ -44,7 +44,7 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
 /*  {
         .name = "Clock",
         .app_init = clock_app_init,
-        .screen_load = ui_Clock_screen_load,
+    .screen_load = ui_Clock_screen_init,
         .controller_init = clock_controller_init,
         .controller_cleanup = clock_controller_cleanup,
         .app_destroy = clock_app_destroy,
@@ -53,7 +53,7 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
         .name = "Settings",
         .app_init = settings_app_init,
-        .screen_load = ui_Settings_screen_load,
+    .screen_load = ui_Settings_screen_init,
         .controller_init = settings_controller_init,
         .controller_cleanup = settings_controller_cleanup,
         .app_destroy = settings_app_destroy,
@@ -62,7 +62,7 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
         .name = "Weather",
         .app_init = weather_app_init,
-        .screen_load = ui_Weather_screen_load,
+    .screen_load = ui_Weather_screen_init,
         .controller_init = weather_controller_init,
         .controller_cleanup = weather_controller_cleanup,
         .app_destroy = weather_app_destroy,
