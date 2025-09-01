@@ -19,7 +19,7 @@ ui_Home = lv_obj_create(NULL);
 lv_obj_clear_flag( ui_Home, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
 
 ui_backImage = lv_img_create(ui_Home);
-lv_img_set_src(ui_backImage, &ui_img_gauge_face_kw_final_png);
+lv_img_set_src(ui_backImage, &ui_img_black_circle_360_png);
 lv_obj_set_width( ui_backImage, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_backImage, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_backImage, LV_ALIGN_CENTER );

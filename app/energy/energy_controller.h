@@ -8,6 +8,9 @@ extern "C" {
 // Call this to update the UI arc to reflect the current balance value
 void energy_controller_update_balance(int balance);
 
+// Draw the pointer for the energy balance (controller-owned implementation)
+void draw_pointer_for_balance(float energy_balance);
+
 // Call this to update all UI elements from the model (tick)
 void energy_controller_tick(void);
 

@@ -15,8 +15,10 @@ extern void ui_Energy_screen_init(void);
 extern void ui_Energy_screen_destroy(void);
 extern lv_obj_t *ui_Energy;
 extern lv_obj_t *ui_Image2;
+extern lv_obj_t *ui_Label1;
 // CUSTOM VARIABLES
 extern lv_obj_t *uic_Energy;
+extern lv_obj_t *uic_Label1;
 
 #ifdef __cplusplus
 } /*extern "C"*/

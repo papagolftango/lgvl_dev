@@ -136,6 +136,54 @@ void energy_controller_cleanup(void) {
 
 // Update the UI arc to reflect the current balance value
 void energy_controller_update_balance(int balance) {
-    // (ui_balance removed: now handled by draw_pointer_for_balance)
+    draw_pointer_for_balance((float)balance);
+}
+
+#include "../ui/screens/ui_Energy.h"
+#include <lvgl.h>
+#include <math.h>
+#include "esp_log.h"
+
+void draw_pointer_for_balance(float energy_balance) {
+    ESP_LOGI("UI", "draw_pointer_for_balance called: input=%.2f, ui_Energy=%p", energy_balance, ui_Energy);
+    lv_obj_t *parent = lv_scr_act();
+    float min = -4000.0f, max = 6000.0f;
+    float angle = 0.0f;
+    if (energy_balance < 0) {
+        float frac = sqrtf(fabsf(energy_balance / min));
+        angle = -135.0f * frac;
+    } else if (energy_balance > 0) {
+        float frac = sqrtf(energy_balance / max);
+        angle = 135.0f * frac;
+    }
+    ESP_LOGI("UI", "draw_pointer_for_balance: scaled angle=%.2f deg", angle);
+    float rad = angle * (M_PI / 180.0f);
+    ESP_LOGI("UI", "draw_pointer_for_balance: rad=%.2f", rad);
+    // Center for 360x360 round display
+    const int cx = 180, cy = 180, r = 140;
+    int tip_x = cx + (int)(r * sinf(rad));
+    int tip_y = cy - (int)(r * cosf(rad));
+    ESP_LOGI("UI", "draw_pointer_for_balance: line from (%d,%d) to (%d,%d)", cx, cy, tip_x, tip_y);
+    lv_obj_t *debug_bg = lv_obj_create(parent);
+    lv_obj_set_size(debug_bg, 360, 360);
+    lv_obj_set_pos(debug_bg, 0, 0);
+    lv_obj_set_style_bg_color(debug_bg, lv_color_hex(0x00FF00), LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(debug_bg, LV_OPA_20, LV_PART_MAIN);
+    lv_obj_set_style_border_width(debug_bg, 0, LV_PART_MAIN);
+    lv_obj_move_background(debug_bg);
+    static lv_point_t line_points[2];
+    line_points[0].x = 0;
+    line_points[0].y = 0;
+    line_points[1].x = tip_x - cx;
+    line_points[1].y = tip_y - cy;
+    lv_obj_t *pointer_line = lv_line_create(parent);
+    lv_line_set_points(pointer_line, line_points, 2);
+    lv_obj_set_pos(pointer_line, cx, cy);
+    static lv_style_t style_line_red;
+    lv_style_init(&style_line_red);
+    lv_style_set_line_width(&style_line_red, 16);
+    lv_style_set_line_color(&style_line_red, lv_color_hex(0xFF0000));
+    lv_style_set_line_rounded(&style_line_red, true);
+    lv_obj_add_style(pointer_line, &style_line_red, LV_PART_MAIN);
 }
 
