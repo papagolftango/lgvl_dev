@@ -31,7 +31,7 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
         .app_destroy = energy_app_destroy,
         .tick = energy_controller_tick,
     },
-    
+    /*
     {
         .name = "Home",
         .app_init = home_app_init,
@@ -41,15 +41,17 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
         .app_destroy = home_app_destroy,
         .tick = home_controller_tick,
     },
-/*  {
+    
+    {
         .name = "Clock",
         .app_init = clock_app_init,
-    .screen_load = ui_Clock_screen_init,
+        .screen_load = ui_Clock_screen_init,
         .controller_init = clock_controller_init,
         .controller_cleanup = clock_controller_cleanup,
         .app_destroy = clock_app_destroy,
         .tick = clock_controller_tick,
-    }, */
+    },
+    
     {
         .name = "Settings",
         .app_init = settings_app_init,
@@ -67,14 +69,15 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
         .controller_cleanup = weather_controller_cleanup,
         .app_destroy = weather_app_destroy,
         .tick = weather_controller_tick,
-    }
+    } */
 };
 
-static app_id_t current_app = APP_ID_WEATHER;
+static app_id_t current_app = APP_ID_ENERGY;
 
 void app_manager_init(void) {
-    // Initialize UI (only once, before any app)
+    // Initialize UI (theme and screens)
     ui_init();
+
     // Initialize all apps (model/controller/view)
     for (int i = 0; i < APP_ID_COUNT; ++i) {
         if (app_table[i].app_init)
@@ -95,9 +98,26 @@ void app_manager_set_active(app_id_t app_id) {
     if (app_table[current_app].controller_cleanup)
         app_table[current_app].controller_cleanup();
 
-    // Load new app screen
-    if (app_table[app_id].screen_load)
-        app_table[app_id].screen_load();
+    // Show new app's persistent screen (assumes screen object is global, e.g., ui_Energy)
+    switch (app_id) {
+        case APP_ID_ENERGY:
+            lv_scr_load(ui_Energy);
+            break;
+    /**   case APP_ID_HOME:
+            lv_scr_load(ui_Home);
+            break;
+        case APP_ID_CLOCK:
+            lv_scr_load(ui_Clock);
+            break;
+        case APP_ID_SETTINGS:
+            lv_scr_load(ui_Settings);
+            break;
+        case APP_ID_WEATHER:
+            lv_scr_load(ui_Weather);
+            break; */
+        default:
+            break;
+    }
 
     // Init new app controller
     if (app_table[app_id].controller_init)

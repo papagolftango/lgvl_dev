@@ -3,7 +3,6 @@
 // LVGL version: 8.3.11
 // Project name: knob
 
-#include <stdio.h>
 #include "ui.h"
 #include "ui_helpers.h"
 
@@ -30,20 +29,16 @@ lv_obj_t *ui____initial_actions0;
 
 void ui_init( void )
 {
-    lv_disp_t *dispp = lv_disp_get_default();
-    if (!dispp) {
-        printf("[ui_init] ERROR: lv_disp_get_default() returned NULL! Display driver not registered.\n");
-        return;
-    }
-    lv_theme_t *theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), false, LV_FONT_DEFAULT);
-    lv_disp_set_theme(dispp, theme);
-    ui_Energy_screen_init();
-    ui_Weather_screen_init();
-    /* ui_Clock_screen_init(); */
-    ui_Settings_screen_init();
-    ui_Home_screen_init();
-    ui____initial_actions0 = lv_obj_create(NULL);
-    lv_disp_load_scr( ui_Energy );
+lv_disp_t *dispp = lv_disp_get_default();
+lv_theme_t *theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), false, LV_FONT_DEFAULT);
+lv_disp_set_theme(dispp, theme);
+ui_Energy_screen_init();
+ui_Weather_screen_init();
+ui_Clock_screen_init();
+ui_Settings_screen_init();
+ui_Home_screen_init();
+ui____initial_actions0 = lv_obj_create(NULL);
+lv_disp_load_scr( ui_Energy);
 }
 
 void ui_destroy( void )

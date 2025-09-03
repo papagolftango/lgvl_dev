@@ -14,26 +14,19 @@ lv_obj_t *ui_Settings = NULL;lv_obj_t *ui_seetinsName = NULL;
 
 void ui_Settings_screen_init(void)
 {
+ui_Settings = lv_obj_create(NULL);
+lv_obj_clear_flag( ui_Settings, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+
+ui_seetinsName = lv_label_create(ui_Settings);
+lv_obj_set_width( ui_seetinsName, LV_SIZE_CONTENT);  /// 1
+lv_obj_set_height( ui_seetinsName, LV_SIZE_CONTENT);   /// 1
+lv_obj_set_x( ui_seetinsName, 14 );
 lv_obj_set_y( ui_seetinsName, -21 );
 lv_obj_set_align( ui_seetinsName, LV_ALIGN_CENTER );
 lv_label_set_text(ui_seetinsName,"Settings");
+
 uic_Settings = ui_Settings;
 uic_settingsName = ui_seetinsName;
-   if (ui_Settings == NULL) {
-      ui_Settings = lv_obj_create(NULL);
-      lv_obj_clear_flag( ui_Settings, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-
-      ui_seetinsName = lv_label_create(ui_Settings);
-      lv_obj_set_width( ui_seetinsName, LV_SIZE_CONTENT);  /// 1
-      lv_obj_set_height( ui_seetinsName, LV_SIZE_CONTENT);   /// 1
-      lv_obj_set_x( ui_seetinsName, 14 );
-      lv_obj_set_y( ui_seetinsName, -21 );
-      lv_obj_set_align( ui_seetinsName, LV_ALIGN_CENTER );
-      lv_label_set_text(ui_seetinsName,"Settings");
-
-      uic_Settings = ui_Settings;
-      uic_settingsName = ui_seetinsName;
-   }
 
 }
 

@@ -11,10 +11,16 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "mqtt_client.h" // For esp_mqtt_event_handle_t, MQTT_EVENT_*, esp_mqtt_client_subscribe
+#include "../ui/screens/ui_Energy.h"
+#include <lvgl.h>
+#include <math.h>
+#include "esp_log.h"
 
 #define TAG "energy_app"
 
 
+        // Set both main and indicator arc colors so the whole arc is the same color
+extern float energy_balance, energy_solar, energy_used;
 
 // Local helpers to update peak markers for the bars
 static void ui_update_bar2_peak_marker(float peak_value) {
@@ -32,29 +38,10 @@ static void ui_update_bar1_peak_marker(float peak_value) {
 
 // Update all UI elements from the model (tick)
 
-#define ARC_COLOR_GREEN  0x40FF6D
-#define ARC_COLOR_RED    0xFF4040
-#define ARC_COLOR_ORANGE 0xFFA500
 
 void energy_controller_tick(void) {
-    extern void draw_pointer_for_balance(float energy_balance);
+ 
     draw_pointer_for_balance(energy_balance);
-        // Set arc color based on balance
-        lv_color_t arc_color;
-        if (energy_balance < 0) {
-            arc_color = lv_color_hex(ARC_COLOR_GREEN);
-        } else if (energy_balance > 1000) {
-            arc_color = lv_color_hex(ARC_COLOR_RED);
-        } else {
-            arc_color = lv_color_hex(ARC_COLOR_ORANGE);
-        }
-        // Set both main and indicator arc colors so the whole arc is the same color
-    extern float energy_balance, energy_solar, energy_used;
-    
-    // Update peak marker for Bar2 (used)
-    ui_update_bar2_peak_marker(energy_peak_used);
-    // Update peak marker for Bar1 (solar)
-    ui_update_bar1_peak_marker(energy_peak_solar);
 
     if (!energy_app_is_screen_active()) {
         ESP_LOGW(TAG, "energy_controller_tick called but screen_active is false. Skipping UI update.");
@@ -63,6 +50,7 @@ void energy_controller_tick(void) {
     ESP_LOGD(TAG, "energy_controller_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
     // (ui_balance removed: now handled by draw_pointer_for_balance)
 }
+
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;
     switch (event_id) {
@@ -139,51 +127,48 @@ void energy_controller_update_balance(int balance) {
     draw_pointer_for_balance((float)balance);
 }
 
-#include "../ui/screens/ui_Energy.h"
-#include <lvgl.h>
-#include <math.h>
-#include "esp_log.h"
+
+
+// Persistent pointer line object and style
+static lv_obj_t *pointer_line = NULL;
+static lv_point_t line_points[2];
+static lv_style_t style_line_blue;
+static bool style_initialized = false;
+static int sweep_angle = -135;
 
 void draw_pointer_for_balance(float energy_balance) {
-    ESP_LOGI("UI", "draw_pointer_for_balance called: input=%.2f, ui_Energy=%p", energy_balance, ui_Energy);
-    lv_obj_t *parent = lv_scr_act();
-    float min = -4000.0f, max = 6000.0f;
-    float angle = 0.0f;
-    if (energy_balance < 0) {
-        float frac = sqrtf(fabsf(energy_balance / min));
-        angle = -135.0f * frac;
-    } else if (energy_balance > 0) {
-        float frac = sqrtf(energy_balance / max);
-        angle = 135.0f * frac;
-    }
-    ESP_LOGI("UI", "draw_pointer_for_balance: scaled angle=%.2f deg", angle);
-    float rad = angle * (M_PI / 180.0f);
-    ESP_LOGI("UI", "draw_pointer_for_balance: rad=%.2f", rad);
-    // Center for 360x360 round display
-    const int cx = 180, cy = 180, r = 140;
-    int tip_x = cx + (int)(r * sinf(rad));
-    int tip_y = cy - (int)(r * cosf(rad));
-    ESP_LOGI("UI", "draw_pointer_for_balance: line from (%d,%d) to (%d,%d)", cx, cy, tip_x, tip_y);
-    lv_obj_t *debug_bg = lv_obj_create(parent);
-    lv_obj_set_size(debug_bg, 360, 360);
-    lv_obj_set_pos(debug_bg, 0, 0);
-    lv_obj_set_style_bg_color(debug_bg, lv_color_hex(0x00FF00), LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(debug_bg, LV_OPA_20, LV_PART_MAIN);
-    lv_obj_set_style_border_width(debug_bg, 0, LV_PART_MAIN);
-    lv_obj_move_background(debug_bg);
-    static lv_point_t line_points[2];
-    line_points[0].x = 0;
-    line_points[0].y = 0;
-    line_points[1].x = tip_x - cx;
-    line_points[1].y = tip_y - cy;
-    lv_obj_t *pointer_line = lv_line_create(parent);
-    lv_line_set_points(pointer_line, line_points, 2);
-    lv_obj_set_pos(pointer_line, cx, cy);
-    static lv_style_t style_line_red;
-    lv_style_init(&style_line_red);
-    lv_style_set_line_width(&style_line_red, 16);
-    lv_style_set_line_color(&style_line_red, lv_color_hex(0xFF0000));
-    lv_style_set_line_rounded(&style_line_red, true);
-    lv_obj_add_style(pointer_line, &style_line_red, LV_PART_MAIN);
-}
 
+    // Map value in [0,6] to angle in [0, -135] using sqrt mapping
+    // Convert balance from W to kW
+    float value = energy_balance / 1000.0f;
+
+    float angle = sqrtf(value) * (135.0f / sqrtf(6.0f));
+    float rad = angle * (M_PI / 180.0f);
+
+    int r = 125;
+    int x0 = r, y0 = r; // center of the object
+    int x1 = r + (int)roundf(r * cosf(rad));
+    int y1 = r + (int)roundf(r * sinf(rad));
+    line_points[0].x = x0;
+    line_points[0].y = y0;
+    line_points[1].x = x1;
+    line_points[1].y = y1;
+
+    lv_obj_t *parent = lv_scr_act();
+    if (!pointer_line) {
+        pointer_line = lv_line_create(parent);
+        lv_obj_set_pos(pointer_line, 180 - r, 180 - r);
+        lv_obj_set_size(pointer_line, 2*r, 2*r);
+        lv_obj_move_foreground(pointer_line);
+        if (!style_initialized) {
+            lv_style_init(&style_line_blue);
+            lv_style_set_line_width(&style_line_blue, 5);
+            lv_style_set_line_color(&style_line_blue, lv_color_hex(0x0000FF));
+            lv_style_set_line_rounded(&style_line_blue, true);
+            style_initialized = true;
+        }
+        lv_obj_add_style(pointer_line, &style_line_blue, LV_PART_MAIN);
+    }
+    lv_line_set_points(pointer_line, line_points, 2);
+
+}

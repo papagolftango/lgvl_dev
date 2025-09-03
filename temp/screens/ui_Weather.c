@@ -14,7 +14,12 @@ lv_obj_t *ui_Weather = NULL;lv_obj_t *ui_weatherName = NULL;
 
 void ui_Weather_screen_init(void)
 {
+ui_Weather = lv_obj_create(NULL);
+lv_obj_clear_flag( ui_Weather, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
+lv_obj_set_style_bg_color(ui_Weather, lv_color_hex(0x050000), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_bg_opa(ui_Weather, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
+
+ui_weatherName = lv_label_create(ui_Weather);
 lv_obj_set_width( ui_weatherName, LV_SIZE_CONTENT);  /// 1
 lv_obj_set_height( ui_weatherName, LV_SIZE_CONTENT);   /// 1
 lv_obj_set_align( ui_weatherName, LV_ALIGN_CENTER );
@@ -22,26 +27,9 @@ lv_label_set_text(ui_weatherName,"Weather");
 lv_obj_set_style_text_color(ui_weatherName, lv_color_hex(0x2DD227), LV_PART_MAIN | LV_STATE_DEFAULT );
 lv_obj_set_style_text_opa(ui_weatherName, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
 lv_obj_set_style_text_font(ui_weatherName, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
+
 uic_Weather = ui_Weather;
 uic_weatherName = ui_weatherName;
-   if (ui_Weather == NULL) {
-      ui_Weather = lv_obj_create(NULL);
-      lv_obj_clear_flag( ui_Weather, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-      lv_obj_set_style_bg_color(ui_Weather, lv_color_hex(0x050000), LV_PART_MAIN | LV_STATE_DEFAULT );
-      lv_obj_set_style_bg_opa(ui_Weather, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-      ui_weatherName = lv_label_create(ui_Weather);
-      lv_obj_set_width( ui_weatherName, LV_SIZE_CONTENT);  /// 1
-      lv_obj_set_height( ui_weatherName, LV_SIZE_CONTENT);   /// 1
-      lv_obj_set_align( ui_weatherName, LV_ALIGN_CENTER );
-      lv_label_set_text(ui_weatherName,"Weather");
-      lv_obj_set_style_text_color(ui_weatherName, lv_color_hex(0x2DD227), LV_PART_MAIN | LV_STATE_DEFAULT );
-      lv_obj_set_style_text_opa(ui_weatherName, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-      lv_obj_set_style_text_font(ui_weatherName, &lv_font_montserrat_48, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-      uic_Weather = ui_Weather;
-      uic_weatherName = ui_weatherName;
-   }
 
 }
 
