@@ -9,10 +9,11 @@
 #include "energy_controller.h"
 
 static const char *TAG = "energy_app";
-// Static/global variables
+
+/*Static/global variables*/
 static bool screen_active = false;
 
-// Energy data variables (shared with MQTT handler)
+/*Energy data variables (shared with MQTT handler)*/
 float energy_vrms = 0.0f;
 float energy_solar = 0.0f;
 float energy_used = 0.0f;
@@ -20,20 +21,28 @@ float energy_balance = 0.0f;
 float energy_peak_solar = 0.0f;
 float energy_peak_used = 0.0f;
 
-// Forward declarations
+/*Forward declarations*/
 static void energy_daily_actions_cb(void);
 extern void energy_app_mqtt_init(void);
 
-// Daily callback to clear peaks
-static void energy_daily_actions_cb(void) {
+/**
+ * Daily callback to clear peak values
+ * Called once per day to reset peak solar and used values
+ */
+static void energy_daily_actions_cb(void)
+{
     energy_peak_solar = 0.0f;
     energy_peak_used = 0.0f;
     ESP_LOGI(TAG, "Daily reset: peak_solar and peak_used cleared.");
 }
 
 
-// Getter for screen_active (for controller)
-bool energy_app_is_screen_active(void) {
+/**
+ * Get the screen active status
+ * @return true if the energy screen is currently active
+ */
+bool energy_app_is_screen_active(void)
+{
     return screen_active;
 }
 
@@ -42,36 +51,53 @@ bool energy_app_is_screen_active(void) {
 
 
 
-void energy_app_process(void) {
-    // Example: update latest_vrms from MQTT or other source
-    // latest_vrms = ...;
-    // Do NOT touch LVGL objects here!
+/**
+ * Process energy app data
+ * Update energy data from MQTT or other sources
+ * Note: Do NOT touch LVGL objects here!
+ */
+void energy_app_process(void)
+{
+    /*Example: update latest_vrms from MQTT or other source*/
+    /*latest_vrms = ...;*/
+    /*Do NOT touch LVGL objects here!*/
 }
 
 
-void energy_app_init(void) {
+/**
+ * Initialize the energy application
+ * Sets up MQTT handlers, registers callbacks, and initializes the controller
+ */
+void energy_app_init(void)
+{
     ESP_LOGI(TAG, "energy_app_init: begin");
-    // Ensure DEBUG logs are visible for this tag
+    /*Ensure DEBUG logs are visible for this tag*/
     esp_log_level_set(TAG, ESP_LOG_DEBUG);
-    // Register MQTT event handler and subscribe to topics
+    /*Register MQTT event handler and subscribe to topics*/
     energy_app_mqtt_init();
 
-    // Register daily callback to clear peaks
+    /*Register daily callback to clear peaks*/
     time_manager_register_day_callback(energy_daily_actions_cb);
     screen_active = true;
     ESP_LOGI(TAG, "energy_app_init: end");
     energy_controller_init();
 }
 
-void ui_Energy_screen_load(void) {
+/**
+ * Load the energy screen and set it as active
+ */
+void ui_Energy_screen_load(void)
+{
     lv_scr_load(ui_Energy);
     screen_active = true;
 }
 
-
-
-
-void energy_app_cleanup(void) {
+/**
+ * Clean up the energy application resources
+ * Destroys UI elements and sets screen inactive
+ */
+void energy_app_cleanup(void)
+{
     ESP_LOGI(TAG, "energy_app_cleanup: begin");
     ui_Energy_screen_destroy();
     ESP_LOGI(TAG, "ui_Energy_screen_destroy called");
@@ -79,9 +105,15 @@ void energy_app_cleanup(void) {
     ESP_LOGI(TAG, "energy_app_cleanup: end");
 }
 
-void energy_app_destroy(void) {
-    // Clean up model/controller/view state if needed
-    // Example: set pointers to NULL, free memory, etc.
+/**
+ * Destroy the energy application
+ * Resets all energy data variables and sets screen inactive
+ * Note: LVGL objects created with SquareLine are usually managed elsewhere
+ */
+void energy_app_destroy(void)
+{
+    /*Clean up model/controller/view state if needed*/
+    /*Example: set pointers to NULL, free memory, etc.*/
     energy_vrms = 0.0f;
     energy_solar = 0.0f;
     energy_used = 0.0f;
@@ -89,10 +121,15 @@ void energy_app_destroy(void) {
     energy_peak_solar = 0.0f;
     energy_peak_used = 0.0f;
     screen_active = false;
-    // If you dynamically allocated any LVGL objects, delete them here
-    // (LVGL objects created with SquareLine are usually managed elsewhere)
+    /*If you dynamically allocated any LVGL objects, delete them here*/
+    /*(LVGL objects created with SquareLine are usually managed elsewhere)*/
 }
 
-void energy_app_touch(void) {
+/**
+ * Handle touch events on the energy screen
+ * Moves to the next application in the sequence
+ */
+void energy_app_touch(void)
+{
     app_manager_next_app();
 }

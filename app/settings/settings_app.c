@@ -5,25 +5,46 @@
 #include "screens/ui_Settings.h"
 #include "settings_controller.h"
 
-// Static/global variables
+/*Static/global variables*/
 static bool screen_active = false;
 
-void settings_app_process(void) {}
+/**
+ * Process settings app data
+ * Update settings-related data (currently empty)
+ */
+void settings_app_process(void)
+{
+    /*Settings processing logic here*/
+}
 
-void settings_app_init(void) {
+/**
+ * Initialize the settings application
+ * Creates the SquareLine screen and initializes the controller
+ */
+void settings_app_init(void)
+{
     printf("[settings_app] Creating SquareLine screen...\n");
     screen_active = true;
     printf("[settings_app] Screen initialized.\n");
     settings_controller_init();
 }
 
-
-void settings_app_cleanup(void) {
-    // Add cleanup logic if needed
+/**
+ * Clean up the settings application resources
+ * Add cleanup logic if needed
+ */
+void settings_app_cleanup(void)
+{
+    /*Add cleanup logic if needed*/
 }
 
-void settings_app_destroy(void) {
-    // Clean up model/controller/view state if needed
+/**
+ * Destroy the settings application
+ * Clean up model/controller/view state
+ */
+void settings_app_destroy(void)
+{
+    /*Clean up model/controller/view state if needed*/
     screen_active = false;
-    // If you dynamically allocated any LVGL objects, delete them here
+    /*If you dynamically allocated any LVGL objects, delete them here*/
 }

@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-// Controller interface for clock app
+/*Controller interface for clock app*/
 void clock_controller_init(void);
 void clock_controller_tick(void);
 void clock_controller_cleanup(void);
