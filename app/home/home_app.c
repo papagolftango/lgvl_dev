@@ -1,4 +1,4 @@
-// home_app.c - Home app logic
+/*home_app.c - Home app logic*/
 #include <stdio.h>
 #include "lvgl.h"
 #include "touch_manager.h"
@@ -8,79 +8,113 @@
 #include "screens/ui_Home.h"
 #include "home_controller.h"
 
-// Static/global variables
+/*Static/global variables*/
 static lv_obj_t *home_screen = NULL;
 static lv_obj_t *label = NULL;
 static bool screen_active = false;
-static int home_counter = 0; // Example background data (replace with real data/event logic)
+static int home_counter = 0; /*Example background data (replace with real data/event logic)*/
 
-// Bin schedule for 52 weeks: top nibble = day of week (2=Tuesday), bottom nibble = bin bitmap
-// Odd weeks: general bin (0x2), Even weeks: recycle+garden (0x5)
+/*Bin schedule for 52 weeks: top nibble = day of week (2=Tuesday), bottom nibble = bin bitmap*/
+/*Odd weeks: general bin (0x2), Even weeks: recycle+garden (0x5)*/
 static uint8_t bin_schedule[52] = {
-    /* Weeks 1-52 */
+    /*Weeks 1-52*/
     0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25,
     0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25,
     0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25,
     0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25, 0x22, 0x25
 };
 
-// Icon display flags (set from message bits)
+/*Icon display flags (set from message bits)*/
 static bool show_recycle_bin_icon = false;
 static bool show_general_waste_bin_icon = false;
 static bool show_garden_bin_icon = false;
-// Tip lorry icon: show when bin_state == BIN_STATE_EMPTYING
+/*Tip lorry icon: show when bin_state == BIN_STATE_EMPTYING*/
 
-// Forward declarations
+/*Forward declarations*/
 static void process_bin_touch(void);
 static void home_app_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data);
 static void daily_actions_cb(void);
 
-// Touch callback for home app
-static void home_app_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data) {
-    if (data->state == LV_INDEV_STATE_PRESSED) {
+/**
+ * Touch callback for home app
+ * @param drv pointer to input device driver
+ * @param data pointer to input device data
+ */
+static void home_app_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
+{
+    if(data->state == LV_INDEV_STATE_PRESSED) {
         process_bin_touch();
     }
 }
 
-// Called always, even when not active
-void home_app_process(void) {
-    // Example: update home_counter from events, etc.
-    // home_counter++;
-    // Do NOT touch LVGL objects here!
+/**
+ * Process home app data
+ * Called always, even when not active
+ * Note: Do NOT touch LVGL objects here!
+ */
+void home_app_process(void)
+{
+    /*Example: update home_counter from events, etc.*/
+    /*home_counter++;*/
+    /*Do NOT touch LVGL objects here!*/
 }
 
-void home_app_init(void) {
-    // Use SquareLine Studio generated screen
+/**
+ * Initialize the home application
+ * Creates the SquareLine Studio generated screen and registers callbacks
+ */
+void home_app_init(void)
+{
+    /*Use SquareLine Studio generated screen*/
     printf("[home_app] Creating SquareLine screen...\n");
-    // Assign label pointer to the LVGL label object
+    /*Assign label pointer to the LVGL label object*/
     label = ui_homeName;
     screen_active = true;
-    // Register home app's touch callback
+    /*Register home app's touch callback*/
     touch_manager_register_user_cb(home_app_touch_cb);
-    // Register daily callback
+    /*Register daily callback*/
     time_manager_register_day_callback(daily_actions_cb);
     home_controller_init();
 }
 
-
-void home_app_cleanup(void) {
+/**
+ * Clean up the home application resources
+ * Destroys the SquareLine screen and unregisters callbacks
+ */
+void home_app_cleanup(void)
+{
     printf("[home_app] Cleanup: destroying SquareLine screen.\n");
-  //  ui_Screen1_screen_destroy();
+    /*ui_Screen1_screen_destroy();*/
     screen_active = false;
-    // Unregister home app's touch callback
+    /*Unregister home app's touch callback*/
     touch_manager_unregister_user_cb();
 }
 
-void home_app_destroy(void) {
-    // Clean up model/controller/view state if needed
+/**
+ * Destroy the home application
+ * Clean up model/controller/view state
+ */
+void home_app_destroy(void)
+{
+    /*Clean up model/controller/view state if needed*/
     home_screen = NULL;
     label = NULL;
     screen_active = false;
-    // If you dynamically allocated any LVGL objects, delete them here
+    /*If you dynamically allocated any LVGL objects, delete them here*/
 }
 
-// Stub implementations to resolve linker errors
-static void process_bin_touch(void) {}
-static void daily_actions_cb(void) {}
+/**
+ * Process bin touch event (stub implementation)
+ */
+static void process_bin_touch(void)
+{
+    /*Stub implementation for testing*/
+}
 
-// Internal function to process bin touch (for testing)
+/**
+ * Daily actions callback (stub implementation)
+ */
+static void daily_actions_cb(void)
+{
+    /*Stub implementation*/
+}
