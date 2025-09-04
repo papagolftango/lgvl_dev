@@ -1,10 +1,10 @@
 // home_app.c - Home app logic
 #include <stdio.h>
 #include "lvgl.h"
-#include "touch_manager.h"
+#include "managers/touch_manager.h"
 #include "home_app.h"
-#include "app_manager.h"
-#include "time_manager.h"
+#include "managers/app_manager.h"
+#include "managers/time_manager.h"
 #include "screens/ui_Home.h"
 #include "home_controller.h"
 

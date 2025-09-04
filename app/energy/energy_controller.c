@@ -3,8 +3,8 @@
 #include "energy_controller.h"
 #include <math.h>
 #include "energy_app.h" // for balance variable, if needed
-#include "mqtt_manager.h"
-#include "lvgl_manager.h"
+#include "managers/mqtt_manager.h"
+#include "managers/lvgl_manager.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -138,17 +138,26 @@ static int sweep_angle = -135;
 
 void draw_pointer_for_balance(float energy_balance) {
 
-    // Map value in [0,6] to angle in [0, -135] using sqrt mapping
-    // Convert balance from W to kW
-    float value = energy_balance / 1000.0f;
+    // Map: -4kW (FSD left) to -135°, 0kW (center) to 0°, +6kW (FSD right) to +135°
+    // Use sqrt scale for both sides
+    float angle = 0.0f;
+    if (energy_balance < 0.0f) {
+        // Negative: map [-4000, 0] W to [-135, 0] deg
+        float frac = fminf(1.0f, sqrtf(fabsf(energy_balance) / 4000.0f));
+        angle = -135.0f * frac;
+    } else if (energy_balance > 0.0f) {
+        // Positive: map [0, 6000] W to [0, +135] deg
+        float frac = fminf(1.0f, sqrtf(energy_balance / 6000.0f));
+        angle = 135.0f * frac;
+    } else {
+        angle = 0.0f;
+    }
 
-    float angle = sqrtf(value) * (135.0f / sqrtf(6.0f));
     float rad = angle * (M_PI / 180.0f);
-
     int r = 125;
     int x0 = r, y0 = r; // center of the object
-    int x1 = r + (int)roundf(r * cosf(rad));
-    int y1 = r + (int)roundf(r * sinf(rad));
+    int x1 = r + (int)roundf(r * sinf(rad));
+    int y1 = r - (int)roundf(r * cosf(rad));
     line_points[0].x = x0;
     line_points[0].y = y0;
     line_points[1].x = x1;
@@ -170,5 +179,4 @@ void draw_pointer_for_balance(float energy_balance) {
         lv_obj_add_style(pointer_line, &style_line_blue, LV_PART_MAIN);
     }
     lv_line_set_points(pointer_line, line_points, 2);
-
 }

@@ -15,18 +15,17 @@
 #include "../drivers/bidi_switch_knob.h"
 #include "lcd_bl_pwm_bsp.h"
 
-#include "../managers/power_manager.h"
-#include "../managers/persistent_data_manager.h"
-#include "../managers/lvgl_manager.h"
-#include "../managers/touch_manager.h"
-#include "../managers/app_manager.h"
-#include "../managers/mqtt_manager.h"
-#include "../managers/wifi_manager.h"
-#include "../managers/provisioning_server.h"
-#include "../managers/time_manager.h"
-
-#include "../managers/encoder_manager.h"
-#include "../managers/haptic_manager.h"
+#include "power_manager.h"
+#include "persistent_data_manager.h"
+#include "lvgl_manager.h"
+#include "touch_manager.h"
+#include "app_manager.h"
+#include "mqtt_manager.h"
+#include "wifi_manager.h"
+#include "provisioning_server.h"
+#include "time_manager.h"
+#include "encoder_manager.h"
+#include "haptic_manager.h"
 
 
 // For development: Erase NVS and restart to force provisioning
@@ -108,6 +107,9 @@ void app_main(void)
 
 
     // --- Usual app initialization ---
+
+// Helper to check display init every time app_main runs
+static esp_lcd_panel_handle_t safe_display_init(void) {
     ESP_LOGI(TAG, "Calling display_init...");
     esp_lcd_panel_handle_t panel_handle = display_init();
     if (!panel_handle) {
@@ -115,6 +117,10 @@ void app_main(void)
         while (1) { vTaskDelay(pdMS_TO_TICKS(1000)); }
     }
     ESP_LOGI(TAG, "display_init complete, panel_handle=%p", panel_handle);
+    return panel_handle;
+}
+
+    esp_lcd_panel_handle_t panel_handle = safe_display_init();
 
     ESP_LOGI(TAG, "Set backlight to 50%%");
     setUpduty(LCD_PWM_MODE_50);

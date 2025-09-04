@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <lvgl.h>
 #include "clock_app.h"
-#include "app_manager.h"
-#include "time_manager.h"
+#include "managers/app_manager.h"
+#include "managers/time_manager.h"
 //#include "ui/ui.h" // UI is now initialized by app_manager
 #include "ui/screens/ui_Clock.h"
 #include "clock_controller.h"

@@ -2,8 +2,8 @@
 #include <stdio.h>
 #include <lvgl.h>
 #include "energy_app.h"
-#include "app_manager.h"
-#include "time_manager.h"
+#include "managers/app_manager.h"
+#include "managers/time_manager.h"
 
 #include "screens/ui_Energy.h"
 #include "energy_controller.h"

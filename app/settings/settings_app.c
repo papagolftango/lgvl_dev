@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <lvgl.h>
 #include "settings_app.h"
-#include "app_manager.h"
+#include "managers/app_manager.h"
 #include "screens/ui_Settings.h"
 #include "settings_controller.h"
 
