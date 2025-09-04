@@ -16,11 +16,7 @@ extern "C" {
 #include "ui_events.h"
 
 ///////////////////// SCREENS ////////////////////
-#include "screens/ui_Energy.h"
-#include "screens/ui_Weather.h"
-#include "screens/ui_Clock.h"
-#include "screens/ui_Settings.h"
-#include "screens/ui_Home.h"
+
 
 ///////////////////// VARIABLES ////////////////////
 

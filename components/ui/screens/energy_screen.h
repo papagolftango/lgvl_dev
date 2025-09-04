@@ -1,3 +1,6 @@
+#include <math.h>
+// Draw the energy balance pointer on the energy screen
+void draw_pointer_for_balance(float energy_balance);
 #pragma once
 #include <lvgl.h>
 

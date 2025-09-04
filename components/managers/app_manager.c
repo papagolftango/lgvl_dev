@@ -17,8 +17,7 @@
 #include "settings/settings_controller.h"
 #include "weather/weather_controller.h"
 #include <stdio.h>
-#include "screens/ui_Settings.h"
-#include "screens/ui_Weather.h"
+
 
 
 

@@ -1,7 +1,5 @@
 
-#include "ui_Home.h"
-#include "ui_Settings.h"
-#include "ui_Weather.h"
+
 #include <lvgl.h>
 
 void ui_Home_screen_load(void) {

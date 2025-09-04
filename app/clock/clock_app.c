@@ -8,8 +8,6 @@
 //#include "ui/ui.h" // UI is now initialized by app_manager
 #include "ui/screens/ui_Clock.h"
 #include "clock_controller.h"
-// #include "ui/ui.h" // UI is now initialized by app_manager
-
 
 static bool screen_active = false;
 

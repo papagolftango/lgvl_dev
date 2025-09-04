@@ -5,7 +5,7 @@
 #include "managers/app_manager.h"
 #include "managers/time_manager.h"
 
-#include "screens/ui_Energy.h"
+
 #include "energy_controller.h"
 
 static const char *TAG = "energy_app";
