@@ -8,7 +8,7 @@ extern "C" {
 #endif
 
 // Draw the energy balance pointer and peak markers on the energy screen
-void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_used);
+void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_used, float curr_solar, float curr_used);
 
 // Create the Energy screen and return its root object
 lv_obj_t *energy_screen_create(lv_obj_t *parent);

@@ -21,6 +21,7 @@
 
 // Set both main and indicator arc colors so the whole arc is the same color
 extern float energy_balance, energy_solar, energy_used;
+extern float energy_peak_solar, energy_peak_used;
 
 void energy_controller_tick(void) {
     static float last_balance = NAN;
@@ -34,8 +35,8 @@ void energy_controller_tick(void) {
 
     // Only update UI if values have changed
     // Always update pointer and peaks (could optimize, but peaks may change independently)
-    extern float energy_peak_solar, energy_peak_used;
-    draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used);
+   
+    draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used, energy_solar, energy_used);
     if (energy_used != last_used) {
         energy_screen_set_value((int)energy_used);
         last_used = energy_used;

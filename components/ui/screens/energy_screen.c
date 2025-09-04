@@ -8,12 +8,18 @@
 static lv_obj_t *pointer_line = NULL;
 static lv_obj_t *peak_solar_line = NULL;
 static lv_obj_t *peak_used_line = NULL;
+static lv_obj_t *curr_solar_line = NULL;
+static lv_obj_t *curr_used_line = NULL;
 static lv_point_t line_points[2];
 static lv_point_t peak_solar_points[2];
 static lv_point_t peak_used_points[2];
+static lv_point_t curr_solar_points[2];
+static lv_point_t curr_used_points[2];
 static lv_style_t style_line_blue;
 static lv_style_t style_peak_solar;
 static lv_style_t style_peak_used;
+static lv_style_t style_curr_solar;
+static lv_style_t style_curr_used;
 static bool style_initialized = false;
 
 // Static pointer to the root object of the Energy screen
@@ -34,7 +40,7 @@ static float energy_value_to_angle(float value) {
     }
 }
 
-void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_used) {
+void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_used, float curr_solar, float curr_used) {
     // Main pointer
     float angle = energy_value_to_angle(energy_balance);
     float rad = angle * (M_PI / 180.0f);
@@ -63,29 +69,42 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
         lv_style_init(&style_peak_solar);
         lv_style_set_line_width(&style_peak_solar, 3);
         lv_style_set_line_color(&style_peak_solar, lv_color_hex(0xFFD600)); // yellow
+        lv_style_set_line_opa(&style_peak_solar, LV_OPA_40); // faded
         lv_style_set_line_rounded(&style_peak_solar, true);
 
         lv_style_init(&style_peak_used);
         lv_style_set_line_width(&style_peak_used, 3);
         lv_style_set_line_color(&style_peak_used, lv_color_hex(0xFF3B30)); // red
+        lv_style_set_line_opa(&style_peak_used, LV_OPA_40); // faded
         lv_style_set_line_rounded(&style_peak_used, true);
+
+        lv_style_init(&style_curr_solar);
+        lv_style_set_line_width(&style_curr_solar, 3);
+        lv_style_set_line_color(&style_curr_solar, lv_color_hex(0xFFD600)); // yellow
+        lv_style_set_line_opa(&style_curr_solar, LV_OPA_COVER); // solid
+        lv_style_set_line_rounded(&style_curr_solar, true);
+
+        lv_style_init(&style_curr_used);
+        lv_style_set_line_width(&style_curr_used, 3);
+        lv_style_set_line_color(&style_curr_used, lv_color_hex(0xFF3B30)); // red
+        lv_style_set_line_opa(&style_curr_used, LV_OPA_COVER); // solid
+        lv_style_set_line_rounded(&style_curr_used, true);
 
         style_initialized = true;
     }
     lv_obj_add_style(pointer_line, &style_line_blue, LV_PART_MAIN);
     lv_line_set_points(pointer_line, line_points, 2);
 
-    // Peak solar marker (short yellow line)
-    // Solar is received as +ve, but should be displayed as -ve (left side)
-    float solar_angle = energy_value_to_angle(-peak_solar);
-    float solar_rad = solar_angle * (M_PI / 180.0f);
-    int r_peak = r - 20; // slightly shorter than main pointer
-    int x1s = r + (int)roundf(r_peak * sinf(solar_rad));
-    int y1s = r - (int)roundf(r_peak * cosf(solar_rad));
+    // Peak solar marker (faded yellow)
+    float solar_angle_peak = energy_value_to_angle(-peak_solar);
+    float solar_rad_peak = solar_angle_peak * (M_PI / 180.0f);
+    int r_peak = r - 20;
+    int x1s_peak = r + (int)roundf(r_peak * sinf(solar_rad_peak));
+    int y1s_peak = r - (int)roundf(r_peak * cosf(solar_rad_peak));
     peak_solar_points[0].x = r;
     peak_solar_points[0].y = r;
-    peak_solar_points[1].x = x1s;
-    peak_solar_points[1].y = y1s;
+    peak_solar_points[1].x = x1s_peak;
+    peak_solar_points[1].y = y1s_peak;
     if (!peak_solar_line) {
         peak_solar_line = lv_line_create(parent);
         lv_obj_set_pos(peak_solar_line, 180 - r, 180 - r);
@@ -95,15 +114,33 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     }
     lv_line_set_points(peak_solar_line, peak_solar_points, 2);
 
-    // Peak used marker (short red line)
-    float used_angle = energy_value_to_angle(peak_used);
-    float used_rad = used_angle * (M_PI / 180.0f);
-    int x1u = r + (int)roundf(r_peak * sinf(used_rad));
-    int y1u = r - (int)roundf(r_peak * cosf(used_rad));
+    // Current solar marker (solid yellow)
+    float solar_angle_curr = energy_value_to_angle(-curr_solar);
+    float solar_rad_curr = solar_angle_curr * (M_PI / 180.0f);
+    int x1s_curr = r + (int)roundf(r_peak * sinf(solar_rad_curr));
+    int y1s_curr = r - (int)roundf(r_peak * cosf(solar_rad_curr));
+    curr_solar_points[0].x = r;
+    curr_solar_points[0].y = r;
+    curr_solar_points[1].x = x1s_curr;
+    curr_solar_points[1].y = y1s_curr;
+    if (!curr_solar_line) {
+        curr_solar_line = lv_line_create(parent);
+        lv_obj_set_pos(curr_solar_line, 180 - r, 180 - r);
+        lv_obj_set_size(curr_solar_line, 2*r, 2*r);
+        lv_obj_move_foreground(curr_solar_line);
+        lv_obj_add_style(curr_solar_line, &style_curr_solar, LV_PART_MAIN);
+    }
+    lv_line_set_points(curr_solar_line, curr_solar_points, 2);
+
+    // Peak used marker (faded red)
+    float used_angle_peak = energy_value_to_angle(peak_used);
+    float used_rad_peak = used_angle_peak * (M_PI / 180.0f);
+    int x1u_peak = r + (int)roundf(r_peak * sinf(used_rad_peak));
+    int y1u_peak = r - (int)roundf(r_peak * cosf(used_rad_peak));
     peak_used_points[0].x = r;
     peak_used_points[0].y = r;
-    peak_used_points[1].x = x1u;
-    peak_used_points[1].y = y1u;
+    peak_used_points[1].x = x1u_peak;
+    peak_used_points[1].y = y1u_peak;
     if (!peak_used_line) {
         peak_used_line = lv_line_create(parent);
         lv_obj_set_pos(peak_used_line, 180 - r, 180 - r);
@@ -112,6 +149,24 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
         lv_obj_add_style(peak_used_line, &style_peak_used, LV_PART_MAIN);
     }
     lv_line_set_points(peak_used_line, peak_used_points, 2);
+
+    // Current used marker (solid red)
+    float used_angle_curr = energy_value_to_angle(curr_used);
+    float used_rad_curr = used_angle_curr * (M_PI / 180.0f);
+    int x1u_curr = r + (int)roundf(r_peak * sinf(used_rad_curr));
+    int y1u_curr = r - (int)roundf(r_peak * cosf(used_rad_curr));
+    curr_used_points[0].x = r;
+    curr_used_points[0].y = r;
+    curr_used_points[1].x = x1u_curr;
+    curr_used_points[1].y = y1u_curr;
+    if (!curr_used_line) {
+        curr_used_line = lv_line_create(parent);
+        lv_obj_set_pos(curr_used_line, 180 - r, 180 - r);
+        lv_obj_set_size(curr_used_line, 2*r, 2*r);
+        lv_obj_move_foreground(curr_used_line);
+        lv_obj_add_style(curr_used_line, &style_curr_used, LV_PART_MAIN);
+    }
+    lv_line_set_points(curr_used_line, curr_used_points, 2);
 }
 
 lv_obj_t *energy_screen_create(lv_obj_t *parent) {
