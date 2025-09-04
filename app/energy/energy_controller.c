@@ -40,8 +40,11 @@ static void ui_update_bar1_peak_marker(float peak_value) {
 
 
 void energy_controller_tick(void) {
- 
-    draw_pointer_for_balance(energy_balance);
+    static float last_balance = NAN;
+    if (energy_balance != last_balance) {
+        draw_pointer_for_balance(energy_balance);
+        last_balance = energy_balance;
+    }
 
     if (!energy_app_is_screen_active()) {
         ESP_LOGW(TAG, "energy_controller_tick called but screen_active is false. Skipping UI update.");
