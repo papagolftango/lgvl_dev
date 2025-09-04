@@ -1,8 +1,9 @@
-#include "haptic_manager.h"
-#include "i2c_bsp.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_log.h"
+
+#include "haptic_manager.h"
+#include "i2c_bsp.h"
 
 #define TAG "haptic_manager"
 #define DRV_ADDR 0x5A

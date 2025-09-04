@@ -1,9 +1,13 @@
-#include "touch_manager.h"
-#include "../../main/user_config.h"
-#include "lcd_touch_bsp.h"
-#include "esp_log.h"
 #include "haptic_manager.h"
+#include "touch_manager.h"
+
 #include <stdint.h>
+
+#include "esp_log.h"
+#include "lcd_touch_bsp.h"
+
+#include "user_config.h"
+#include "haptic_manager.h"
 
 // Touch callback for LVGL input device
 typedef struct {
@@ -29,7 +33,9 @@ static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
         data->state = LV_INDEV_STATE_PRESSED;
         ESP_LOGI("TP", "Touch detected: (%d, %d)", data->point.x, data->point.y);
         haptic_click();
-        if (user_cb) user_cb(drv, data);
+        if (user_cb) {
+            user_cb(drv, data);
+        }
     } else {
         data->state = LV_INDEV_STATE_RELEASED;
     }

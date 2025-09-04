@@ -6,6 +6,7 @@
 #include "esp_log.h"
 
 static const char *TAG = "persistent_data_mgr";
+
 static nvs_handle_t s_nvs_handle = 0;
 
 void persistent_data_manager_init(void) {

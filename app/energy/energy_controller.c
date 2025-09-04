@@ -19,25 +19,28 @@
 #define TAG "energy_app"
 
 
-        // Set both main and indicator arc colors so the whole arc is the same color
+// Set both main and indicator arc colors so the whole arc is the same color
 extern float energy_balance, energy_solar, energy_used;
-
-// Local helpers to update peak markers for the bars
-
-
-
-// Update all UI elements from the model (tick)
-
 
 void energy_controller_tick(void) {
     static float last_balance = NAN;
-
-
+    static float last_solar = NAN;
+    static float last_used = NAN;
     if (!energy_app_is_screen_active()) {
         ESP_LOGW(TAG, "energy_controller_tick called but screen_active is false. Skipping UI update.");
         return;
     }
     ESP_LOGD(TAG, "energy_controller_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
+
+    // Only update UI if values have changed
+    // Always update pointer and peaks (could optimize, but peaks may change independently)
+    extern float energy_peak_solar, energy_peak_used;
+    draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used);
+    if (energy_used != last_used) {
+        energy_screen_set_value((int)energy_used);
+        last_used = energy_used;
+    }
+    // Add more UI updates as needed (e.g., for solar, VRMS, etc.)
 }
 
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
@@ -63,7 +66,7 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                 if (strcmp(topic, "emon/emontx3/vrms") == 0) {
                     ESP_LOGI(TAG, "Received vrms: %s", payload);
                     energy_vrms = strtof(payload, NULL);
-                    lvgl_manager_set_vrms(payload);
+                    // TODO: update VRMS value on UI here
                 } else if (strcmp(topic, "emon/emontx3/solar") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed solar: %.2f", value);

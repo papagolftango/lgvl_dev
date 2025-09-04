@@ -10,7 +10,7 @@
 #include "esp_event.h"
 #include "esp_wifi.h"
 
-#include "../drivers/user_config.h"
+#include "user_config.h"
 #include "../drivers/display_driver.h"
 #include "../drivers/bidi_switch_knob.h"
 #include "lcd_bl_pwm_bsp.h"
@@ -27,6 +27,7 @@
 #include "encoder_manager.h"
 #include "haptic_manager.h"
 
+static const char *TAG = "Home Help";
 
 // For development: Erase NVS and restart to force provisioning
 void erase_nvs_and_restart() {
@@ -37,15 +38,6 @@ void erase_nvs_and_restart() {
         ESP_LOGE("main", "Failed to erase NVS: %s", esp_err_to_name(err));
     }
 }
-
-
-
-
-
-static const char *TAG = "example";
-
-// --- Provisioning and WiFi/MQTT setup implementation ---
-
 
 // Provisioning callback: called when credentials are received from the web form
 static void provisioning_credentials_cb(const char* ssid, const char* password, const char* mqtt_host, const char* mqtt_user, const char* mqtt_pass) {
@@ -71,43 +63,6 @@ static void handle_provisioning(void) {
     }
 }
 
-void app_main(void)
-{
-    // Initialize power manager
-    power_manager_init();
-
-    // TEMP: Erase NVS and restart to force provisioning on next boot
-   // yes
-   //erase_nvs_and_restart();
-   //  WiFi/MQTT credentials will be set via provisioning web server
-
-    // Initialize TCP/IP stack and event loop (required before WiFi/HTTP server)
-    ESP_ERROR_CHECK(esp_netif_init());
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    // Create default WiFi AP netif (enables DHCP server for AP mode)
-    esp_netif_create_default_wifi_ap();
-
-    // --- Time manager initialization ---
-
-    time_manager_init();
-
-    // Initialize persistent data manager (handles NVS)
-    persistent_data_manager_init();
-    // ...existing code...
-
-
-    // --- WiFi/MQTT provisioning and connection ---
-    wifi_manager_load_credentials();
-    mqtt_manager_load_credentials();
-    handle_provisioning();
-
-    // For development only: Uncomment to force hardcoded credentials
-    // local_init_credentials();
-    // wifi_manager_connect();
-
-
-    // --- Usual app initialization ---
-
 // Helper to check display init every time app_main runs
 static esp_lcd_panel_handle_t safe_display_init(void) {
     ESP_LOGI(TAG, "Calling display_init...");
@@ -120,12 +75,37 @@ static esp_lcd_panel_handle_t safe_display_init(void) {
     return panel_handle;
 }
 
+
+void app_main(void)
+{
+    // TEMP: Erase NVS and restart to force provisioning on next boot
+    //erase_nvs_and_restart();
+
+    // Initialize TCP/IP stack and event loop (required before WiFi/HTTP server)
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    // Create default WiFi AP netif (enables DHCP server for AP mode)
+    esp_netif_create_default_wifi_ap();
+
+    // --- Time manager initialization ---
+    time_manager_init();
+
+    // Initialize persistent data manager (handles NVS)
+    persistent_data_manager_init();
+
+    // --- WiFi/MQTT provisioning and connection ---
+    wifi_manager_load_credentials();
+    mqtt_manager_load_credentials();
+    handle_provisioning();
+
     esp_lcd_panel_handle_t panel_handle = safe_display_init();
 
     ESP_LOGI(TAG, "Set backlight to 50%%");
     setUpduty(LCD_PWM_MODE_50);
+
     ESP_LOGI(TAG, "Initialize LVGL library");
     lv_disp_t *disp = lvgl_manager_init(panel_handle);
+
     ESP_LOGI(TAG, "Install LVGL tick timer");
     lvgl_manager_start_tick_timer();
   
@@ -135,21 +115,23 @@ static esp_lcd_panel_handle_t safe_display_init(void) {
 
     // Register touch input device
     touch_manager_init(disp);
+
+    // Startup the rotary encoder manager
     encoder_manager_init();
 
     // LVGL mutex is now managed by lvgl_manager
     lvgl_manager_start_task();
 
-
-
     // Initialize and start the app system (apps, controllers, UI)
     app_manager_init();
+
+    // Initialize power manager
+    power_manager_init();
 
     bool last_synced = false;
     while (1) {
     app_manager_tick();
         vTaskDelay(pdMS_TO_TICKS(50));
-        // Touch events are now handled by the touch manager and app logic
 
         // Only log SNTP sync status when it changes
         extern bool time_manager_is_synced(void);
@@ -159,5 +141,4 @@ static esp_lcd_panel_handle_t safe_display_init(void) {
             last_synced = now_synced;
         }
     }
-
 }

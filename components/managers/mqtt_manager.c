@@ -120,23 +120,7 @@ void mqtt_manager_load_credentials(void) {
 }
 
 
-
-
-
-
 static esp_mqtt_client_handle_t s_mqtt_client = NULL;
-
-// Track max values for solar and used
-static float max_solar = -FLT_MAX;
-static float max_used = -FLT_MAX;
-
-void mqtt_manager_reset_max_solar(void) {
-    max_solar = -FLT_MAX;
-}
-
-void mqtt_manager_reset_max_used(void) {
-    max_used = -FLT_MAX;
-}
 
 
 // App event handler registration

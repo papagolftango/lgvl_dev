@@ -16,7 +16,7 @@ idf_component_register(
         "../app/weather/weather_controller.c"
         # Managers
     # Managers are now a component, do not include here
-                       INCLUDE_DIRS "." "../app" "../app/energy" "../app/home" "../app/settings" "../app/weather" "../components/i2c_bsp" "../components/managers" "../drivers" "../components/ui" "../components/ui/screens"
+                       INCLUDE_DIRS "." "../app" "../app/energy" "../app/home" "../app/settings" "../app/weather" "../components/i2c_bsp" "../components/managers" "../drivers" "../components/ui" "../components/ui/screens" "../drivers"
     REQUIRES esp_netif esp_event nvs_flash esp_wifi esp_http_server mqtt ui
     PRIV_REQUIRES lcd_touch_bsp lcd_bl_pwm_bsp
 )

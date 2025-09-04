@@ -1,11 +1,7 @@
-#include <time.h>
-#include <stddef.h>
-#include <stdbool.h>
 
-// Set timezone to UK (GMT/BST with DST rules)
-void time_manager_set_timezone_uk(void);
+#ifndef TIME_MANAGER_H
+#define TIME_MANAGER_H
 
-#pragma once
 #include <time.h>
 #include <stddef.h>
 #include <stdbool.h>
@@ -14,8 +10,9 @@ void time_manager_set_timezone_uk(void);
 extern "C" {
 #endif
 
-// Initialize time manager (starts SNTP, etc)
+// Initialize time manager (starts SNTP, sets timezone, etc)
 void time_manager_init(void);
+void time_manager_set_timezone_uk(void);
 
 // Get current time as time_t (seconds since epoch)
 time_t time_manager_now(void);
@@ -41,3 +38,5 @@ void time_manager_unregister_hour_callback(time_manager_hour_cb_t cb);
 #ifdef __cplusplus
 }
 #endif
+
+#endif // TIME_MANAGER_H

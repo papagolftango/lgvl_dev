@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "i2c_bsp.h"
-#include "../../drivers/user_config.h"
+#include "user_config.h"
 #include "freertos/FreeRTOS.h"
 
 static i2c_master_bus_handle_t user_i2c_port0_handle = NULL;

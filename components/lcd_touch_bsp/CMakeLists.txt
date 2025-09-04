@@ -4,6 +4,6 @@ idf_component_register(
   PRIV_REQUIRES
   i2c_bsp
 
-  INCLUDE_DIRS "./")
+  INCLUDE_DIRS "./" "../../drivers")
 
 ##REQUIRES

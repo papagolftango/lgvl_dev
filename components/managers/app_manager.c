@@ -1,25 +1,34 @@
+
+#include <stdio.h>
 #include <lvgl.h>
+#include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include "app_manager.h"
 #include "ui.h"
+#include "ui_custom_load.h"
+
 #include "energy/energy_app.h"
 #include "home/home_app.h"
 #include "clock/clock_app.h"
 #include "settings/settings_app.h"
 #include "weather/weather_app.h"
+
 #include "screens/energy_screen.h"
 #include "screens/home_screen.h"
 #include "screens/settings_screen.h"
 #include "screens/weather_screen.h"
 #include "screens/clock_screen.h"
-#include "ui_custom_load.h"
+
 #include "energy/energy_controller.h"
 #include "home/home_controller.h"
 #include "settings/settings_controller.h"
 #include "weather/weather_controller.h"
-#include <stdio.h>
 
+static const char *APP_MANAGER_TAG = "app_manager";
 
-
+static SemaphoreHandle_t app_manager_mutex = NULL;
 
 static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
@@ -72,6 +81,10 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
 static app_id_t current_app = APP_ID_ENERGY;
 
 void app_manager_init(void) {
+    // Create mutex for thread safety
+    if (!app_manager_mutex) {
+        app_manager_mutex = xSemaphoreCreateMutex();
+    }
     // Initialize UI (theme and screens)
     ui_init();
 
@@ -86,8 +99,9 @@ void app_manager_init(void) {
 
 void app_manager_set_active(app_id_t app_id) {
     if (app_id >= APP_ID_COUNT) return;
+    if (app_manager_mutex) xSemaphoreTake(app_manager_mutex, portMAX_DELAY);
 
-    printf("[app_manager] Switching from app %d to app %d (%s)\n", current_app, app_id, app_table[app_id].name);
+    ESP_LOGI(APP_MANAGER_TAG, "Switching from app %d to app %d (%s)", current_app, app_id, app_table[app_id].name);
 
     // Persistent screen pattern: do not destroy previous app's screen on switch
 
@@ -100,9 +114,9 @@ void app_manager_set_active(app_id_t app_id) {
         case APP_ID_ENERGY:
             lv_scr_load(energy_screen_get_root());
             break;
-    case APP_ID_HOME:
-        lv_scr_load(home_screen_get_root());
-        break;
+        case APP_ID_HOME:
+            lv_scr_load(home_screen_get_root());
+            break;
         case APP_ID_CLOCK:
             lv_scr_load(clock_screen_get_root());
             break;
@@ -121,6 +135,7 @@ void app_manager_set_active(app_id_t app_id) {
         app_table[app_id].controller_init();
 
     current_app = app_id;
+    if (app_manager_mutex) xSemaphoreGive(app_manager_mutex);
 }
 
 app_id_t app_manager_get_active(void) {

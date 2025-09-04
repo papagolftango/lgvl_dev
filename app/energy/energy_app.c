@@ -7,6 +7,7 @@
 
 
 #include "energy_controller.h"
+#include "managers/touch_manager.h"
 
 static const char *TAG = "energy_app";
 // Static/global variables
@@ -31,23 +32,16 @@ static void energy_daily_actions_cb(void) {
     ESP_LOGI(TAG, "Daily reset: peak_solar and peak_used cleared.");
 }
 
-
 // Getter for screen_active (for controller)
 bool energy_app_is_screen_active(void) {
     return screen_active;
 }
-
-
-
-
-
 
 void energy_app_process(void) {
     // Example: update latest_vrms from MQTT or other source
     // latest_vrms = ...;
     // Do NOT touch LVGL objects here!
 }
-
 
 void energy_app_init(void) {
     ESP_LOGI(TAG, "energy_app_init: begin");
@@ -58,6 +52,8 @@ void energy_app_init(void) {
 
     // Register daily callback to clear peaks
     time_manager_register_day_callback(energy_daily_actions_cb);
+    // Register touch callback for this app
+    touch_manager_register_user_cb(energy_app_touch);
     screen_active = true;
     ESP_LOGI(TAG, "energy_app_init: end");
     energy_controller_init();
@@ -67,9 +63,6 @@ void ui_Energy_screen_load(void) {
     lv_scr_load(ui_Energy);
     screen_active = true;
 }
-
-
-
 
 void energy_app_cleanup(void) {
     ESP_LOGI(TAG, "energy_app_cleanup: begin");
@@ -89,10 +82,9 @@ void energy_app_destroy(void) {
     energy_peak_solar = 0.0f;
     energy_peak_used = 0.0f;
     screen_active = false;
-    // If you dynamically allocated any LVGL objects, delete them here
-    // (LVGL objects created with SquareLine are usually managed elsewhere)
 }
 
+// Only trigger haptic feedback on touch (now handled in touch_manager)
 void energy_app_touch(void) {
-    app_manager_next_app();
+    // No-op: all touch haptics handled globally
 }

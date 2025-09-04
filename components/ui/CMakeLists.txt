@@ -1,15 +1,12 @@
 
-idf_component_register(
-    SRCS screens/ui_Energy.c
-         screens/ui_Weather.c
-         screens/ui_Clock.c
-         screens/ui_Settings.c
-         screens/ui_Home.c
-         ui.c
-         components/ui_comp_hook.c
-         ui_helpers.c
-         images/ui_img_gauge_face_kw_final_png.c
+    SRCS images/ui_img_gauge_face_kw_final_png.c
          images/ui_img_black_circle_360_png.c
-    INCLUDE_DIRS .
+    INCLUDE_DIRS . ../../drivers
     REQUIRES lvgl__lvgl
 )
+    idf_component_register(
+        SRCS images/ui_img_gauge_face_kw_final_png.c
+             images/ui_img_black_circle_360_png.c
+        INCLUDE_DIRS . ../../drivers
+        REQUIRES lvgl__lvgl
+    )

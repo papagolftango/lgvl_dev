@@ -3,7 +3,7 @@
 #include "esp_err.h"
 #include "driver/ledc.h"
 #include "driver/gpio.h"
-#include "../../drivers/user_config.h"
+#include "user_config.h"
 
 void gpio_init(void)
 {

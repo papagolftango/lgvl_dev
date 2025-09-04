@@ -1,8 +1,8 @@
-#include "encoder_manager.h"
-#include "../../main/user_config.h" // Updated include path
-#include "../../main/bidi_switch_knob.h" // Updated include path
-#include "app_manager.h"
 #include "esp_log.h"
+#include "encoder_manager.h"
+#include "user_config.h"
+#include "bidi_switch_knob.h"
+#include "app_manager.h"
 
 static void knob_left_cb(void *arg, void *data) {
     ESP_LOGI("encoder", "Knob turned LEFT");

@@ -14,7 +14,7 @@ idf_component_register(
 		"time_manager.c"
 		"touch_manager.c"
 		"wifi_manager.c"
-	INCLUDE_DIRS "."
+	INCLUDE_DIRS "." "../../drivers"
 	PRIV_REQUIRES lvgl nvs_flash esp_http_server esp_event esp_wifi freertos
 )
 
