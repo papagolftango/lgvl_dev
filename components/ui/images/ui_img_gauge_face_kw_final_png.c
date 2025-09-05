@@ -3,7 +3,10 @@
 // LVGL version: 8.3.11
 // Project name: knob
 
-#include "../ui.h"
+#include <stdint.h>
+#include "lvgl.h"
+
+// #include "ui.h" (removed, file not present)
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN
 #define LV_ATTRIBUTE_MEM_ALIGN

@@ -1,7 +1,9 @@
 
+
 #include <stdio.h>
 #include "energy_screen.h"
-#include "../ui.h"
+#include "lvgl.h"
+extern const lv_img_dsc_t ui_img_gauge_face_kw_final_png;
 
 
 // Persistent pointer line object and style for energy balance pointer
@@ -39,6 +41,7 @@ static float energy_value_to_angle(float value) {
         return 0.0f;
     }
 }
+
 
 // Helper to draw a marker line (peak/current, solar/used)
 static void draw_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, float value, bool invert, int r, const lv_style_t *style, lv_obj_t *parent) {
@@ -121,7 +124,6 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     draw_marker_line(&curr_solar_line, curr_solar_points, curr_solar, true, r, &style_curr_solar, parent);
     draw_marker_line(&peak_used_line, peak_used_points, peak_used, false, r, &style_peak_used, parent);
     draw_marker_line(&curr_used_line, curr_used_points, curr_used, false, r, &style_curr_used, parent);
-}
 }
 
 lv_obj_t *energy_screen_create(lv_obj_t *parent) {

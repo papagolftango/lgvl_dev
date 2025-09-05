@@ -1,7 +1,7 @@
 // home_app.c - Home app logic
 #include <stdio.h>
 #include "lvgl.h"
-#include "managers/touch_manager.h"
+#include "touch_manager.h"
 #include "home_app.h"
 #include "managers/app_manager.h"
 #include "managers/time_manager.h"
@@ -53,7 +53,7 @@ void home_app_init(void) {
     // Use SquareLine Studio generated screen
     printf("[home_app] Creating SquareLine screen...\n");
     // Assign label pointer to the LVGL label object
-    label = ui_homeName;
+    // label = ui_homeName; // Removed: ui_homeName is not defined
     screen_active = true;
     // Register home app's touch callback
     touch_manager_register_user_cb(home_app_touch_cb);

@@ -59,15 +59,9 @@ void energy_app_init(void) {
     energy_controller_init();
 }
 
-void ui_Energy_screen_load(void) {
-    lv_scr_load(ui_Energy);
-    screen_active = true;
-}
 
 void energy_app_cleanup(void) {
     ESP_LOGI(TAG, "energy_app_cleanup: begin");
-    ui_Energy_screen_destroy();
-    ESP_LOGI(TAG, "ui_Energy_screen_destroy called");
     screen_active = false;
     ESP_LOGI(TAG, "energy_app_cleanup: end");
 }
@@ -85,6 +79,6 @@ void energy_app_destroy(void) {
 }
 
 // Only trigger haptic feedback on touch (now handled in touch_manager)
-void energy_app_touch(void) {
+void energy_app_touch(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     // No-op: all touch haptics handled globally
 }

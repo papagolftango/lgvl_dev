@@ -1,5 +1,5 @@
 #include <lvgl.h>
-#include "components/ui/screens/energy_screen.h"
+#include "ui/screens/energy_screen.h"
 #include "energy_controller.h"
 #include <math.h>
 #include "energy_app.h" // for balance variable, if needed

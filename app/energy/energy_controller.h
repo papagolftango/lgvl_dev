@@ -3,7 +3,6 @@
 extern "C" {
 #endif
 
-#include "screens/ui_Energy.h"
 
 // Call this to update the UI arc to reflect the current balance value
 void energy_controller_update_balance(int balance);

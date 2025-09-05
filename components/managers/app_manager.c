@@ -6,8 +6,6 @@
 #include "freertos/semphr.h"
 
 #include "app_manager.h"
-#include "ui.h"
-#include "ui_custom_load.h"
 
 #include "energy/energy_app.h"
 #include "home/home_app.h"
@@ -43,9 +41,9 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
         .name = "Home",
         .app_init = home_app_init,
-        .screen_load = (app_screen_load_fn)home_screen_create,
-        .controller_init = home_controller_init,
-        .controller_cleanup = home_controller_cleanup,
+        .controller_init = NULL,
+        .controller_cleanup = NULL,
+        .tick = NULL,
         .app_destroy = home_app_destroy,
         .tick = home_controller_tick,
     },
@@ -53,10 +51,10 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
         .name = "Clock",
         .app_init = clock_app_init,
         .screen_load = (app_screen_load_fn)clock_screen_create,
-        .controller_init = clock_controller_init,
-        .controller_cleanup = clock_controller_cleanup,
+        .controller_init = NULL,
+        .controller_cleanup = NULL,
         .app_destroy = clock_app_destroy,
-        .tick = clock_controller_tick,
+        .tick = NULL,
     },
     {
         .name = "Settings",
@@ -86,7 +84,7 @@ void app_manager_init(void) {
         app_manager_mutex = xSemaphoreCreateMutex();
     }
     // Initialize UI (theme and screens)
-    ui_init();
+    // ui_init(); // Commented out to remove reference to ui_init
 
     // Initialize all apps (model/controller/view)
     for (int i = 0; i < APP_ID_COUNT; ++i) {
@@ -111,21 +109,41 @@ void app_manager_set_active(app_id_t app_id) {
 
     // Show new app's persistent screen (assumes screen object is global, e.g., ui_Energy)
     switch (app_id) {
-        case APP_ID_ENERGY:
-            lv_scr_load(energy_screen_get_root());
+        case APP_ID_ENERGY: {
+            lv_obj_t *root = energy_screen_get_root();
+            if (!root) root = energy_screen_create(NULL);
+            if (root) lv_scr_load(root);
+            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Energy screen!");
             break;
-        case APP_ID_HOME:
-            lv_scr_load(home_screen_get_root());
+        }
+        case APP_ID_HOME: {
+            lv_obj_t *root = home_screen_get_root();
+            if (!root) root = home_screen_create(NULL);
+            if (root) lv_scr_load(root);
+            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Home screen!");
             break;
-        case APP_ID_CLOCK:
-            lv_scr_load(clock_screen_get_root());
+        }
+        case APP_ID_CLOCK: {
+            lv_obj_t *root = clock_screen_get_root();
+            if (!root) root = clock_screen_create(NULL);
+            if (root) lv_scr_load(root);
+            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Clock screen!");
             break;
-        case APP_ID_SETTINGS:
-            lv_scr_load(settings_screen_get_root());
+        }
+        case APP_ID_SETTINGS: {
+            lv_obj_t *root = settings_screen_get_root();
+            if (!root) root = settings_screen_create(NULL);
+            if (root) lv_scr_load(root);
+            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Settings screen!");
             break;
-        case APP_ID_WEATHER:
-            lv_scr_load(weather_screen_get_root());
+        }
+        case APP_ID_WEATHER: {
+            lv_obj_t *root = weather_screen_get_root();
+            if (!root) root = weather_screen_create(NULL);
+            if (root) lv_scr_load(root);
+            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Weather screen!");
             break;
+        }
         default:
             break;
     }
