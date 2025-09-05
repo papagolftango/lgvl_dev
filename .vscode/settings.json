@@ -8,9 +8,12 @@
     "bidi_switch_knob.h": "c",
     "user_config.h": "c"
   },
-  "idf.espIdfPathWin": "e:\\v5_3_2\\v5.3.2\\esp-idf",
-  "idf.toolsPathWin": "e:\\v5_3_2\\Espressif",
-  "idf.pythonInstallPath": "/opt/homebrew/bin/python3",
+  "idf.espIdfPathWin": "c:\\espressif\\frameworks\\esp-idf-v5.5.1\\esp-idf",
+  "idf.toolsPathWin": "c:\\espressif\\",
+  "idf.pythonInstallPath": "c:\\espressif\\tools\\idf-python\\3.11.2\\python.exe",
   "idf.port": "/dev/tty.usbmodem1101",
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "terminal.integrated.shellArgs.windows": [
+    "/k", "C:\\Espressif\\frameworks\\esp-idf-v5.5.1\\export.bat"
+  ]
 }

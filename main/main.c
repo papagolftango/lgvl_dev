@@ -134,7 +134,6 @@ void app_main(void)
         vTaskDelay(pdMS_TO_TICKS(50));
 
         // Only log SNTP sync status when it changes
-        extern bool time_manager_is_synced(void);
         bool now_synced = time_manager_is_synced();
         if (now_synced != last_synced) {
             ESP_LOGI("main", "SNTP synced: %s", now_synced ? "YES" : "NO");

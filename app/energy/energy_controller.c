@@ -90,8 +90,7 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed balance: %.2f", value);
                     energy_balance = value;
-                    // Update UI arc via controller
-                    energy_controller_update_balance((int)value);
+                    // UI update is handled in tick/UI logic
                 }
             }
             break;
@@ -113,11 +112,6 @@ void energy_controller_cleanup(void) {
     // Stop controller logic, timers, event handlers, etc.
     // (Implement as needed)
     // No need to access screen_active directly; use app destroy/cleanup logic if needed.
-}
-
-// Update the UI arc to reflect the current balance value
-void energy_controller_update_balance(int balance) {
-
 }
 
 

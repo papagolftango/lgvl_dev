@@ -6,6 +6,7 @@ idf_component_register(
         screens/home_screen.c
         screens/settings_screen.c
         screens/weather_screen.c
+        screens/error_screen.c
     INCLUDE_DIRS . .. images screens ../../drivers
     REQUIRES lvgl__lvgl
 )

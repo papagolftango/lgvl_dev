@@ -19,6 +19,8 @@
 #include "screens/weather_screen.h"
 #include "screens/clock_screen.h"
 
+#include "screens/error_screen.h"
+
 #include "energy/energy_controller.h"
 #include "home/home_controller.h"
 #include "settings/settings_controller.h"
@@ -107,45 +109,44 @@ void app_manager_set_active(app_id_t app_id) {
     if (app_table[current_app].controller_cleanup)
         app_table[current_app].controller_cleanup();
 
-    // Show new app's persistent screen (assumes screen object is global, e.g., ui_Energy)
+    bool loaded = false;
+    lv_obj_t *root = NULL;
     switch (app_id) {
-        case APP_ID_ENERGY: {
-            lv_obj_t *root = energy_screen_get_root();
+        case APP_ID_ENERGY:
+            root = energy_screen_get_root();
             if (!root) root = energy_screen_create(NULL);
-            if (root) lv_scr_load(root);
-            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Energy screen!");
             break;
-        }
-        case APP_ID_HOME: {
-            lv_obj_t *root = home_screen_get_root();
+        case APP_ID_HOME:
+            root = home_screen_get_root();
             if (!root) root = home_screen_create(NULL);
-            if (root) lv_scr_load(root);
-            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Home screen!");
             break;
-        }
-        case APP_ID_CLOCK: {
-            lv_obj_t *root = clock_screen_get_root();
+        case APP_ID_CLOCK:
+            root = clock_screen_get_root();
             if (!root) root = clock_screen_create(NULL);
-            if (root) lv_scr_load(root);
-            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Clock screen!");
             break;
-        }
-        case APP_ID_SETTINGS: {
-            lv_obj_t *root = settings_screen_get_root();
+        case APP_ID_SETTINGS:
+            root = settings_screen_get_root();
             if (!root) root = settings_screen_create(NULL);
-            if (root) lv_scr_load(root);
-            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Settings screen!");
             break;
-        }
-        case APP_ID_WEATHER: {
-            lv_obj_t *root = weather_screen_get_root();
+        case APP_ID_WEATHER:
+            root = weather_screen_get_root();
             if (!root) root = weather_screen_create(NULL);
-            if (root) lv_scr_load(root);
-            else ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load Weather screen!");
             break;
-        }
         default:
             break;
+    }
+    if (root) {
+        lv_scr_load(root);
+        loaded = true;
+    } else {
+        ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load screen for app %d (%s), loading error screen!", app_id, app_table[app_id].name);
+        root = error_screen_get_root();
+        if (!root) root = error_screen_create(NULL);
+        if (root) {
+            lv_scr_load(root);
+        } else {
+            ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load error screen! Display may be unstable.");
+        }
     }
 
     // Init new app controller
