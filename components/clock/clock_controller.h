@@ -5,6 +5,8 @@ extern "C" {
 #endif
 
 // Controller interface for clock app
+// Backup files before deletion
+// Move files to a backup folder for safety
 void clock_controller_init(void);
 void clock_controller_tick(void);
 void clock_controller_cleanup(void);

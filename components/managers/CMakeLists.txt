@@ -16,7 +16,7 @@ idf_component_register(
 	   "wifi_manager.c"
    INCLUDE_DIRS "." "../../drivers"
 	PRIV_REQUIRES lvgl nvs_flash esp_http_server esp_event esp_wifi freertos lcd_touch_bsp
-	REQUIRES main i2c_bsp clock
+	REQUIRES main i2c_bsp
 )
 
 

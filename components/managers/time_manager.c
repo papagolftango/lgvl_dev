@@ -3,16 +3,19 @@
 #include <string.h>
 #include <stdbool.h>
 #include <time.h>
+#include <stdlib.h>
 #include <sys/time.h>
 #include "esp_log.h"
 #include "esp_sntp.h"
 #include <esp_timer.h>
-typedef void (*time_manager_day_cb_t)(void);
-typedef void (*time_manager_hour_cb_t)(void);
-#include <stdlib.h>
+#include "time_manager.h"
+
+static const char *TAG = "time_manager";
+
 #define MAX_DAY_CALLBACKS 4
 #define MAX_HOUR_CALLBACKS 4
 
+static volatile bool sntp_synced = false;
 static time_manager_day_cb_t day_callbacks[MAX_DAY_CALLBACKS] = {NULL, NULL, NULL, NULL};
 static time_manager_hour_cb_t hour_callbacks[MAX_HOUR_CALLBACKS] = {NULL, NULL, NULL, NULL};
 static int last_day = -1;
@@ -35,19 +38,6 @@ void time_manager_get_localtime(struct tm *out_tm) {
 	time(&now);
 	localtime_r(&now, out_tm);
 }
-
-#include "time_manager.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
-#include <time.h>
-#include <sys/time.h>
-#include "esp_log.h"
-#include "esp_sntp.h"
-
-
-static const char *TAG = "time_manager";
-static volatile bool sntp_synced = false;
 
 static void time_sync_notification_cb(struct timeval *tv) {
 	sntp_synced = true;
