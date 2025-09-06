@@ -78,7 +78,7 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     }
 };
 
-static app_id_t current_app = APP_ID_ENERGY;
+static app_id_t current_app = APP_ID_HOME;
 
 void app_manager_init(void) {
     // Create mutex for thread safety

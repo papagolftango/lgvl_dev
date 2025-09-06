@@ -16,6 +16,7 @@
 
 #include "lvgl_manager.h"
 #include "user_config.h"
+#include "display_driver.h"  // For display_driver_flush_cb & display_driver_rounder_cb
 
 #ifdef __cplusplus
 extern "C" {
@@ -112,8 +113,9 @@ lv_disp_t *lvgl_manager_init(esp_lcd_panel_handle_t panel_handle) {
     lv_disp_drv_init(&disp_drv);
     disp_drv.hor_res = LCD_H_RES;
     disp_drv.ver_res = LCD_V_RES;
-    // disp_drv.flush_cb = display_driver_flush_cb;
-    // disp_drv.rounder_cb = display_driver_rounder_cb;
+    // Register hardware flush & (optional) rounder callbacks so LVGL can draw to the panel
+    disp_drv.flush_cb = display_driver_flush_cb;
+    disp_drv.rounder_cb = display_driver_rounder_cb; // safe; adjust if alignment not needed
     disp_drv.draw_buf = &disp_buf;
     disp_drv.user_data = panel_handle;
 
