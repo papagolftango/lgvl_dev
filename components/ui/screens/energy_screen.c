@@ -5,6 +5,24 @@
 #include "lvgl.h"
 extern const lv_img_dsc_t ui_img_gauge_face_kw_final_png;
 
+// ---- Gauge layout tuning --------------------------------------------------
+// Base logical centre of the 360x360 dial
+#define GAUGE_BASE_CENTER_X 180
+#define GAUGE_BASE_CENTER_Y 180
+// Adjustable pixel offsets (positive X moves right, positive Y moves down)
+// Tweak these if the pointer pivot does not visually coincide with the dial centre
+#ifndef GAUGE_CENTER_OFFSET_X
+#define GAUGE_CENTER_OFFSET_X 0
+#endif
+#ifndef GAUGE_CENTER_OFFSET_Y
+#define GAUGE_CENTER_OFFSET_Y 0
+#endif
+// Pointer radius (distance from pivot to pointer tip)
+#define POINTER_RADIUS 125
+// Peak marker geometry (short dashes near outer edge)
+#define PEAK_MARKER_OUTER_INSET 6      // distance inward from full radius to outer endpoint
+#define PEAK_MARKER_LENGTH     22      // length of the short peak marker line
+
 
 // Persistent pointer line object and style for energy balance pointer
 static lv_obj_t *pointer_line = NULL;
@@ -27,6 +45,8 @@ static bool style_initialized = false;
 // Static pointer to the root object of the Energy screen
 static lv_obj_t *energy_root = NULL;
 static lv_obj_t *energy_label = NULL;
+static lv_style_t style_energy_label;
+static bool energy_label_style_initialized = false;
 
 
 // Helper to map a value to an angle (deg) for the gauge
@@ -44,7 +64,7 @@ static float energy_value_to_angle(float value) {
 
 
 // Helper to draw a marker line (peak/current, solar/used)
-static void draw_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, float value, bool invert, int r, const lv_style_t *style, lv_obj_t *parent) {
+static void draw_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, float value, bool invert, int r, lv_style_t *style, lv_obj_t *parent, int center_x, int center_y) {
     float angle = energy_value_to_angle(invert ? -value : value);
     float rad = angle * (M_PI / 180.0f);
     int r_marker = r - 20;
@@ -56,7 +76,36 @@ static void draw_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, float
     line_points[1].y = y1;
     if (!*line_obj) {
         *line_obj = lv_line_create(parent);
-        lv_obj_set_pos(*line_obj, 180 - r, 180 - r);
+        lv_obj_set_pos(*line_obj, center_x - r, center_y - r);
+        lv_obj_set_size(*line_obj, 2*r, 2*r);
+        lv_obj_move_foreground(*line_obj);
+        lv_obj_add_style(*line_obj, style, LV_PART_MAIN);
+    }
+    lv_line_set_points(*line_obj, line_points, 2);
+}
+
+// Draw a short peak marker near the circumference (does not originate at centre)
+static void draw_peak_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, float value, bool invert, int r, lv_style_t *style, lv_obj_t *parent, int center_x, int center_y) {
+    float angle = energy_value_to_angle(invert ? -value : value);
+    float rad = angle * (M_PI / 180.0f);
+    // Outer and inner radii for the short tick
+    int outer_r = r - PEAK_MARKER_OUTER_INSET;
+    int inner_r = outer_r - PEAK_MARKER_LENGTH;
+    if (inner_r < 0) inner_r = 0;
+
+    int x_outer = r + (int)roundf(outer_r * sinf(rad));
+    int y_outer = r - (int)roundf(outer_r * cosf(rad));
+    int x_inner = r + (int)roundf(inner_r * sinf(rad));
+    int y_inner = r - (int)roundf(inner_r * cosf(rad));
+
+    line_points[0].x = x_inner;
+    line_points[0].y = y_inner;
+    line_points[1].x = x_outer;
+    line_points[1].y = y_outer;
+
+    if (!*line_obj) {
+        *line_obj = lv_line_create(parent);
+        lv_obj_set_pos(*line_obj, center_x - r, center_y - r);
         lv_obj_set_size(*line_obj, 2*r, 2*r);
         lv_obj_move_foreground(*line_obj);
         lv_obj_add_style(*line_obj, style, LV_PART_MAIN);
@@ -68,7 +117,9 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     // Main pointer
     float angle = energy_value_to_angle(energy_balance);
     float rad = angle * (M_PI / 180.0f);
-    int r = 125;
+    int r = POINTER_RADIUS;
+    int center_x = GAUGE_BASE_CENTER_X + GAUGE_CENTER_OFFSET_X;
+    int center_y = GAUGE_BASE_CENTER_Y + GAUGE_CENTER_OFFSET_Y;
     int x0 = r, y0 = r;
     int x1 = r + (int)roundf(r * sinf(rad));
     int y1 = r - (int)roundf(r * cosf(rad));
@@ -80,7 +131,7 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     lv_obj_t *parent = lv_scr_act();
     if (!pointer_line) {
         pointer_line = lv_line_create(parent);
-        lv_obj_set_pos(pointer_line, 180 - r, 180 - r);
+        lv_obj_set_pos(pointer_line, center_x - r, center_y - r);
         lv_obj_set_size(pointer_line, 2*r, 2*r);
         lv_obj_move_foreground(pointer_line);
     }
@@ -120,10 +171,10 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     lv_line_set_points(pointer_line, line_points, 2);
 
     // Draw all marker lines using the helper
-    draw_marker_line(&peak_solar_line, peak_solar_points, peak_solar, true, r, &style_peak_solar, parent);
-    draw_marker_line(&curr_solar_line, curr_solar_points, curr_solar, true, r, &style_curr_solar, parent);
-    draw_marker_line(&peak_used_line, peak_used_points, peak_used, false, r, &style_peak_used, parent);
-    draw_marker_line(&curr_used_line, curr_used_points, curr_used, false, r, &style_curr_used, parent);
+    draw_peak_marker_line(&peak_solar_line, peak_solar_points, peak_solar, true, r, &style_peak_solar, parent, center_x, center_y);
+    draw_marker_line(&curr_solar_line, curr_solar_points, curr_solar, true, r, &style_curr_solar, parent, center_x, center_y);
+    draw_peak_marker_line(&peak_used_line, peak_used_points, peak_used, false, r, &style_peak_used, parent, center_x, center_y);
+    draw_marker_line(&curr_used_line, curr_used_points, curr_used, false, r, &style_curr_used, parent, center_x, center_y);
 }
 
 lv_obj_t *energy_screen_create(lv_obj_t *parent) {
@@ -143,7 +194,22 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     // Add a label on top of the image
     energy_label = lv_label_create(energy_root);
     lv_label_set_text(energy_label, "Energy: 0 kWh");
-    lv_obj_align(energy_label, LV_ALIGN_CENTER, 0, 0);
+    if (!energy_label_style_initialized) {
+    lv_style_init(&style_energy_label);
+#if LV_FONT_MONTSERRAT_20
+    lv_style_set_text_font(&style_energy_label, &lv_font_montserrat_20);
+#elif LV_FONT_MONTSERRAT_18
+    lv_style_set_text_font(&style_energy_label, &lv_font_montserrat_18);
+#elif LV_FONT_MONTSERRAT_16
+    lv_style_set_text_font(&style_energy_label, &lv_font_montserrat_16);
+#endif
+    // Slightly dim to reduce visual weight
+    lv_style_set_text_opa(&style_energy_label, LV_OPA_90);
+    energy_label_style_initialized = true;
+    }
+    lv_obj_add_style(energy_label, &style_energy_label, LV_PART_MAIN);
+    // Position label below center (positive y moves downward)
+    lv_obj_align(energy_label, LV_ALIGN_CENTER, 0, 70);
 
     // Add more UI elements as needed
     return energy_root;

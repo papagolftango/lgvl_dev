@@ -49,6 +49,12 @@
 //#define Backlight_Testing
 //#define EXAMPLE_Rotate_90
 
+// Show a raw panel test pattern right after panel init (for debugging color order)
+// Comment out to disable at build time
+#ifndef DISPLAY_SHOW_TEST_PATTERN
+#define DISPLAY_SHOW_TEST_PATTERN 0
+#endif
+
 #define EXAMPLE_ENCODER_ECA_PIN    8
 #define EXAMPLE_ENCODER_ECB_PIN    7
 //bit

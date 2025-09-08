@@ -11,6 +11,7 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "mqtt_client.h" // For esp_mqtt_event_handle_t, MQTT_EVENT_*, esp_mqtt_client_subscribe
+#include "esp_timer.h" // for esp_timer_get_time()
 
 #include <lvgl.h>
 #include <math.h>
@@ -27,21 +28,42 @@ void energy_controller_tick(void) {
     static float last_balance = NAN;
     static float last_solar = NAN;
     static float last_used = NAN;
-    if (!energy_app_is_screen_active()) {
-        ESP_LOGW(TAG, "energy_controller_tick called but screen_active is false. Skipping UI update.");
-        return;
-    }
-    ESP_LOGD(TAG, "energy_controller_tick: energy_balance=%.2f energy_solar=%.2f energy_used=%.2f", energy_balance, energy_solar, energy_used);
+    static float last_peak_solar = NAN;
+    static float last_peak_used = NAN;
+    static uint32_t last_update_ms = 0;
+    const uint32_t now_ms = (uint32_t)(esp_timer_get_time() / 1000ULL);
+    const uint32_t MIN_UPDATE_INTERVAL_MS = 150; // throttle heavy pointer redraws
 
-    // Only update UI if values have changed
-    // Always update pointer and peaks (could optimize, but peaks may change independently)
-   
-    draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used, energy_solar, energy_used);
-    if (energy_used != last_used) {
-        energy_screen_set_value((int)energy_used);
-        last_used = energy_used;
+    if (!energy_app_is_screen_active()) {
+        return; // silent skip when inactive
     }
-    // Add more UI updates as needed (e.g., for solar, VRMS, etc.)
+
+    // Throttle full redraws to reduce CPU load & WDT risk
+    bool time_ok = (now_ms - last_update_ms) >= MIN_UPDATE_INTERVAL_MS;
+
+    // Detect any data change that would warrant a redraw
+    bool changed = false;
+    if (energy_balance != last_balance) { changed = true; last_balance = energy_balance; }
+    if (energy_solar   != last_solar)   { changed = true; last_solar   = energy_solar; }
+    if (energy_used    != last_used)    { changed = true; last_used    = energy_used; }
+    if (energy_peak_solar != last_peak_solar) { changed = true; last_peak_solar = energy_peak_solar; }
+    if (energy_peak_used  != last_peak_used)  { changed = true; last_peak_used  = energy_peak_used; }
+
+    if (time_ok && changed) {
+        uint32_t t_start = (uint32_t)(esp_timer_get_time() / 1000ULL);
+        draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used, energy_solar, energy_used);
+        energy_screen_set_value((int)energy_used);
+        uint32_t t_end = (uint32_t)(esp_timer_get_time() / 1000ULL);
+        uint32_t duration = t_end - t_start;
+        if (duration > 40) { // 40ms is a lot for a 360x360 incremental update; log occasionally
+            static int warn_mod = 0;
+            if ((warn_mod++ % 10) == 0) {
+                ESP_LOGW(TAG, "energy_controller_tick heavy UI update took %ums", duration);
+            }
+        }
+        last_update_ms = now_ms;
+    }
+    // else: no change or throttled; do nothing this tick
 }
 
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {

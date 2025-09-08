@@ -167,9 +167,15 @@ const app_descriptor_t *app_manager_get_descriptor(app_id_t app_id) {
 }
 
 void app_manager_tick(void) {
-    // Only call tick for the active app
-    if (app_table[current_app].tick)
+    // Only call tick for the active app. Many ticks perform LVGL object updates, so
+    // ensure we hold the LVGL mutex to avoid concurrent access with lv_timer_handler().
+    if (app_table[current_app].tick) {
+        extern void lvgl_manager_lock(void);
+        extern void lvgl_manager_unlock(void);
+        lvgl_manager_lock();
         app_table[current_app].tick();
+        lvgl_manager_unlock();
+    }
 }
 
 void app_manager_next_app(void) {

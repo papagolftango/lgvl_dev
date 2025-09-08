@@ -11,6 +11,7 @@
 #include "i2c_bsp.h"
 #include "lcd_touch_bsp.h"
 #include <stdint.h>
+#include <stdlib.h>
 #include "lvgl.h"
 
 // Logging tag for this module
@@ -214,6 +215,11 @@ static const sh8601_lcd_init_cmd_t lcd_init_cmds[] = {
 #endif
 };
 
+// Optional simple test pattern to validate raw color ordering on the panel
+// Draws horizontal bands: Red, Green, Blue, White, Black (each ~72px tall for 360px height)
+static void display_test_pattern(void);
+static esp_lcd_panel_handle_t s_panel_handle = NULL; // cached for optional raw draws
+
 esp_lcd_panel_handle_t display_init(void)
 {
 	lcd_bl_pwm_bsp_init(LCD_PWM_MODE_255);
@@ -254,6 +260,17 @@ esp_lcd_panel_handle_t display_init(void)
 	ESP_ERROR_CHECK(esp_lcd_new_panel_sh8601(io_handle, &panel_config, &panel_handle));
 	ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
 	ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
+	s_panel_handle = panel_handle; // cache
+
+#if DISPLAY_SHOW_TEST_PATTERN
+	// Forward declaration to avoid implicit declaration warning
+	static void display_test_pattern(void);
+#endif
+
+#if DISPLAY_SHOW_TEST_PATTERN
+	ESP_LOGI(TAG, "Drawing test pattern (DISPLAY_SHOW_TEST_PATTERN=1)");
+	display_test_pattern();
+#endif
 	i2c_master_Init();
 #if EXAMPLE_USE_TOUCH
 	lcd_touch_init();
@@ -261,6 +278,41 @@ esp_lcd_panel_handle_t display_init(void)
 
 #endif
 	return panel_handle;
+}
+
+// Draw a raw test pattern directly to panel (bypasses LVGL) to check channel order
+static void display_test_pattern(void)
+{
+	if (!s_panel_handle) {
+		ESP_LOGW(TAG, "Test pattern skipped (panel handle NULL)");
+		return;
+	}
+	// 360x360x2 = 259,200 bytes
+	uint32_t buf_sz = LCD_H_RES * LCD_V_RES * sizeof(uint16_t);
+	uint16_t *fb = (uint16_t *)malloc(buf_sz);
+	if (!fb) {
+		ESP_LOGE(TAG, "Alloc fail test pattern (%u bytes)", (unsigned)buf_sz);
+		return;
+	}
+	#define COLOR565(r,g,b) ( ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | ((b) >> 3) )
+	uint16_t red    = COLOR565(255,0,0);
+	uint16_t green  = COLOR565(0,255,0);
+	uint16_t blue   = COLOR565(0,0,255);
+	uint16_t white  = COLOR565(255,255,255);
+	uint16_t black  = COLOR565(0,0,0);
+	for (int y = 0; y < LCD_V_RES; ++y) {
+		uint16_t c;
+		if (y < (LCD_V_RES/5)*1) c = red;
+		else if (y < (LCD_V_RES/5)*2) c = green;
+		else if (y < (LCD_V_RES/5)*3) c = blue;
+		else if (y < (LCD_V_RES/5)*4) c = white;
+		else c = black;
+		uint16_t *row = &fb[y * LCD_H_RES];
+		for (int x = 0; x < LCD_H_RES; ++x) row[x] = c;
+	}
+	ESP_ERROR_CHECK(esp_lcd_panel_draw_bitmap(s_panel_handle, 0, 0, LCD_H_RES, LCD_V_RES, fb));
+	free(fb);
+	ESP_LOGI(TAG, "Test pattern drawn (R,G,B,W,K bands)");
 }
 
 // LVGL display driver flush callback
