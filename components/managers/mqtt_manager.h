@@ -9,6 +9,9 @@ typedef void (*mqtt_app_event_handler_t)(void *handler_args, esp_event_base_t ba
 
 void mqtt_manager_set_credentials(const char *host, const char *user, const char *pass);
 void mqtt_manager_load_credentials(void);
+// Register an application MQTT event handler. Multiple handlers are supported and
+// will each receive all MQTT events. Handlers should be lightweight and defer UI
+// updates to their app/controller tick via a dirty flag.
 void mqtt_manager_register_app_event_handler(mqtt_app_event_handler_t handler, void *handler_args);
 
 #endif // MQTT_MANAGER_H

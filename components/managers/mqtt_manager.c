@@ -123,18 +123,41 @@ void mqtt_manager_load_credentials(void) {
 static esp_mqtt_client_handle_t s_mqtt_client = NULL;
 
 
-// App event handler registration
-static mqtt_app_event_handler_t s_app_event_handler = NULL;
-static void *s_app_event_handler_args = NULL;
+// App event handler registration (support multiple subscribers)
+typedef struct {
+    mqtt_app_event_handler_t handler;
+    void *args;
+} mqtt_app_handler_entry_t;
+
+#define MAX_MQTT_APP_HANDLERS 8
+static mqtt_app_handler_entry_t s_app_handlers[MAX_MQTT_APP_HANDLERS];
+static size_t s_app_handlers_count = 0;
 
 void mqtt_manager_register_app_event_handler(mqtt_app_event_handler_t handler, void *handler_args) {
-    s_app_event_handler = handler;
-    s_app_event_handler_args = handler_args;
+    if (!handler) return;
+    // Avoid duplicates
+    for (size_t i = 0; i < s_app_handlers_count; ++i) {
+        if (s_app_handlers[i].handler == handler && s_app_handlers[i].args == handler_args) {
+            return;
+        }
+    }
+    if (s_app_handlers_count < MAX_MQTT_APP_HANDLERS) {
+        s_app_handlers[s_app_handlers_count].handler = handler;
+        s_app_handlers[s_app_handlers_count].args = handler_args;
+        s_app_handlers_count++;
+    } else {
+        ESP_LOGW("mqtt_manager", "Max MQTT app handlers reached (%d)", MAX_MQTT_APP_HANDLERS);
+    }
 }
 
 static void mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
-    if (s_app_event_handler) {
-        s_app_event_handler(s_app_event_handler_args, base, event_id, event_data);
+    // Fan out to all registered app handlers
+    for (size_t i = 0; i < s_app_handlers_count; ++i) {
+        mqtt_app_event_handler_t h = s_app_handlers[i].handler;
+        void *args = s_app_handlers[i].args;
+        if (h) {
+            h(args, base, event_id, event_data);
+        }
     }
 }
 

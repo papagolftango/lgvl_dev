@@ -3,6 +3,7 @@
 #include <string.h>
 
 static char s_motd[128] = "Welcome home – Message of the day";
+static volatile bool s_motd_dirty = false;
 
 void home_controller_init(void) {
     // Ensure home screen exists when app becomes active
@@ -13,7 +14,11 @@ void home_controller_init(void) {
 }
 
 void home_controller_tick(void) {
-    // Could react to time or other events; ticker scrolls automatically
+    // Apply pending MOTD updates under LVGL lock (tick runs under app_manager lock)
+    if (s_motd_dirty) {
+        s_motd_dirty = false;
+        home_screen_set_motd(s_motd);
+    }
 }
 
 void home_controller_cleanup(void) {
@@ -36,5 +41,6 @@ void home_controller_set_motd(const char *text) {
     if (!text) return;
     strncpy(s_motd, text, sizeof(s_motd) - 1);
     s_motd[sizeof(s_motd) - 1] = '\0';
-    home_screen_set_motd(s_motd);
+    // Mark dirty; UI update will happen in tick (thread-safe)
+    s_motd_dirty = true;
 }

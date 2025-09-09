@@ -2,6 +2,8 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
 // Bin state machine
 typedef enum {
 	BIN_STATE_IDLE,        // Bin is in normal/idle state
@@ -22,7 +24,7 @@ void home_app_destroy(void);
 void home_app_process(void);
 
 // Access current bin schedule entry (1-52 -> index 0-51). If out of range, wraps.
-#include <stdint.h>
+
 uint8_t home_app_get_bin_schedule(uint8_t week_number);
 
 #ifdef __cplusplus
