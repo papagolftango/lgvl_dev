@@ -11,7 +11,7 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "mqtt_client.h" // For esp_mqtt_event_handle_t, MQTT_EVENT_*, esp_mqtt_client_subscribe
-#include "esp_timer.h" // for esp_timer_get_time()
+// Removed time-based throttling; updates only on data change
 
 #include <lvgl.h>
 #include <math.h>
@@ -24,46 +24,14 @@
 extern float energy_balance, energy_solar, energy_used;
 extern float energy_peak_solar, energy_peak_used;
 
+static volatile bool s_dirty = false; // set on MQTT data change, read/cleared in tick
+
 void energy_controller_tick(void) {
-    static float last_balance = NAN;
-    static float last_solar = NAN;
-    static float last_used = NAN;
-    static float last_peak_solar = NAN;
-    static float last_peak_used = NAN;
-    static uint32_t last_update_ms = 0;
-    const uint32_t now_ms = (uint32_t)(esp_timer_get_time() / 1000ULL);
-    const uint32_t MIN_UPDATE_INTERVAL_MS = 150; // throttle heavy pointer redraws
-
-    if (!energy_app_is_screen_active()) {
-        return; // silent skip when inactive
-    }
-
-    // Throttle full redraws to reduce CPU load & WDT risk
-    bool time_ok = (now_ms - last_update_ms) >= MIN_UPDATE_INTERVAL_MS;
-
-    // Detect any data change that would warrant a redraw
-    bool changed = false;
-    if (energy_balance != last_balance) { changed = true; last_balance = energy_balance; }
-    if (energy_solar   != last_solar)   { changed = true; last_solar   = energy_solar; }
-    if (energy_used    != last_used)    { changed = true; last_used    = energy_used; }
-    if (energy_peak_solar != last_peak_solar) { changed = true; last_peak_solar = energy_peak_solar; }
-    if (energy_peak_used  != last_peak_used)  { changed = true; last_peak_used  = energy_peak_used; }
-
-    if (time_ok && changed) {
-        uint32_t t_start = (uint32_t)(esp_timer_get_time() / 1000ULL);
-        draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used, energy_solar, energy_used);
-        energy_screen_set_value((int)energy_used);
-        uint32_t t_end = (uint32_t)(esp_timer_get_time() / 1000ULL);
-        uint32_t duration = t_end - t_start;
-        if (duration > 40) { // 40ms is a lot for a 360x360 incremental update; log occasionally
-            static int warn_mod = 0;
-            if ((warn_mod++ % 10) == 0) {
-                ESP_LOGW(TAG, "energy_controller_tick heavy UI update took %ums", duration);
-            }
-        }
-        last_update_ms = now_ms;
-    }
-    // else: no change or throttled; do nothing this tick
+    if (!energy_app_is_screen_active()) return;
+    if (!s_dirty) return;
+    // Clear first to coalesce mid-update changes into next tick
+    s_dirty = false;
+    draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used, energy_solar, energy_used);
 }
 
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
@@ -93,25 +61,27 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                 } else if (strcmp(topic, "emon/emontx3/solar") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed solar: %.2f", value);
-                    energy_solar = value;
+                    if (value != energy_solar) { energy_solar = value; s_dirty = true; }
                     if (value > energy_peak_solar) {
                         energy_peak_solar = value;
                         ESP_LOGI(TAG, "New peak solar: %.2f", energy_peak_solar);
+                        s_dirty = true;
                     }
                     // TODO: update UI with solar value
                 } else if (strcmp(topic, "emon/emontx3/used") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed used: %.2f", value);
-                    energy_used = value;
+                    if (value != energy_used) { energy_used = value; s_dirty = true; }
                     if (value > energy_peak_used) {
                         energy_peak_used = value;
                         ESP_LOGI(TAG, "New peak used: %.2f", energy_peak_used);
+                        s_dirty = true;
                     }
                     // TODO: update UI with used value
                 } else if (strcmp(topic, "emon/emontx3/balance") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed balance: %.2f", value);
-                    energy_balance = value;
+                    if (value != energy_balance) { energy_balance = value; s_dirty = true; }
                     // UI update is handled in tick/UI logic
                 }
             }

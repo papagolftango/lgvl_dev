@@ -11,6 +11,7 @@ void home_controller_cleanup(void);
 void home_controller_destroy(void);
 void home_controller_process(void);
 void home_controller_touch(void);
+void home_controller_set_motd(const char *text);
 
 #ifdef __cplusplus
 }

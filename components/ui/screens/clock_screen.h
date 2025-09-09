@@ -13,6 +13,8 @@ void clock_screen_destroy(void);
 
 // Example: update a value on the screen
 void clock_screen_set_time(const char *time_str);
+// Update the date label text
+void clock_screen_set_date(const char *date_str);
 
 // Get the root object for persistent screen switching
 lv_obj_t *clock_screen_get_root(void);

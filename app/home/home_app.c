@@ -1,16 +1,20 @@
 // home_app.c - Home app logic
 #include <stdio.h>
+#include <stdlib.h>
 #include "lvgl.h"
 #include "touch_manager.h"
 #include "home_app.h"
 #include "managers/app_manager.h"
 #include "managers/time_manager.h"
+#include "ui/screens/home_screen.h"
 
 #include "home_controller.h"
 
 // Static/global variables
 static lv_obj_t *home_screen = NULL;
 static lv_obj_t *label = NULL;
+static lv_obj_t *dbg_week_label = NULL;     // shows week number
+static lv_obj_t *dbg_sched_label = NULL;    // shows schedule hex
 static bool screen_active = false;
 static int home_counter = 0; // Example background data (replace with real data/event logic)
 
@@ -34,6 +38,7 @@ static bool show_garden_bin_icon = false;
 static void process_bin_touch(void);
 static void home_app_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data);
 static void daily_actions_cb(void);
+static void update_bin_debug_labels(void);
 
 // Touch callback for home app
 static void home_app_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data) {
@@ -60,6 +65,15 @@ void home_app_init(void) {
     // Register daily callback
     time_manager_register_day_callback(daily_actions_cb);
     home_controller_init();
+
+    // Create debug labels near bottom of display
+    lv_obj_t *root = home_screen_get_root();
+    if (!root) root = lv_scr_act();
+    dbg_week_label = lv_label_create(root);
+    lv_obj_align(dbg_week_label, LV_ALIGN_BOTTOM_MID, 0, -34);
+    dbg_sched_label = lv_label_create(root);
+    lv_obj_align(dbg_sched_label, LV_ALIGN_BOTTOM_MID, 0, -16);
+    update_bin_debug_labels();
 }
 
 
@@ -81,6 +95,41 @@ void home_app_destroy(void) {
 
 // Stub implementations to resolve linker errors
 static void process_bin_touch(void) {}
-static void daily_actions_cb(void) {}
+static void daily_actions_cb(void) {
+    // Recompute current ISO week and refresh debug labels once per day
+    update_bin_debug_labels();
+}
+static int iso_week_number(const struct tm *tm) {
+    // ISO week: weeks start on Monday, week 1 has Jan 4th
+    // Compute using C library where available via strftime %V, else fallback
+    char buf[4];
+    if (strftime(buf, sizeof(buf), "%V", tm) > 0) {
+        return atoi(buf);
+    }
+    // Fallback (simple): approximate using day-of-year/7 + 1
+    return tm->tm_yday / 7 + 1;
+}
+
+static void update_bin_debug_labels(void) {
+    struct tm now;
+    time_manager_get_localtime(&now);
+    int week = iso_week_number(&now);
+    if (week < 1) week = 1; if (week > 52) week = 52;
+    // Retrieve schedule entry from local table
+    uint8_t entry = bin_schedule[(week - 1) % 52];
+
+    if (dbg_week_label) {
+        static const char *W[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+        const char *dow = (now.tm_wday >= 0 && now.tm_wday <= 6) ? W[now.tm_wday] : "";
+        char txt[40];
+        snprintf(txt, sizeof(txt), "Week: %d %s", week, dow);
+        lv_label_set_text(dbg_week_label, txt);
+    }
+    if (dbg_sched_label) {
+        char txt[32];
+        snprintf(txt, sizeof(txt), "Sched: 0x%02X", entry);
+        lv_label_set_text(dbg_sched_label, txt);
+    }
+}
 
 // Internal function to process bin touch (for testing)

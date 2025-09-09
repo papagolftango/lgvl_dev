@@ -21,6 +21,10 @@ void home_app_destroy(void);
 // Called always, even when not active
 void home_app_process(void);
 
+// Access current bin schedule entry (1-52 -> index 0-51). If out of range, wraps.
+#include <stdint.h>
+uint8_t home_app_get_bin_schedule(uint8_t week_number);
+
 #ifdef __cplusplus
 }
 #endif

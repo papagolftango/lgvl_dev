@@ -5,6 +5,21 @@
 extern "C" {
 #endif
 
+lv_obj_t *home_screen_create(lv_obj_t *parent);
+void home_screen_destroy(void);
+void home_screen_set_motd(const char *text);
+lv_obj_t *home_screen_get_root(void);
+
+#ifdef __cplusplus
+}
+#endif
+#pragma once
+#include <lvgl.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Create the Home screen and return its root object
 lv_obj_t *home_screen_create(lv_obj_t *parent);
 
