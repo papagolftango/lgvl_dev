@@ -10,7 +10,7 @@
   },
   "idf.espIdfPathWin": "c:\\espressif\\frameworks\\esp-idf-v5.5.1\\esp-idf",
   "idf.toolsPathWin": "c:\\espressif\\",
-  "idf.pythonInstallPath": "/Users/paultindall/.espressif/python_env/idf5.5_py3.13_env/bin/python",
+  "idf.pythonInstallPath": "c:\\espressif\\tools\\idf-python\\3.11.2\\python.exe",
   "idf.port": "/dev/tty.usbmodem1101",
   "idf.flashType": "UART",
   "terminal.integrated.shellArgs.windows": [
