@@ -8,15 +8,15 @@
         "deepid": 485685689,
         "children": [
           {
-            "guid": "GUID62122499-193925S9604245",
-            "deepid": 438069249,
+            "guid": "GUID42840886-707501S486254253",
+            "deepid": -2076652114,
             "dont_export": false,
             "locked": false,
             "properties": [
               {
                 "nid": 10,
                 "strtype": "OBJECT/Name",
-                "strval": "Image1",
+                "strval": "Image2",
                 "InheritedType": 10
               },
               {
@@ -57,8 +57,8 @@
                 "flags": 51,
                 "strtype": "OBJECT/Size",
                 "intarray": [
-                  1,
-                  1
+                  360,
+                  360
                 ],
                 "InheritedType": 7
               },
@@ -136,7 +136,7 @@
               {
                 "nid": 1020,
                 "strtype": "IMAGE/Asset",
-                "strval": "assets/gauge_face_kw Final.png",
+                "strval": "assets/rect1.png",
                 "InheritedType": 5
               },
               {
@@ -1663,8 +1663,8 @@
     "theme_dark": false,
     "theme_color1": 5,
     "theme_color2": 0,
-    "uiExportFolderPath": "/Users/paultindall/Documents/code/LVGL_Dev/temp",
-    "projectExportFolderPath": "/Users/paultindall/Documents/code/LVGL_Dev/",
+    "uiExportFolderPath": "/Users/paultindall/Documents/code/lgvl_dev_clean",
+    "projectExportFolderPath": "/Users/paultindall/Documents/code/lgvl_dev_clean",
     "custom_variable_prefix": "uic",
     "backup_cnt": 17,
     "autosave_cnt": 0,

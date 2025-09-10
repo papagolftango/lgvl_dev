@@ -25,6 +25,7 @@
 #include "home/home_controller.h"
 #include "settings/settings_controller.h"
 #include "weather/weather_controller.h"
+#include "clock/clock_controller.h"
 
 static const char *APP_MANAGER_TAG = "app_manager";
 
@@ -43,11 +44,11 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
         .name = "Home",
         .app_init = home_app_init,
-        .controller_init = NULL,
-        .controller_cleanup = NULL,
-        .tick = NULL,
+    .screen_load = (app_screen_load_fn)home_screen_create,
+    .controller_init = home_controller_init,
+    .controller_cleanup = home_controller_cleanup,
         .app_destroy = home_app_destroy,
-        .tick = home_controller_tick,
+    .tick = home_controller_tick,
     },
     {
         .name = "Clock",
@@ -109,7 +110,6 @@ void app_manager_set_active(app_id_t app_id) {
     if (app_table[current_app].controller_cleanup)
         app_table[current_app].controller_cleanup();
 
-    bool loaded = false;
     lv_obj_t *root = NULL;
     switch (app_id) {
         case APP_ID_ENERGY:
@@ -137,7 +137,6 @@ void app_manager_set_active(app_id_t app_id) {
     }
     if (root) {
         lv_scr_load(root);
-        loaded = true;
     } else {
         ESP_LOGE(APP_MANAGER_TAG, "Failed to create/load screen for app %d (%s), loading error screen!", app_id, app_table[app_id].name);
         root = error_screen_get_root();

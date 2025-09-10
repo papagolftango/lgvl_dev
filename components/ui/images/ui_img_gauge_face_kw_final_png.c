@@ -5,8 +5,7 @@
 
 #include <stdint.h>
 #include "lvgl.h"
-
-// #include "ui.h" (removed, file not present)
+// #include "ui.h" (kept disabled; file not present)
 
 #ifndef LV_ATTRIBUTE_MEM_ALIGN
 #define LV_ATTRIBUTE_MEM_ALIGN
