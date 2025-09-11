@@ -25,32 +25,35 @@ extern const lv_img_dsc_t ui_img_rect1_png;
 #define ARC_END_TRIM_DEG 2
 #endif
 
-// Concentric arc objects (outer=balance, mid=solar, inner=used)
-static lv_obj_t *arc_balance = NULL;
-static lv_obj_t *arc_solar   = NULL;
-static lv_obj_t *arc_used    = NULL;
+// Balance arc diameter (pixels). Reduce to make the arc radius smaller.
+#ifndef BALANCE_ARC_DIAMETER
+#define BALANCE_ARC_DIAMETER 220
+#endif
 
-// Peak marker lines placed on solar and used arcs
+// Single arc: balance only
+static lv_obj_t *arc_balance = NULL;
+
+// Peak marker lines (grey) and current value marker lines (black)
 static lv_obj_t *peak_solar_line = NULL;
 static lv_obj_t *peak_used_line  = NULL;
 static lv_point_t peak_solar_points[2];
 static lv_point_t peak_used_points[2];
+static lv_obj_t *curr_solar_line = NULL;
+static lv_obj_t *curr_used_line  = NULL;
+static lv_point_t curr_solar_points[2];
+static lv_point_t curr_used_points[2];
 
-// Radii (pixels) of the arcs, computed from object sizes
+// Radius cache for balance arc (pixels)
 static int radius_balance = 0;
-static int radius_solar   = 0;
-static int radius_used    = 0;
 
-// Styles for peaks and label
+// Styles for markers and label
 static lv_style_t style_peak_solar;
 static lv_style_t style_peak_used;
+static lv_style_t style_curr_marker;
 static bool styles_inited = false;
 
 // Static pointer to the root object of the Energy screen
 static lv_obj_t *energy_root = NULL;
-static lv_obj_t *energy_label = NULL;
-static lv_style_t style_energy_label;
-static bool energy_label_style_initialized = false;
 // New labels for central balance value and its title
 static lv_obj_t *balance_value_label = NULL;
 static lv_obj_t *balance_title_label = NULL;
@@ -58,9 +61,7 @@ static lv_style_t style_balance_value_label;
 static lv_style_t style_balance_title_label;
 static bool balance_label_styles_initialized = false;
 // Units label placed next to the center numeric value
-static lv_obj_t *center_units_label = NULL;
-static lv_style_t style_center_units_label;
-static bool center_units_style_initialized = false;
+// Removed small center-units label beside numeric
 
 // Center display modes (easy to extend): order defines tap-cycling sequence
 typedef enum {
@@ -134,20 +135,8 @@ static void refresh_center_display(void) {
     format_with_thousands((int)lroundf(value), num, sizeof(num));
     lv_label_set_text(balance_value_label, num);
 
-    // Keep the small center units label aligned to the numeric
-    if (center_units_label) {
-        lv_label_set_text(center_units_label, "W");
-        lv_obj_align_to(center_units_label, balance_value_label, LV_ALIGN_OUT_RIGHT_MID, 6, 0);
-    }
-
     lv_color_t c = color_for_value(value);
     lv_obj_set_style_text_color(balance_value_label, c, LV_PART_MAIN);
-    if (center_units_label) {
-        lv_obj_set_style_text_color(center_units_label, c, LV_PART_MAIN);
-    }
-    if (energy_label) {
-        lv_obj_set_style_text_color(energy_label, c, LV_PART_MAIN);
-    }
 }
 
 static void cycle_center_mode(void) {
@@ -207,18 +196,16 @@ static void draw_peak_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, 
 
 // Ensure arcs exist and are styled; sizes chosen to be concentric inside 360x360 root
 static void ensure_arcs_created(lv_obj_t *parent) {
-    if (arc_balance && arc_solar && arc_used) return;
+    if (arc_balance) return;
 
     // Colors for arcs
     lv_color_t color_balance = lv_color_hex(0x00B0FF); // light blue
-    lv_color_t color_solar   = lv_color_hex(0xFFD600); // yellow
-    lv_color_t color_used    = lv_color_hex(0xFF3B30); // red
 
-    // Create balance (outer) arc
+    // Create balance arc (only arc)
     if (!arc_balance) {
         arc_balance = lv_arc_create(parent);
-        // Move inward by 20px (radius): diameter reduced by 40px
-        lv_obj_set_size(arc_balance, 260, 260); // diameter
+    // Use configurable diameter for the single balance arc
+    lv_obj_set_size(arc_balance, BALANCE_ARC_DIAMETER, BALANCE_ARC_DIAMETER);
         lv_obj_center(arc_balance);
         lv_obj_clear_flag(arc_balance, LV_OBJ_FLAG_CLICKABLE);
         // Background span of gauge: -135..+135 around top => 135 -> 45 (wrap)
@@ -229,59 +216,36 @@ static void ensure_arcs_created(lv_obj_t *parent) {
     // Flat ends: remove rounded caps
     lv_obj_set_style_arc_rounded(arc_balance, 0, LV_PART_MAIN);
     lv_obj_set_style_arc_rounded(arc_balance, 0, LV_PART_INDICATOR);
-        lv_obj_set_style_arc_color(arc_balance, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
+    lv_obj_set_style_arc_color(arc_balance, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
         lv_obj_set_style_arc_opa(arc_balance, LV_OPA_40, LV_PART_MAIN);
         lv_obj_set_style_arc_color(arc_balance, color_balance, LV_PART_INDICATOR);
-        radius_balance = 80; // -20px to keep peak markers aligned
+    // Hide the default knob (circular marker at the end)
+    lv_obj_set_style_bg_opa(arc_balance, LV_OPA_TRANSP, LV_PART_KNOB);
+    lv_obj_set_style_border_opa(arc_balance, LV_OPA_TRANSP, LV_PART_KNOB);
+    lv_obj_set_style_outline_opa(arc_balance, LV_OPA_TRANSP, LV_PART_KNOB);
+    lv_obj_set_style_shadow_opa(arc_balance, LV_OPA_TRANSP, LV_PART_KNOB);
+    radius_balance = lv_obj_get_width(arc_balance) / 2;
     }
 
-    // Create solar (middle) arc
-    if (!arc_solar) {
-        arc_solar = lv_arc_create(parent);
-        lv_obj_set_size(arc_solar, 220, 220); // -40px diameter
-        lv_obj_center(arc_solar);
-        lv_obj_clear_flag(arc_solar, LV_OBJ_FLAG_CLICKABLE);
-        lv_arc_set_bg_angles(arc_solar, 135, 45);
-    lv_obj_set_style_arc_width(arc_solar, 12, LV_PART_MAIN);
-    lv_obj_set_style_arc_width(arc_solar, 12, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_rounded(arc_solar, 0, LV_PART_MAIN);
-    lv_obj_set_style_arc_rounded(arc_solar, 0, LV_PART_INDICATOR);
-        lv_obj_set_style_arc_color(arc_solar, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
-        lv_obj_set_style_arc_opa(arc_solar, LV_OPA_40, LV_PART_MAIN);
-        lv_obj_set_style_arc_color(arc_solar, color_solar, LV_PART_INDICATOR);
-        radius_solar = 70; // -20px
-    }
-
-    // Create used (inner) arc
-    if (!arc_used) {
-        arc_used = lv_arc_create(parent);
-        lv_obj_set_size(arc_used, 180, 180); // -40px diameter
-        lv_obj_center(arc_used);
-        lv_obj_clear_flag(arc_used, LV_OBJ_FLAG_CLICKABLE);
-        lv_arc_set_bg_angles(arc_used, 135, 45);
-    lv_obj_set_style_arc_width(arc_used, 10, LV_PART_MAIN);
-    lv_obj_set_style_arc_width(arc_used, 10, LV_PART_INDICATOR);
-    lv_obj_set_style_arc_rounded(arc_used, 0, LV_PART_MAIN);
-    lv_obj_set_style_arc_rounded(arc_used, 0, LV_PART_INDICATOR);
-        lv_obj_set_style_arc_color(arc_used, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
-        lv_obj_set_style_arc_opa(arc_used, LV_OPA_40, LV_PART_MAIN);
-        lv_obj_set_style_arc_color(arc_used, color_used, LV_PART_INDICATOR);
-        radius_used = 50; // -20px
-    }
-
-    // Peak line styles
+    // Marker styles: peaks grey; current markers black
     if (!styles_inited) {
         lv_style_init(&style_peak_solar);
         lv_style_set_line_width(&style_peak_solar, 3);
-        lv_style_set_line_color(&style_peak_solar, lv_color_hex(0xFFD600)); // yellow
-        lv_style_set_line_opa(&style_peak_solar, LV_OPA_50);
+        lv_style_set_line_color(&style_peak_solar, lv_color_hex(0x808080)); // grey
+        lv_style_set_line_opa(&style_peak_solar, LV_OPA_80);
         lv_style_set_line_rounded(&style_peak_solar, true);
 
         lv_style_init(&style_peak_used);
         lv_style_set_line_width(&style_peak_used, 3);
-        lv_style_set_line_color(&style_peak_used, lv_color_hex(0xFF3B30)); // red
-        lv_style_set_line_opa(&style_peak_used, LV_OPA_50);
+        lv_style_set_line_color(&style_peak_used, lv_color_hex(0x808080)); // grey
+        lv_style_set_line_opa(&style_peak_used, LV_OPA_80);
         lv_style_set_line_rounded(&style_peak_used, true);
+
+        lv_style_init(&style_curr_marker);
+        lv_style_set_line_width(&style_curr_marker, 3);
+        lv_style_set_line_color(&style_curr_marker, lv_color_hex(0x000000)); // black
+        lv_style_set_line_opa(&style_curr_marker, LV_OPA_100);
+        lv_style_set_line_rounded(&style_curr_marker, true);
 
         styles_inited = true;
     }
@@ -295,10 +259,8 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     lv_obj_t *parent = energy_root ? energy_root : lv_scr_act();
     ensure_arcs_created(parent);
 
-    // Map values to angles relative to top (270deg)
+    // Map balance to angles relative to top (270deg)
     float a_bal = energy_value_to_angle(energy_balance);
-    float a_sol = energy_value_to_angle(-curr_solar);
-    float a_use = energy_value_to_angle(curr_used);
 
     const int base_top = 270; // LVGL angle for top
 
@@ -324,36 +286,22 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
         sol_start += ARC_END_TRIM_DEG;
         if (sol_start > sol_end) sol_start = sol_end;
     }
-    lv_arc_set_start_angle(arc_solar, sol_start);
-    lv_arc_set_end_angle(arc_solar, sol_end);
-
-    int use_start = (a_use < 0) ? (base_top + (int)lroundf(a_use)) : base_top;
-    int use_end   = (a_use < 0) ? base_top : (base_top + (int)lroundf(a_use));
-    if (a_use > 0) {
-        use_end -= ARC_END_TRIM_DEG;
-        if (use_end < use_start) use_end = use_start;
-    } else if (a_use < 0) {
-        use_start += ARC_END_TRIM_DEG;
-        if (use_start > use_end) use_start = use_end;
-    }
-    lv_arc_set_start_angle(arc_used, use_start);
-    lv_arc_set_end_angle(arc_used, use_end);
-
-    // Draw peak ticks on corresponding arc centerlines
+    // Draw markers on balance arc centerline
     int center_x = GAUGE_BASE_CENTER_X + GAUGE_CENTER_OFFSET_X;
     int center_y = GAUGE_BASE_CENTER_Y + GAUGE_CENTER_OFFSET_Y;
 
-    // Container radii are half of arc object sizes (they are centered squares)
-    int cont_r_solar = lv_obj_get_width(arc_solar) / 2;
-    int cont_r_used  = lv_obj_get_width(arc_used) / 2;
-    // Arc stroke widths from styles
-    int width_solar = lv_obj_get_style_arc_width(arc_solar, LV_PART_INDICATOR);
-    if (width_solar <= 0) width_solar = lv_obj_get_style_arc_width(arc_solar, LV_PART_MAIN);
-    int width_used  = lv_obj_get_style_arc_width(arc_used, LV_PART_INDICATOR);
-    if (width_used <= 0) width_used = lv_obj_get_style_arc_width(arc_used, LV_PART_MAIN);
+    // Container radius and stroke width for balance arc
+    int cont_r_bal = lv_obj_get_width(arc_balance) / 2;
+    int width_bal  = lv_obj_get_style_arc_width(arc_balance, LV_PART_INDICATOR);
+    if (width_bal <= 0) width_bal = lv_obj_get_style_arc_width(arc_balance, LV_PART_MAIN);
 
-    draw_peak_marker_line(&peak_solar_line, peak_solar_points, peak_solar, true, cont_r_solar, width_solar, &style_peak_solar, parent, center_x, center_y);
-    draw_peak_marker_line(&peak_used_line,  peak_used_points,  peak_used,  false, cont_r_used,  width_used,  &style_peak_used,  parent, center_x, center_y);
+    // Peak markers (grey) – solar is inverted; used is normal
+    draw_peak_marker_line(&peak_solar_line, peak_solar_points, peak_solar, true,  cont_r_bal, width_bal, &style_peak_solar, parent, center_x, center_y);
+    draw_peak_marker_line(&peak_used_line,  peak_used_points,  peak_used,  false, cont_r_bal, width_bal, &style_peak_used,  parent, center_x, center_y);
+
+    // Current value markers (black) – inside the same arc
+    draw_peak_marker_line(&curr_solar_line, curr_solar_points, curr_solar, true,  cont_r_bal, width_bal, &style_curr_marker, parent, center_x, center_y);
+    draw_peak_marker_line(&curr_used_line,  curr_used_points,  curr_used,  false, cont_r_bal, width_bal, &style_curr_marker, parent, center_x, center_y);
 
     // Store last-known values for instant UI refresh on taps and update center now
     last_balance_val = energy_balance;
@@ -381,33 +329,15 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     // Create concentric arcs layered above the background
     ensure_arcs_created(energy_root);
 
-    // Units label (reuse existing variable); place lower down
-    energy_label = lv_label_create(energy_root);
-    lv_label_set_text(energy_label, "W");
-    if (!energy_label_style_initialized) {
-    lv_style_init(&style_energy_label);
-#if LV_FONT_MONTSERRAT_22
-    lv_style_set_text_font(&style_energy_label, &lv_font_montserrat_22);
-#elif LV_FONT_MONTSERRAT_20
-    lv_style_set_text_font(&style_energy_label, &lv_font_montserrat_20);
-#elif LV_FONT_MONTSERRAT_18
-    lv_style_set_text_font(&style_energy_label, &lv_font_montserrat_18);
-#endif
-    lv_style_set_text_opa(&style_energy_label, LV_OPA_90);
-    energy_label_style_initialized = true;
-    }
-    lv_obj_add_style(energy_label, &style_energy_label, LV_PART_MAIN);
-    lv_obj_align(energy_label, LV_ALIGN_CENTER, 0, 110); // lower than before
-
     // Central balance title and numeric value, nearer the center
     if (!balance_label_styles_initialized) {
     lv_style_init(&style_balance_title_label);
-#if LV_FONT_MONTSERRAT_20
-    lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_20);
-#elif LV_FONT_MONTSERRAT_18
-    lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_18);
-#elif LV_FONT_MONTSERRAT_16
+#if LV_FONT_MONTSERRAT_16
     lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_16);
+#elif LV_FONT_MONTSERRAT_14
+    lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_14);
+#elif LV_FONT_MONTSERRAT_12
+    lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_12);
 #endif
     lv_style_set_text_opa(&style_balance_title_label, LV_OPA_90);
 
@@ -433,23 +363,7 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     lv_obj_add_style(balance_value_label, &style_balance_value_label, LV_PART_MAIN);
     lv_obj_align(balance_value_label, LV_ALIGN_CENTER, 0, 48);
 
-    // Small units label next to the central numeric
-    center_units_label = lv_label_create(energy_root);
-    if (!center_units_style_initialized) {
-    lv_style_init(&style_center_units_label);
-#if LV_FONT_MONTSERRAT_20
-    lv_style_set_text_font(&style_center_units_label, &lv_font_montserrat_20);
-#elif LV_FONT_MONTSERRAT_18
-    lv_style_set_text_font(&style_center_units_label, &lv_font_montserrat_18);
-#elif LV_FONT_MONTSERRAT_16
-    lv_style_set_text_font(&style_center_units_label, &lv_font_montserrat_16);
-#endif
-    lv_style_set_text_opa(&style_center_units_label, LV_OPA_90);
-    center_units_style_initialized = true;
-    }
-    lv_obj_add_style(center_units_label, &style_center_units_label, LV_PART_MAIN);
-    lv_label_set_text(center_units_label, "W");
-    lv_obj_align_to(center_units_label, balance_value_label, LV_ALIGN_OUT_RIGHT_MID, 6, 0);
+    // Removed center-units label creation
 
     // Make the whole screen react to taps to cycle center display
     lv_obj_add_flag(energy_root, LV_OBJ_FLAG_CLICKABLE);
@@ -462,9 +376,7 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
 void energy_screen_destroy(void) {
     if (energy_root) {
         lv_obj_del(energy_root);
-        energy_root = NULL;
-        energy_label = NULL;
-    center_units_label = NULL;
+    energy_root = NULL;
     }
 }
 
@@ -486,20 +398,9 @@ void energy_screen_set_value(int value) {
             color = lv_color_hex(0xFF3B30); // red
         }
         lv_obj_set_style_text_color(balance_value_label, color, LV_PART_MAIN);
-        if (center_units_label) {
-            lv_label_set_text(center_units_label, "W");
-            lv_obj_set_style_text_color(center_units_label, color, LV_PART_MAIN);
-            lv_obj_align_to(center_units_label, balance_value_label, LV_ALIGN_OUT_RIGHT_MID, 6, 0);
-        }
+    // Removed center-units label updates
     }
-    if (energy_label) {
-        // Optional: match units label color to value color for cohesion
-        int watts = value;
-        lv_color_t color = (watts < 0) ? lv_color_hex(0x40FF6D)
-                                       : (watts <= 1500 ? lv_color_hex(0xFFA500)
-                                                        : lv_color_hex(0xFF3B30));
-        lv_obj_set_style_text_color(energy_label, color, LV_PART_MAIN);
-    }
+    // Removed bottom units label color sync
 }
 
 lv_obj_t *energy_screen_get_root(void) {
