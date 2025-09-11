@@ -3,7 +3,7 @@
 #include <string.h>
 #include "energy_screen.h"
 #include "lvgl.h"
-extern const lv_img_dsc_t ui_img_gauge_face_kw_final_png;
+extern const lv_img_dsc_t ui_img_rect1_png;
 
 // ---- Gauge layout tuning --------------------------------------------------
 // Base logical centre of the 360x360 dial
@@ -20,6 +20,10 @@ extern const lv_img_dsc_t ui_img_gauge_face_kw_final_png;
 // Peak marker geometry (short dashes near arc circumference)
 #define PEAK_MARKER_OUTER_INSET 6      // distance inward from arc radius to outer endpoint
 #define PEAK_MARKER_LENGTH     22      // length of the short peak marker line
+// Trim a bit from the indicator's visible end to soften the edge (in degrees)
+#ifndef ARC_END_TRIM_DEG
+#define ARC_END_TRIM_DEG 2
+#endif
 
 // Concentric arc objects (outer=balance, mid=solar, inner=used)
 static lv_obj_t *arc_balance = NULL;
@@ -172,19 +176,19 @@ static float energy_value_to_angle(float value) {
     }
 }
 
-// Draw a short peak marker near the circumference (does not originate at centre)
-static void draw_peak_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, float value, bool invert, int r, lv_style_t *style, lv_obj_t *parent, int center_x, int center_y) {
+// Draw a short peak marker exactly on an arc's centerline (does not originate at centre)
+static void draw_peak_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, float value, bool invert, int container_r, int arc_width, lv_style_t *style, lv_obj_t *parent, int center_x, int center_y) {
     float angle = energy_value_to_angle(invert ? -value : value);
     float rad = angle * (M_PI / 180.0f);
-    // Outer and inner radii for the short tick
-    int outer_r = r - PEAK_MARKER_OUTER_INSET;
+    // Place the outer endpoint on the arc centerline: container radius minus half the arc stroke width
+    int outer_r = container_r - (arc_width / 2);
     int inner_r = outer_r - PEAK_MARKER_LENGTH;
     if (inner_r < 0) inner_r = 0;
 
-    int x_outer = r + (int)roundf(outer_r * sinf(rad));
-    int y_outer = r - (int)roundf(outer_r * cosf(rad));
-    int x_inner = r + (int)roundf(inner_r * sinf(rad));
-    int y_inner = r - (int)roundf(inner_r * cosf(rad));
+    int x_outer = container_r + (int)roundf(outer_r * sinf(rad));
+    int y_outer = container_r - (int)roundf(outer_r * cosf(rad));
+    int x_inner = container_r + (int)roundf(inner_r * sinf(rad));
+    int y_inner = container_r - (int)roundf(inner_r * cosf(rad));
 
     line_points[0].x = x_inner;
     line_points[0].y = y_inner;
@@ -193,8 +197,8 @@ static void draw_peak_marker_line(lv_obj_t **line_obj, lv_point_t *line_points, 
 
     if (!*line_obj) {
         *line_obj = lv_line_create(parent);
-        lv_obj_set_pos(*line_obj, center_x - r, center_y - r);
-        lv_obj_set_size(*line_obj, 2*r, 2*r);
+        lv_obj_set_pos(*line_obj, center_x - container_r, center_y - container_r);
+        lv_obj_set_size(*line_obj, 2*container_r, 2*container_r);
         lv_obj_move_foreground(*line_obj);
         lv_obj_add_style(*line_obj, style, LV_PART_MAIN);
     }
@@ -213,48 +217,56 @@ static void ensure_arcs_created(lv_obj_t *parent) {
     // Create balance (outer) arc
     if (!arc_balance) {
         arc_balance = lv_arc_create(parent);
-        lv_obj_set_size(arc_balance, 300, 300); // diameter
+        // Move inward by 20px (radius): diameter reduced by 40px
+        lv_obj_set_size(arc_balance, 260, 260); // diameter
         lv_obj_center(arc_balance);
         lv_obj_clear_flag(arc_balance, LV_OBJ_FLAG_CLICKABLE);
         // Background span of gauge: -135..+135 around top => 135 -> 45 (wrap)
         lv_arc_set_bg_angles(arc_balance, 135, 45);
         // Thicker balance arc
-        lv_obj_set_style_arc_width(arc_balance, 18, LV_PART_MAIN);       // track
-        lv_obj_set_style_arc_width(arc_balance, 18, LV_PART_INDICATOR);  // indicator
+    lv_obj_set_style_arc_width(arc_balance, 18, LV_PART_MAIN);       // track
+    lv_obj_set_style_arc_width(arc_balance, 18, LV_PART_INDICATOR);  // indicator
+    // Flat ends: remove rounded caps
+    lv_obj_set_style_arc_rounded(arc_balance, 0, LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(arc_balance, 0, LV_PART_INDICATOR);
         lv_obj_set_style_arc_color(arc_balance, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
         lv_obj_set_style_arc_opa(arc_balance, LV_OPA_40, LV_PART_MAIN);
         lv_obj_set_style_arc_color(arc_balance, color_balance, LV_PART_INDICATOR);
-        radius_balance = 150;
+        radius_balance = 80; // -20px to keep peak markers aligned
     }
 
     // Create solar (middle) arc
     if (!arc_solar) {
         arc_solar = lv_arc_create(parent);
-        lv_obj_set_size(arc_solar, 260, 260);
+        lv_obj_set_size(arc_solar, 220, 220); // -40px diameter
         lv_obj_center(arc_solar);
         lv_obj_clear_flag(arc_solar, LV_OBJ_FLAG_CLICKABLE);
         lv_arc_set_bg_angles(arc_solar, 135, 45);
-        lv_obj_set_style_arc_width(arc_solar, 12, LV_PART_MAIN);
-        lv_obj_set_style_arc_width(arc_solar, 12, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(arc_solar, 12, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(arc_solar, 12, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_rounded(arc_solar, 0, LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(arc_solar, 0, LV_PART_INDICATOR);
         lv_obj_set_style_arc_color(arc_solar, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
         lv_obj_set_style_arc_opa(arc_solar, LV_OPA_40, LV_PART_MAIN);
         lv_obj_set_style_arc_color(arc_solar, color_solar, LV_PART_INDICATOR);
-        radius_solar = 130;
+        radius_solar = 70; // -20px
     }
 
     // Create used (inner) arc
     if (!arc_used) {
         arc_used = lv_arc_create(parent);
-        lv_obj_set_size(arc_used, 220, 220);
+        lv_obj_set_size(arc_used, 180, 180); // -40px diameter
         lv_obj_center(arc_used);
         lv_obj_clear_flag(arc_used, LV_OBJ_FLAG_CLICKABLE);
         lv_arc_set_bg_angles(arc_used, 135, 45);
-        lv_obj_set_style_arc_width(arc_used, 10, LV_PART_MAIN);
-        lv_obj_set_style_arc_width(arc_used, 10, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(arc_used, 10, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(arc_used, 10, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_rounded(arc_used, 0, LV_PART_MAIN);
+    lv_obj_set_style_arc_rounded(arc_used, 0, LV_PART_INDICATOR);
         lv_obj_set_style_arc_color(arc_used, lv_color_hex(0x2A2A2A), LV_PART_MAIN);
         lv_obj_set_style_arc_opa(arc_used, LV_OPA_40, LV_PART_MAIN);
         lv_obj_set_style_arc_color(arc_used, color_used, LV_PART_INDICATOR);
-        radius_used = 110;
+        radius_used = 50; // -20px
     }
 
     // Peak line styles
@@ -285,32 +297,63 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
 
     // Map values to angles relative to top (270deg)
     float a_bal = energy_value_to_angle(energy_balance);
-    float a_sol = energy_value_to_angle(curr_solar);
+    float a_sol = energy_value_to_angle(-curr_solar);
     float a_use = energy_value_to_angle(curr_used);
 
     const int base_top = 270; // LVGL angle for top
 
     int bal_start = (a_bal < 0) ? (base_top + (int)lroundf(a_bal)) : base_top;
     int bal_end   = (a_bal < 0) ? base_top : (base_top + (int)lroundf(a_bal));
+    // Apply end trim: trim the variable end for positive values, or the variable start for negative values
+    if (a_bal > 0) {
+        bal_end -= ARC_END_TRIM_DEG;
+        if (bal_end < bal_start) bal_end = bal_start;
+    } else if (a_bal < 0) {
+        bal_start += ARC_END_TRIM_DEG;
+        if (bal_start > bal_end) bal_start = bal_end;
+    }
     lv_arc_set_start_angle(arc_balance, bal_start);
     lv_arc_set_end_angle(arc_balance, bal_end);
 
     int sol_start = (a_sol < 0) ? (base_top + (int)lroundf(a_sol)) : base_top;
     int sol_end   = (a_sol < 0) ? base_top : (base_top + (int)lroundf(a_sol));
+    if (a_sol > 0) {
+        sol_end -= ARC_END_TRIM_DEG;
+        if (sol_end < sol_start) sol_end = sol_start;
+    } else if (a_sol < 0) {
+        sol_start += ARC_END_TRIM_DEG;
+        if (sol_start > sol_end) sol_start = sol_end;
+    }
     lv_arc_set_start_angle(arc_solar, sol_start);
     lv_arc_set_end_angle(arc_solar, sol_end);
 
     int use_start = (a_use < 0) ? (base_top + (int)lroundf(a_use)) : base_top;
     int use_end   = (a_use < 0) ? base_top : (base_top + (int)lroundf(a_use));
+    if (a_use > 0) {
+        use_end -= ARC_END_TRIM_DEG;
+        if (use_end < use_start) use_end = use_start;
+    } else if (a_use < 0) {
+        use_start += ARC_END_TRIM_DEG;
+        if (use_start > use_end) use_start = use_end;
+    }
     lv_arc_set_start_angle(arc_used, use_start);
     lv_arc_set_end_angle(arc_used, use_end);
 
-    // Draw peak ticks on corresponding arc radii
+    // Draw peak ticks on corresponding arc centerlines
     int center_x = GAUGE_BASE_CENTER_X + GAUGE_CENTER_OFFSET_X;
     int center_y = GAUGE_BASE_CENTER_Y + GAUGE_CENTER_OFFSET_Y;
 
-    draw_peak_marker_line(&peak_solar_line, peak_solar_points, peak_solar, true, radius_solar, &style_peak_solar, parent, center_x, center_y);
-    draw_peak_marker_line(&peak_used_line,  peak_used_points,  peak_used,  false, radius_used,  &style_peak_used,  parent, center_x, center_y);
+    // Container radii are half of arc object sizes (they are centered squares)
+    int cont_r_solar = lv_obj_get_width(arc_solar) / 2;
+    int cont_r_used  = lv_obj_get_width(arc_used) / 2;
+    // Arc stroke widths from styles
+    int width_solar = lv_obj_get_style_arc_width(arc_solar, LV_PART_INDICATOR);
+    if (width_solar <= 0) width_solar = lv_obj_get_style_arc_width(arc_solar, LV_PART_MAIN);
+    int width_used  = lv_obj_get_style_arc_width(arc_used, LV_PART_INDICATOR);
+    if (width_used <= 0) width_used = lv_obj_get_style_arc_width(arc_used, LV_PART_MAIN);
+
+    draw_peak_marker_line(&peak_solar_line, peak_solar_points, peak_solar, true, cont_r_solar, width_solar, &style_peak_solar, parent, center_x, center_y);
+    draw_peak_marker_line(&peak_used_line,  peak_used_points,  peak_used,  false, cont_r_used,  width_used,  &style_peak_used,  parent, center_x, center_y);
 
     // Store last-known values for instant UI refresh on taps and update center now
     last_balance_val = energy_balance;
@@ -330,7 +373,7 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
 
     // Add the gauge face image as a background
     lv_obj_t *bg_img = lv_img_create(energy_root);
-    lv_img_set_src(bg_img, &ui_img_gauge_face_kw_final_png);
+    lv_img_set_src(bg_img, &ui_img_rect1_png);
     lv_obj_set_size(bg_img, 360, 360);
     lv_obj_align(bg_img, LV_ALIGN_CENTER, 0, 0);
     lv_obj_move_background(bg_img); // Ensure it's at the back

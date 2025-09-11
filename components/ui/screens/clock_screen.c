@@ -20,7 +20,8 @@ static void date_hide_timer_cb(lv_timer_t *t) {
 
 static void clock_event_cb(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_CLICKED || code == LV_EVENT_SHORT_CLICKED) {
+    if (code == LV_EVENT_PRESSED) {
+        // Respond immediately on touch
         clock_controller_touch();
     } else if (code == LV_EVENT_LONG_PRESSED) {
         // Show date for 3 seconds, then auto-hide

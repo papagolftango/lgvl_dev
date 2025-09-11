@@ -2,7 +2,7 @@
 #include "ui/screens/home_screen.h"
 #include <string.h>
 
-static char s_motd[128] = "Welcome home – Message of the day";
+static char s_motd[128] = "Message of the day";
 static volatile bool s_motd_dirty = false;
 
 void home_controller_init(void) {

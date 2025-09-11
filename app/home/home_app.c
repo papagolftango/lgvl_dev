@@ -121,7 +121,11 @@ static void update_bin_debug_labels(void) {
     struct tm now;
     time_manager_get_localtime(&now);
     int week = iso_week_number(&now);
-    if (week < 1) week = 1; if (week > 52) week = 52;
+    if (week < 1) {
+        week = 1;
+    } else if (week > 52) {
+        week = 52;
+    }
     // Retrieve schedule entry from local table
     uint8_t entry = bin_schedule[(week - 1) % 52];
 

@@ -1,5 +1,6 @@
 idf_component_register(
     SRCS images/ui_img_gauge_face_kw_final_png.c
+        images/ui_img_rect1_png.c
         images/ui_img_black_circle_360_png.c
         screens/clock_screen.c
         screens/energy_screen.c
