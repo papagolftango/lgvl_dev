@@ -137,6 +137,8 @@ static void refresh_center_display(void) {
 
     lv_color_t c = color_for_value(value);
     lv_obj_set_style_text_color(balance_value_label, c, LV_PART_MAIN);
+    // Match the title color to the numeric value color
+    lv_obj_set_style_text_color(balance_title_label, c, LV_PART_MAIN);
 }
 
 static void cycle_center_mode(void) {
@@ -347,7 +349,8 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     balance_title_label = lv_label_create(energy_root);
     lv_label_set_text(balance_title_label, "Balance");
     lv_obj_add_style(balance_title_label, &style_balance_title_label, LV_PART_MAIN);
-    lv_obj_align(balance_title_label, LV_ALIGN_CENTER, 0, 20);
+    // Move title up a bit to increase spacing from the number
+    lv_obj_align(balance_title_label, LV_ALIGN_CENTER, 0, 10);
 
     balance_value_label = lv_label_create(energy_root);
     lv_label_set_text(balance_value_label, "0");
@@ -389,6 +392,8 @@ void energy_screen_set_value(int value) {
             color = lv_color_hex(0xFF3B30); // red
         }
         lv_obj_set_style_text_color(balance_value_label, color, LV_PART_MAIN);
+    // Keep the title the same color as the number
+    lv_obj_set_style_text_color(balance_title_label, color, LV_PART_MAIN);
     // Removed center-units label updates
     }
     // Removed bottom units label color sync
