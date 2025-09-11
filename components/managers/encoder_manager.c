@@ -3,14 +3,17 @@
 #include "user_config.h"
 #include "bidi_switch_knob.h"
 #include "app_manager.h"
+#include "power_manager.h"
 
 static void knob_left_cb(void *arg, void *data) {
     ESP_LOGI("encoder", "Knob turned LEFT");
+    power_manager_notify_activity();
     // Optionally, implement previous app logic here
 }
 
 static void knob_right_cb(void *arg, void *data) {
     ESP_LOGI("encoder", "Knob turned RIGHT");
+    power_manager_notify_activity();
     app_manager_next_app();
 }
 

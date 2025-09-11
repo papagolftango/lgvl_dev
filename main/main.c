@@ -29,6 +29,18 @@
 
 static const char *TAG = "Home Help";
 
+// Dim/restore backlight on power state changes
+static void power_state_changed(power_state_t state, void *user) {
+    (void)user;
+    if (state == POWER_IDLE) {
+        // Dim backlight when idle
+        setUpduty(LCD_PWM_MODE_25);
+    } else {
+        // Restore backlight when active
+        setUpduty(LCD_PWM_MODE_50);
+    }
+}
+
 // For development: Erase NVS and restart to force provisioning
 void erase_nvs_and_restart() {
     esp_err_t err = nvs_flash_erase();
@@ -125,8 +137,9 @@ void app_main(void)
     // Initialize and start the app system (apps, controllers, UI)
     app_manager_init();
 
-    // Initialize power manager
-    power_manager_init();
+    // Initialize power manager with inactivity timeout (seconds) and callback
+    power_manager_init(30);
+    power_manager_register_state_cb(power_state_changed, NULL);
 
     bool last_synced = false;
     while (1) {

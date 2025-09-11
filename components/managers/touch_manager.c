@@ -1,5 +1,6 @@
 #include "haptic_manager.h"
 #include "touch_manager.h"
+#include "power_manager.h"
 
 #include <stdint.h>
 
@@ -32,7 +33,8 @@ static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
         if (data->point.y > LCD_V_RES) data->point.y = LCD_V_RES;
         data->state = LV_INDEV_STATE_PRESSED;
         ESP_LOGI("TP", "Touch detected: (%d, %d)", data->point.x, data->point.y);
-        haptic_click();
+    haptic_click();
+    power_manager_notify_activity();
         if (user_cb) {
             user_cb(drv, data);
         }
