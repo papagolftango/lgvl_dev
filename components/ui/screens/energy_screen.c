@@ -277,15 +277,6 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     lv_arc_set_start_angle(arc_balance, bal_start);
     lv_arc_set_end_angle(arc_balance, bal_end);
 
-    int sol_start = (a_sol < 0) ? (base_top + (int)lroundf(a_sol)) : base_top;
-    int sol_end   = (a_sol < 0) ? base_top : (base_top + (int)lroundf(a_sol));
-    if (a_sol > 0) {
-        sol_end -= ARC_END_TRIM_DEG;
-        if (sol_end < sol_start) sol_end = sol_start;
-    } else if (a_sol < 0) {
-        sol_start += ARC_END_TRIM_DEG;
-        if (sol_start > sol_end) sol_start = sol_end;
-    }
     // Draw markers on balance arc centerline
     int center_x = GAUGE_BASE_CENTER_X + GAUGE_CENTER_OFFSET_X;
     int center_y = GAUGE_BASE_CENTER_Y + GAUGE_CENTER_OFFSET_Y;
