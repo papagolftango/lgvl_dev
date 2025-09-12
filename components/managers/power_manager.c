@@ -8,8 +8,10 @@ static const char *TAG = "power_manager";
 
 // State
 static volatile power_state_t s_state = POWER_ACTIVE;
-static uint32_t s_timeout_sec = 60; // default
+static uint32_t s_timeout_sec = 6; // default seconds
 static TimerHandle_t s_idle_timer = NULL;
+// Worker task to handle state transitions outside Timer Service context
+static TaskHandle_t s_worker_task = NULL;
 
 // Callback registry (single for now; can be extended if needed)
 static power_state_cb_t s_cb = NULL;
@@ -25,8 +27,21 @@ static void power_manager_set_state(power_state_t new_state) {
 
 static void idle_timer_cb(TimerHandle_t xTimer) {
     (void)xTimer;
-    ESP_LOGI(TAG, "Inactivity timeout reached; entering IDLE");
-    power_manager_set_state(POWER_IDLE);
+    // Avoid heavy work or logging in Timer Service context to prevent stack canary trips.
+    // Signal the worker task to perform the transition and logging.
+    if (s_worker_task) {
+    xTaskNotifyGive(s_worker_task);
+    }
+}
+
+static void power_manager_worker(void *arg) {
+    (void)arg;
+    for (;;) {
+        // Wait for timer to signal an idle transition
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        ESP_LOGI(TAG, "Inactivity timeout reached; entering IDLE");
+        power_manager_set_state(POWER_IDLE);
+    }
 }
 
 void power_manager_notify_activity(void) {
@@ -65,6 +80,14 @@ void power_manager_init(uint32_t inactivity_seconds) {
     if (!s_idle_timer) {
         ESP_LOGE(TAG, "Failed to create idle timer");
         return;
+    }
+    // Create a small worker task to process transitions and run callbacks safely
+    if (s_worker_task == NULL) {
+        const uint32_t stack_words = 2048; // adjust if needed
+        BaseType_t ok = xTaskCreate(power_manager_worker, "pm_worker", stack_words, NULL, tskIDLE_PRIORITY + 1, &s_worker_task);
+        if (ok != pdPASS) {
+            ESP_LOGE(TAG, "Failed to create pm_worker task");
+        }
     }
     // Start in ACTIVE and arm timer
     power_manager_set_state(POWER_ACTIVE);

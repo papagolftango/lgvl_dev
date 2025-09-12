@@ -34,7 +34,7 @@ static void power_state_changed(power_state_t state, void *user) {
     (void)user;
     if (state == POWER_IDLE) {
         // Dim backlight when idle
-        setUpduty(LCD_PWM_MODE_25);
+        setUpduty(LCD_PWM_MODE_0);
     } else {
         // Restore backlight when active
         setUpduty(LCD_PWM_MODE_50);
