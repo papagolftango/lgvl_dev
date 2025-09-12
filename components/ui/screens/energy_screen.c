@@ -351,8 +351,12 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     // Central balance title and numeric value, nearer the center
     if (!balance_label_styles_initialized) {
     lv_style_init(&style_balance_title_label);
-// Prefer slightly larger title font (20/18), fallback to existing sizes
-#if LV_FONT_MONTSERRAT_20
+// Increase title font by ~2 sizes (24/22), with fallbacks
+#if LV_FONT_MONTSERRAT_24
+    lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_24);
+#elif LV_FONT_MONTSERRAT_22
+    lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_22);
+#elif LV_FONT_MONTSERRAT_20
     lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_20);
 #elif LV_FONT_MONTSERRAT_18
     lv_style_set_text_font(&style_balance_title_label, &lv_font_montserrat_18);
@@ -366,8 +370,14 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     lv_style_set_text_opa(&style_balance_title_label, LV_OPA_90);
 
     lv_style_init(&style_balance_value_label);
-// Prefer 1–2 sizes larger for the main number (28/26), with sensible fallbacks
-#if LV_FONT_MONTSERRAT_28
+// Prefer an even larger main number (34/32/30/28), with sensible fallbacks
+#if LV_FONT_MONTSERRAT_34
+    lv_style_set_text_font(&style_balance_value_label, &lv_font_montserrat_34);
+#elif LV_FONT_MONTSERRAT_32
+    lv_style_set_text_font(&style_balance_value_label, &lv_font_montserrat_32);
+#elif LV_FONT_MONTSERRAT_30
+    lv_style_set_text_font(&style_balance_value_label, &lv_font_montserrat_30);
+#elif LV_FONT_MONTSERRAT_28
     lv_style_set_text_font(&style_balance_value_label, &lv_font_montserrat_28);
 #elif LV_FONT_MONTSERRAT_26
     lv_style_set_text_font(&style_balance_value_label, &lv_font_montserrat_26);
