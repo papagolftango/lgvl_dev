@@ -9,6 +9,9 @@
 #include "esp_netif.h"
 #include "esp_event.h"
 #include "esp_wifi.h"
+#if CONFIG_PM_ENABLE
+#include "esp_pm.h"
+#endif
 
 #include "user_config.h"
 #include "../drivers/display_driver.h"
@@ -29,15 +32,58 @@
 
 static const char *TAG = "Home Help";
 
+#if CONFIG_PM_ENABLE
+// Power management lock to prevent light sleep while ACTIVE
+static esp_pm_lock_handle_t s_no_ls_lock = NULL;
+
+static void pm_init(void) {
+    // Configure Dynamic Frequency Scaling (DFS) and allow light sleep when unlocked
+    esp_pm_config_t pm = {
+        .max_freq_mhz = 240,
+#if CONFIG_IDF_TARGET_ESP32
+        .min_freq_mhz = 40,
+#else
+        // ESP32-S3 typical min is 80 MHz
+        .min_freq_mhz = 80,
+#endif
+        .light_sleep_enable = true,
+    };
+    esp_err_t err = esp_pm_configure(&pm);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_pm_configure failed: %s", esp_err_to_name(err));
+    }
+    // Create a NO_LIGHT_SLEEP lock so we can keep system responsive while ACTIVE
+    err = esp_pm_lock_create(ESP_PM_NO_LIGHT_SLEEP, 0, "ui_active", &s_no_ls_lock);
+    if (err == ESP_OK && s_no_ls_lock) {
+        // Default to ACTIVE at boot: prevent light sleep until we go IDLE
+        esp_pm_lock_acquire(s_no_ls_lock);
+    } else {
+        ESP_LOGW(TAG, "esp_pm_lock_create failed: %s", esp_err_to_name(err));
+    }
+}
+#endif
+
 // Dim/restore backlight on power state changes
 static void power_state_changed(power_state_t state, void *user) {
     (void)user;
     if (state == POWER_IDLE) {
         // Dim backlight when idle
         setUpduty(LCD_PWM_MODE_0);
+#if CONFIG_PM_ENABLE
+        // Allow light sleep while idle
+        if (s_no_ls_lock) {
+            esp_pm_lock_release(s_no_ls_lock);
+        }
+#endif
     } else {
         // Restore backlight when active
         setUpduty(LCD_PWM_MODE_50);
+#if CONFIG_PM_ENABLE
+        // Prevent light sleep to keep UI snappy while active
+        if (s_no_ls_lock) {
+            esp_pm_lock_acquire(s_no_ls_lock);
+        }
+#endif
     }
 }
 
@@ -98,6 +144,13 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     // Create default WiFi AP netif (enables DHCP server for AP mode)
     esp_netif_create_default_wifi_ap();
+
+#if CONFIG_PM_ENABLE
+    // Configure power management (DFS + light sleep) and keep light sleep disabled until idle
+    pm_init();
+#else
+    ESP_LOGI(TAG, "CONFIG_PM_ENABLE is disabled; DFS/light sleep not configured");
+#endif
 
     // --- Time manager initialization ---
     time_manager_init();
