@@ -14,4 +14,7 @@ void mqtt_manager_load_credentials(void);
 // updates to their app/controller tick via a dirty flag.
 void mqtt_manager_register_app_event_handler(mqtt_app_event_handler_t handler, void *handler_args);
 
+// Connect/start the MQTT client using loaded credentials.
+void mqtt_manager_connect(void);
+
 #endif // MQTT_MANAGER_H

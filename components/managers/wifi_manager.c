@@ -15,6 +15,7 @@
 // Project headers
 #include "wifi_manager.h"
 #include "provisioning_server.h"
+#include "mqtt_manager.h"
 
 // Defines
 #define WIFI_NVS_NAMESPACE "wifi_cfg"
@@ -102,7 +103,11 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
         char ipbuf[16];
     ESP_LOGI("wifi_manager", "Got IP: %s", esp_ip4addr_ntoa(&event->ip_info.ip, ipbuf, sizeof(ipbuf)));
     ESP_LOGI("wifi_manager", "Calling mqtt_manager_connect() after IP_EVENT_STA_GOT_IP");
-    extern void mqtt_manager_connect(void);
+    // Enable WiFi power save (MIN_MODEM for balanced latency/power). Log warning on failure but do not abort.
+    esp_err_t ps_err = esp_wifi_set_ps(WIFI_PS_MIN_MODEM);
+    if (ps_err != ESP_OK) {
+        ESP_LOGW("wifi_manager", "esp_wifi_set_ps(MIN_MODEM) failed: %s", esp_err_to_name(ps_err));
+    }
     mqtt_manager_connect();
     }
 }
