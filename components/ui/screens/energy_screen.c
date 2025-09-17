@@ -142,6 +142,15 @@ static void cycle_center_mode(void) {
     refresh_center_display();
 }
 
+void energy_screen_next_mode(void) {
+    cycle_center_mode();
+}
+
+void energy_screen_prev_mode(void) {
+    current_center_mode = (center_mode_t)((((int)current_center_mode) - 1 + CENTER_MODE_COUNT) % CENTER_MODE_COUNT);
+    refresh_center_display();
+}
+
 static void energy_root_event_cb(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
     if (code == LV_EVENT_RELEASED) {

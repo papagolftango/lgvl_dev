@@ -7,11 +7,11 @@ extern "C" {
 // App ID enum
 typedef enum {
   APP_ID_ENERGY = 0,
-  APP_ID_HOME,
   APP_ID_CLOCK,
+  APP_ID_COUNT,         /* for testing just allow the 1st 2 apps*/
+  APP_ID_HOME,
   APP_ID_SETTINGS,
-  APP_ID_WEATHER,
-  APP_ID_COUNT
+  APP_ID_WEATHER
 } app_id_t;
 
 // App function pointer types
@@ -42,6 +42,13 @@ void app_manager_tick(void);
 void app_manager_next_app(void);
 void app_manager_call_active_touch(void);
 void app_manager_cleanup(void);
+
+#include "managers/encoder_manager.h" // for encoder_event_t
+
+// Per-app encoder handler registration: one callback per app, returning true if handled
+typedef bool (*app_encoder_cb_t)(encoder_event_t evt);
+void app_manager_register_encoder_cb(app_id_t app, app_encoder_cb_t cb);
+void app_manager_unregister_encoder_cb(app_id_t app);
 
 #ifdef __cplusplus
 }

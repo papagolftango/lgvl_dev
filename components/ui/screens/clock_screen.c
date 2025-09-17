@@ -34,6 +34,15 @@ static void clock_event_cb(lv_event_t *e) {
     }
 }
 
+void clock_screen_show_date_briefly(void) {
+    if (date_label) lv_obj_clear_flag(date_label, LV_OBJ_FLAG_HIDDEN);
+    if (date_hide_timer) {
+        lv_timer_reset(date_hide_timer);
+    } else {
+        date_hide_timer = lv_timer_create(date_hide_timer_cb, 3000, NULL);
+    }
+}
+
 lv_obj_t *clock_screen_create(lv_obj_t *parent) {
     if (clock_root) return clock_root;
     clock_root = lv_obj_create(parent);

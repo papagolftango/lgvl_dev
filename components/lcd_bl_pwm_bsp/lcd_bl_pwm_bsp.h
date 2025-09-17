@@ -22,6 +22,8 @@ extern "C" {
 
 void lcd_bl_pwm_bsp_init(uint16_t duty);
 void setUpduty(uint16_t duty);
+// Smoothly fade to target duty over duration_ms milliseconds using LEDC fade
+void lcd_bl_pwm_bsp_fade_to(uint16_t duty, uint32_t duration_ms);
 
 #ifdef __cplusplus
 }

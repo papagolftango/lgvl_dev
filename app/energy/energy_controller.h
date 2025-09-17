@@ -5,18 +5,11 @@ extern "C" {
 
 
 
-// Draw the pointer for the energy balance (controller-owned implementation)
-void draw_pointer_for_balance(float energy_balance);
-
-// Call this to update all UI elements from the model (tick)
-void energy_controller_tick(void);
-
 void energy_controller_init(void);
 void energy_controller_cleanup(void);
-
-
-// Switch to the next app
-void switch_to_next_app(void);
+void energy_controller_tick(void);
+void energy_controller_next_mode(void);
+void energy_controller_prev_mode(void);
 
 #ifdef __cplusplus
 }

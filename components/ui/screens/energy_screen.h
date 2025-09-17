@@ -22,6 +22,10 @@ void energy_screen_set_value(int value);
 // Get the root object for persistent screen switching
 lv_obj_t *energy_screen_get_root(void);
 
+// Cycle the center display mode (next/previous). Safe to call from controller.
+void energy_screen_next_mode(void);
+void energy_screen_prev_mode(void);
+
 #ifdef __cplusplus
 }
 #endif

@@ -6,7 +6,16 @@
     "lcd_touch_bsp.h": "c",
     "iot_knob.h": "c",
     "bidi_switch_knob.h": "c",
-    "user_config.h": "c"
+    "user_config.h": "c",
+    "compare": "c",
+    "cstddef": "c",
+    "limits": "c",
+    "type_traits": "c",
+    "vector": "c",
+    "xmemory": "c",
+    "xstring": "c",
+    "xutility": "c",
+    "app_manager.h": "c"
   },
   "idf.espIdfPathWin": "c:\\espressif\\frameworks\\esp-idf-v5.5.1\\esp-idf",
   "idf.toolsPathWin": "c:\\espressif\\",

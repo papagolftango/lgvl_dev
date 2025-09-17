@@ -60,3 +60,13 @@ void clock_controller_touch(void) {
     // Force immediate refresh of time string
     last_sec = -1;
 }
+
+void clock_controller_toggle_12_24(void) {
+    clock_controller_touch();
+}
+
+void clock_controller_show_date_briefly(void) {
+    // Ask screen to show date for ~3s like a short press did
+    extern void clock_screen_show_date_briefly(void);
+    clock_screen_show_date_briefly();
+}

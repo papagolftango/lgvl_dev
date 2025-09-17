@@ -34,6 +34,15 @@ void energy_controller_tick(void) {
     draw_pointer_and_peaks(energy_balance, energy_peak_solar, energy_peak_used, energy_solar, energy_used);
 }
 
+void energy_controller_next_mode(void) {
+    // Rotate through center modes (UI only); keep values the same
+    energy_screen_next_mode();
+}
+
+void energy_controller_prev_mode(void) {
+    energy_screen_prev_mode();
+}
+
 static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t base, int32_t event_id, void *event_data) {
     esp_mqtt_event_handle_t event = event_data;
     switch (event_id) {

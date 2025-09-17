@@ -67,8 +67,8 @@ static void pm_init(void) {
 static void power_state_changed(power_state_t state, void *user) {
     (void)user;
     if (state == POWER_IDLE) {
-        // Dim backlight when idle
-        setUpduty(LCD_PWM_MODE_0);
+        // Dim backlight when idle (fade out over ~10 seconds)
+        lcd_bl_pwm_bsp_fade_to(LCD_PWM_MODE_0, 10000);
 #if CONFIG_PM_ENABLE
         // Allow light sleep while idle
         if (s_no_ls_lock) {
@@ -76,8 +76,8 @@ static void power_state_changed(power_state_t state, void *user) {
         }
 #endif
     } else {
-        // Restore backlight when active
-        setUpduty(LCD_PWM_MODE_50);
+        // Restore backlight when active (quick fade-in)
+        lcd_bl_pwm_bsp_fade_to(LCD_PWM_MODE_50, 250);
 #if CONFIG_PM_ENABLE
         // Prevent light sleep to keep UI snappy while active
         if (s_no_ls_lock) {
@@ -191,7 +191,7 @@ void app_main(void)
     app_manager_init();
 
     // Initialize power manager with inactivity timeout (seconds) and callback
-    power_manager_init(30);
+    power_manager_init(300);
     power_manager_register_state_cb(power_state_changed, NULL);
 
     bool last_synced = false;

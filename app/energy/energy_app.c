@@ -8,8 +8,15 @@
 
 #include "energy_controller.h"
 #include "managers/touch_manager.h"
+#include "managers/encoder_manager.h"
 
 static const char *TAG = "energy_app";
+
+static bool energy_on_encoder(encoder_event_t evt) {
+    if (evt == ENCODER_EVT_RIGHT) { energy_controller_next_mode(); return true; }
+    if (evt == ENCODER_EVT_LEFT)  { energy_controller_prev_mode(); return true; }
+    return false;
+}
 // Static/global variables
 static bool screen_active = false;
 
@@ -52,8 +59,10 @@ void energy_app_init(void) {
 
     // Register daily callback to clear peaks
     time_manager_register_day_callback(energy_daily_actions_cb);
-    // Register touch callback for this app
+    // Register touch callback for this app (if needed for gestures)
     touch_manager_register_user_cb(energy_app_touch);
+    // Register encoder handler for this app
+    app_manager_register_encoder_cb(APP_ID_ENERGY, energy_on_encoder);
     screen_active = true;
     ESP_LOGI(TAG, "energy_app_init: end");
     energy_controller_init();

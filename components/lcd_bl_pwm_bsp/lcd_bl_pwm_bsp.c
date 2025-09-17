@@ -38,10 +38,27 @@ void lcd_bl_pwm_bsp_init(uint16_t duty)
   };
   ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_timer_config(&timer_conf));
   ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_channel_config(&ledc_conf));
+  // Install LEDC fade service once
+  static bool s_fade_installed = false;
+  if (!s_fade_installed) {
+    ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_fade_func_install(0));
+    s_fade_installed = true;
+  }
 }
 
 void setUpduty(uint16_t duty)
 {
   ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, duty));
   ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1));
+}
+
+void lcd_bl_pwm_bsp_fade_to(uint16_t duty, uint32_t duration_ms)
+{
+  // Configure fade to target duty over duration_ms milliseconds and block until complete
+  esp_err_t err = ledc_set_fade_with_time(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, duty, duration_ms);
+  ESP_ERROR_CHECK_WITHOUT_ABORT(err);
+  if (err == ESP_OK) {
+    // Start fade without blocking the caller; subsequent fades will override
+    ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_fade_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, LEDC_FADE_NO_WAIT));
+  }
 }
