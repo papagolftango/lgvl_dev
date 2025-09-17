@@ -39,49 +39,49 @@ static const app_descriptor_t app_table[APP_ID_COUNT] = {
     {
         .name = "Energy",
         .app_init = energy_app_init,
-        .screen_load = (app_screen_load_fn)energy_screen_create,
         .controller_init = energy_controller_init,
         .controller_cleanup = energy_controller_cleanup,
-        .app_destroy = energy_app_destroy,
         .tick = energy_controller_tick,
+        .get_root = energy_screen_get_root,
+        .create_root = energy_screen_create,
     },
 
     {
         .name = "Clock",
         .app_init = clock_app_init,
-        .screen_load = (app_screen_load_fn)clock_screen_create,
         .controller_init = clock_controller_init,
         .controller_cleanup = clock_controller_cleanup,
-        .app_destroy = clock_app_destroy,
         .tick = clock_controller_tick,
+        .get_root = clock_screen_get_root,
+        .create_root = clock_screen_create,
     },
 
-  {
+    {
         .name = "Home",
         .app_init = home_app_init,
-        .screen_load = (app_screen_load_fn)home_screen_create,
         .controller_init = home_controller_init,
         .controller_cleanup = home_controller_cleanup,
-        .app_destroy = home_app_destroy,
         .tick = home_controller_tick,
+        .get_root = home_screen_get_root,
+        .create_root = home_screen_create,
     },
  {
         .name = "Settings",
         .app_init = settings_app_init,
-        .screen_load = (app_screen_load_fn)settings_screen_create,
         .controller_init = settings_controller_init,
         .controller_cleanup = settings_controller_cleanup,
-        .app_destroy = settings_app_destroy,
         .tick = settings_controller_tick,
+     .get_root = settings_screen_get_root,
+     .create_root = settings_screen_create,
     },
     {
         .name = "Weather",
         .app_init = weather_app_init,
-        .screen_load = (app_screen_load_fn)weather_screen_create,
         .controller_init = weather_controller_init,
         .controller_cleanup = weather_controller_cleanup,
-        .app_destroy = weather_app_destroy,
         .tick = weather_controller_tick,
+        .get_root = weather_screen_get_root,
+        .create_root = weather_screen_create,
     } 
 };
 
@@ -121,29 +121,11 @@ void app_manager_set_active(app_id_t app_id) {
         app_table[current_app].controller_cleanup();
 
     lv_obj_t *root = NULL;
-    switch (app_id) {
-        case APP_ID_ENERGY:
-            root = energy_screen_get_root();
-            if (!root) root = energy_screen_create(NULL);
-            break;
-        case APP_ID_HOME:
-            root = home_screen_get_root();
-            if (!root) root = home_screen_create(NULL);
-            break;
-        case APP_ID_CLOCK:
-            root = clock_screen_get_root();
-            if (!root) root = clock_screen_create(NULL);
-            break;
-        case APP_ID_SETTINGS:
-            root = settings_screen_get_root();
-            if (!root) root = settings_screen_create(NULL);
-            break;
-        case APP_ID_WEATHER:
-            root = weather_screen_get_root();
-            if (!root) root = weather_screen_create(NULL);
-            break;
-        default:
-            break;
+    if (app_table[app_id].get_root) {
+        root = app_table[app_id].get_root();
+    }
+    if (!root && app_table[app_id].create_root) {
+        root = app_table[app_id].create_root(NULL);
     }
     if (root) {
         // Ensure LVGL operations are serialized while switching screens

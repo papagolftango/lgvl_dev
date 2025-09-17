@@ -16,21 +16,21 @@ typedef enum {
 
 // App function pointer types
 typedef void (*app_init_fn)(void); // Calls model/controller/view init for the app
-typedef void (*app_screen_load_fn)(void);
 typedef void (*app_controller_init_fn)(void);
 typedef void (*app_controller_cleanup_fn)(void);
-typedef void (*app_destroy_fn)(void);
 typedef void (*app_tick_fn)(void);
+typedef lv_obj_t *(*app_get_root_fn)(void);
+typedef lv_obj_t *(*app_create_root_fn)(lv_obj_t *parent);
 
 // App descriptor struct
 typedef struct {
     const char *name;
     app_init_fn app_init; // single entry point for all app init
-    app_screen_load_fn screen_load;
     app_controller_init_fn controller_init;
     app_controller_cleanup_fn controller_cleanup;
-    app_destroy_fn app_destroy; // single entry point for all app destroy
     app_tick_fn tick;
+  app_get_root_fn get_root;      // returns existing root or NULL
+  app_create_root_fn create_root; // creates root when NULL
 } app_descriptor_t;
 
 void app_manager_destroy(void);
