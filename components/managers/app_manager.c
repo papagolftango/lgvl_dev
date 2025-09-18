@@ -89,6 +89,9 @@ static app_id_t current_app = APP_ID_ENERGY;
 static void app_manager_on_encoder(encoder_event_t evt);
 static void app_manager_on_touch(lv_indev_drv_t *drv, lv_indev_data_t *data);
 static app_encoder_cb_t s_app_encoders[APP_ID_COUNT] = {0};
+// Defer app switches requested by touch to avoid LVGL lock reentrancy from indev read_cb
+static volatile bool s_next_app_requested = false;
+static volatile bool s_touch_down = false;
 
 void app_manager_init(void) {
     // Create mutex for thread safety
@@ -163,6 +166,11 @@ const app_descriptor_t *app_manager_get_descriptor(app_id_t app_id) {
 }
 
 void app_manager_tick(void) {
+    // Handle any deferred app switch first (outside of LVGL lock)
+    if (s_next_app_requested) {
+        s_next_app_requested = false;
+        app_manager_next_app();
+    }
     // Only call tick for the active app. Many ticks perform LVGL object updates, so
     // ensure we hold the LVGL mutex to avoid concurrent access with lv_timer_handler().
     if (app_table[current_app].tick) {
@@ -196,6 +204,14 @@ static void app_manager_on_encoder(encoder_event_t evt) {
 static void app_manager_on_touch(lv_indev_drv_t *drv, lv_indev_data_t *data) {
     LV_UNUSED(drv);
     if (data->state == LV_INDEV_STATE_PRESSED) {
-        app_manager_next_app();
+        // Only schedule once per touch press (edge-triggered)
+        if (!s_touch_down) {
+            s_touch_down = true;
+            // Defer switching apps to app_manager_tick to avoid calling LVGL APIs from indev read_cb
+            s_next_app_requested = true;
+        }
+    } else {
+        // Released
+        s_touch_down = false;
     }
 }
