@@ -262,7 +262,7 @@ void app_main(void)
     app_manager_init();
 
     // Initialize power manager with inactivity timeout (seconds) and callback
-    power_manager_init(10);
+    power_manager_init(120);
     power_manager_register_state_cb(power_state_changed, NULL);
 
     bool last_synced = false;

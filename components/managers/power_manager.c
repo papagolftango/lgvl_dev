@@ -83,7 +83,8 @@ void power_manager_init(uint32_t inactivity_seconds) {
     }
     // Create a small worker task to process transitions and run callbacks safely
     if (s_worker_task == NULL) {
-        const uint32_t stack_words = 2048; // adjust if needed
+        // Increase stack to accommodate logging and backlight fades in callback
+        const uint32_t stack_words = 4096;
         BaseType_t ok = xTaskCreate(power_manager_worker, "pm_worker", stack_words, NULL, tskIDLE_PRIORITY + 1, &s_worker_task);
         if (ok != pdPASS) {
             ESP_LOGE(TAG, "Failed to create pm_worker task");
