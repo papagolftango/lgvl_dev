@@ -1,7 +1,7 @@
 {
     "version":            "1.2",
     "project_name":       "LVGL_Test",
-    "project_version":    "a67dbf9-dirty",
+    "project_version":    "58aa7c0-dirty",
     "project_path":       "C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev",
     "idf_path":           "C:/Espressif/frameworks/esp-idf-v5.5.1",
     "build_dir":          "C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/build_new",

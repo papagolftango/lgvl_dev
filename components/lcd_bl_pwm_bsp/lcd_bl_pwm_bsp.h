@@ -1,6 +1,8 @@
 #ifndef LCD_BL_PWM_BSP_H
 #define LCD_BL_PWM_BSP_H
 
+// For bool type in C
+#include <stdbool.h>
 
 
 #define  LCD_PWM_MODE_0   0
@@ -24,6 +26,8 @@ void lcd_bl_pwm_bsp_init(uint16_t duty);
 void setUpduty(uint16_t duty);
 // Smoothly fade to target duty over duration_ms milliseconds using LEDC fade
 void lcd_bl_pwm_bsp_fade_to(uint16_t duty, uint32_t duration_ms);
+// Fade to target duty, optionally waiting for completion (true = block until done)
+void lcd_bl_pwm_bsp_fade_to_wait(uint16_t duty, uint32_t duration_ms, bool wait);
 
 #ifdef __cplusplus
 }

@@ -4,6 +4,12 @@
 #include "driver/ledc.h"
 #include "driver/gpio.h"
 #include "user_config.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+// Synchronize fade operations across threads
+static SemaphoreHandle_t s_fade_mutex = NULL;
+// Track LEDC init state (must be declared before first use)
+static bool s_ledc_inited = false;
 
 void gpio_init(void)
 {
@@ -44,6 +50,11 @@ void lcd_bl_pwm_bsp_init(uint16_t duty)
     ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_fade_func_install(0));
     s_fade_installed = true;
   }
+  // Mark initialized for later guards
+  s_ledc_inited = true;
+  if (s_fade_mutex == NULL) {
+    s_fade_mutex = xSemaphoreCreateMutex();
+  }
 }
 
 void setUpduty(uint16_t duty)
@@ -54,11 +65,25 @@ void setUpduty(uint16_t duty)
 
 void lcd_bl_pwm_bsp_fade_to(uint16_t duty, uint32_t duration_ms)
 {
-  // Configure fade to target duty over duration_ms milliseconds and block until complete
+  // Non-blocking convenience wrapper
+  lcd_bl_pwm_bsp_fade_to_wait(duty, duration_ms, false);
+}
+
+void lcd_bl_pwm_bsp_fade_to_wait(uint16_t duty, uint32_t duration_ms, bool wait)
+{
+  // Configure fade to target duty over duration_ms milliseconds
+  // Guard against calling before init to avoid crashes
+  if (!s_ledc_inited) {
+    // Try a best-effort minimal init if missed
+    // Note: rely on lcd_bl_pwm_bsp_init in normal flow; this is a safety net
+    // to prevent null ISR/fade state when power callbacks race with init.
+    lcd_bl_pwm_bsp_init(duty);
+  }
+  if (s_fade_mutex) { xSemaphoreTake(s_fade_mutex, portMAX_DELAY); }
   esp_err_t err = ledc_set_fade_with_time(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, duty, duration_ms);
   ESP_ERROR_CHECK_WITHOUT_ABORT(err);
   if (err == ESP_OK) {
-    // Start fade without blocking the caller; subsequent fades will override
-    ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_fade_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, LEDC_FADE_NO_WAIT));
+    ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_fade_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, wait ? LEDC_FADE_WAIT_DONE : LEDC_FADE_NO_WAIT));
   }
+  if (s_fade_mutex) { xSemaphoreGive(s_fade_mutex); }
 }

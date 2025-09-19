@@ -84,23 +84,27 @@ static void pm_init(void) {
 static void power_state_changed(power_state_t state, void *user) {
     (void)user;
     if (state == POWER_IDLE) {
-        // Dim backlight when idle (fade out over ~10 seconds)
-        lcd_bl_pwm_bsp_fade_to(LCD_PWM_MODE_0, 10000);
+    // Dim backlight when idle (fade out over ~10 seconds)
 #if CONFIG_PM_ENABLE
-        // Allow light sleep while idle
+    // Keep light sleep disabled until fade-out completes; LEDC fade uses ISR/timers
+    if (s_no_ls_lock) {
+        esp_pm_lock_acquire(s_no_ls_lock);
+    }
+#endif
+    lcd_bl_pwm_bsp_fade_to_wait(LCD_PWM_MODE_0, 2000, true);
+#if CONFIG_PM_ENABLE
+    // Allow light sleep while idle after fade fully completed
         if (s_no_ls_lock) {
             esp_pm_lock_release(s_no_ls_lock);
         }
 #endif
     } else {
         // Restore backlight when active (quick fade-in)
-        lcd_bl_pwm_bsp_fade_to(LCD_PWM_MODE_50, 250);
+    // Prevent light sleep during fade-in for snappy wake and to avoid LEDC ISR issues
 #if CONFIG_PM_ENABLE
-        // Prevent light sleep to keep UI snappy while active
-        if (s_no_ls_lock) {
-            esp_pm_lock_acquire(s_no_ls_lock);
-        }
+        if (s_no_ls_lock) { esp_pm_lock_acquire(s_no_ls_lock); }
 #endif
+        lcd_bl_pwm_bsp_fade_to_wait(LCD_PWM_MODE_50, 250, true);
     }
 }
 
@@ -258,7 +262,7 @@ void app_main(void)
     app_manager_init();
 
     // Initialize power manager with inactivity timeout (seconds) and callback
-    power_manager_init(300);
+    power_manager_init(10);
     power_manager_register_state_cb(power_state_changed, NULL);
 
     bool last_synced = false;
