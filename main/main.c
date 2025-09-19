@@ -30,6 +30,23 @@
 #include "encoder_manager.h"
 #include "haptic_manager.h"
 
+// Include app & controller and screen headers for registration
+#include "energy_app.h"
+#include "energy_controller.h"
+#include "ui/screens/energy_screen.h"
+#include "clock_app.h"
+#include "clock_controller.h"
+#include "ui/screens/clock_screen.h"
+#include "home_app.h"
+#include "home_controller.h"
+#include "ui/screens/home_screen.h"
+#include "settings_app.h"
+#include "settings_controller.h"
+#include "ui/screens/settings_screen.h"
+#include "weather_app.h"
+#include "weather_controller.h"
+#include "ui/screens/weather_screen.h"
+
 static const char *TAG = "Home Help";
 
 #if CONFIG_PM_ENABLE
@@ -133,6 +150,56 @@ static esp_lcd_panel_handle_t safe_display_init(void) {
     return panel_handle;
 }
 
+
+// Provide app registrations to the app manager (override weak stub)
+extern void app_manager_register(app_id_t app_id, const app_descriptor_t *desc);
+void app_manager_register_all(void) {
+    app_manager_register(APP_ID_ENERGY, &(app_descriptor_t){
+        .name = "Energy",
+        .app_init = energy_app_init,
+        .controller_init = energy_controller_init,
+        .controller_cleanup = energy_controller_cleanup,
+        .tick = energy_controller_tick,
+        .get_root = energy_screen_get_root,
+        .create_root = energy_screen_create,
+    });
+    app_manager_register(APP_ID_CLOCK, &(app_descriptor_t){
+        .name = "Clock",
+        .app_init = clock_app_init,
+        .controller_init = clock_controller_init,
+        .controller_cleanup = clock_controller_cleanup,
+        .tick = clock_controller_tick,
+        .get_root = clock_screen_get_root,
+        .create_root = clock_screen_create,
+    });
+    app_manager_register(APP_ID_HOME, &(app_descriptor_t){
+        .name = "Home",
+        .app_init = home_app_init,
+        .controller_init = home_controller_init,
+        .controller_cleanup = home_controller_cleanup,
+        .tick = home_controller_tick,
+        .get_root = home_screen_get_root,
+        .create_root = home_screen_create,
+    });
+    app_manager_register(APP_ID_SETTINGS, &(app_descriptor_t){
+        .name = "Settings",
+        .app_init = settings_app_init,
+        .controller_init = settings_controller_init,
+        .controller_cleanup = settings_controller_cleanup,
+        .tick = settings_controller_tick,
+        .get_root = settings_screen_get_root,
+        .create_root = settings_screen_create,
+    });
+    app_manager_register(APP_ID_WEATHER, &(app_descriptor_t){
+        .name = "Weather",
+        .app_init = weather_app_init,
+        .controller_init = weather_controller_init,
+        .controller_cleanup = weather_controller_cleanup,
+        .tick = weather_controller_tick,
+        .get_root = weather_screen_get_root,
+        .create_root = weather_screen_create,
+    });
+}
 
 void app_main(void)
 {

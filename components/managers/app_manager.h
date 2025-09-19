@@ -8,10 +8,10 @@ extern "C" {
 typedef enum {
   APP_ID_ENERGY = 0,
   APP_ID_CLOCK,
-  APP_ID_COUNT,         /* for testing just allow the 1st 2 apps*/
   APP_ID_HOME,
   APP_ID_SETTINGS,
-  APP_ID_WEATHER
+  APP_ID_WEATHER,
+  APP_ID_COUNT
 } app_id_t;
 
 // App function pointer types
@@ -38,6 +38,10 @@ void app_manager_init(void);
 void app_manager_set_active(app_id_t app_id);
 app_id_t app_manager_get_active(void);
 const app_descriptor_t *app_manager_get_descriptor(app_id_t app_id);
+// Registration API: call before app_manager_init to populate available apps
+void app_manager_register(app_id_t app_id, const app_descriptor_t *desc);
+// Optional helper implemented by the application to register all apps
+void app_manager_register_all(void);
 void app_manager_tick(void);
 void app_manager_next_app(void);
 void app_manager_call_active_touch(void);

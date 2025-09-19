@@ -1,0 +1,99 @@
+Command: ninja all
+[1/53] Building C object esp-idf/settings/CMakeFiles/__idf_settings.dir/settings_controller.c.obj
+[2/53] Building C object esp-idf/weather/CMakeFiles/__idf_weather.dir/weather_controller.c.obj
+[3/53] Building C object esp-idf/lcd_bl_pwm_bsp/CMakeFiles/__idf_lcd_bl_pwm_bsp.dir/lcd_bl_pwm_bsp.c.obj
+[4/53] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/__/drivers/bidi_switch_knob.c.obj
+[5/53] Building C object esp-idf/home/CMakeFiles/__idf_home.dir/home_controller.c.obj
+[6/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/images/ui_img_gauge_face_kw_final_png.c.obj
+[7/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/images/ui_img_black_circle_360_png.c.obj
+[8/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/images/ui_img_rect1_png.c.obj
+[9/53] Building C object esp-idf/energy/CMakeFiles/__idf_energy.dir/energy_controller.c.obj
+[10/53] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/__/drivers/display_driver.c.obj
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/drivers/display_driver.c:284:13: warning: 'display_test_pattern' defined but not used [-Wunused-function]
+  284 | static void display_test_pattern(void)
+      |             ^~~~~~~~~~~~~~~~~~~~
+[11/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/screens/energy_screen.c.obj
+[12/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/screens/home_screen.c.obj
+[13/53] Building C object esp-idf/weather/CMakeFiles/__idf_weather.dir/weather_app.c.obj
+[14/53] Building C object esp-idf/settings/CMakeFiles/__idf_settings.dir/settings_app.c.obj
+[15/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/screens/clock_screen.c.obj
+[16/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/screens/settings_screen.c.obj
+[17/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/screens/weather_screen.c.obj
+[18/53] Building C object esp-idf/ui/CMakeFiles/__idf_ui.dir/screens/error_screen.c.obj
+[19/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/encoder_manager.c.obj
+[20/53] Building C object esp-idf/energy/CMakeFiles/__idf_energy.dir/energy_app.c.obj
+[21/53] Building C object esp-idf/clock/CMakeFiles/__idf_clock.dir/clock_controller.c.obj
+[22/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/haptic_manager.c.obj
+[23/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/persistent_data_manager.c.obj
+[24/53] Performing build step for 'bootloader'
+[1/1] C:\WINDOWS\system32\cmd.exe /C "cd /D "C:\Users\paul.tindall\OneDrive - TTPGroup\Documents\lgvl_dev\build_new\bootloader\esp-idf\esptool_py" && C:\Espressif\python_env\idf5.5_py3.11_env\Scripts\python.exe C:/Espressif/frameworks/esp-idf-v5.5.1/components/partition_table/check_sizes.py --offset 0x8000 bootloader 0x0 "C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/build_new/bootloader/bootloader.bin""
+Bootloader binary size 0x5240 bytes. 0x2dc0 bytes (36%) free.
+[25/53] No install step for 'bootloader'
+[26/53] Building C object esp-idf/home/CMakeFiles/__idf_home.dir/home_app.c.obj
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/app/home/home_app.c:37:13: warning: 'show_garden_bin_icon' defined but not used [-Wunused-variable]
+   37 | static bool show_garden_bin_icon = false;
+      |             ^~~~~~~~~~~~~~~~~~~~
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/app/home/home_app.c:36:13: warning: 'show_general_waste_bin_icon' defined but not used [-Wunused-variable]
+   36 | static bool show_general_waste_bin_icon = false;
+      |             ^~~~~~~~~~~~~~~~~~~~~~~~~~~
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/app/home/home_app.c:35:13: warning: 'show_recycle_bin_icon' defined but not used [-Wunused-variable]
+   35 | static bool show_recycle_bin_icon = false;
+      |             ^~~~~~~~~~~~~~~~~~~~~
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/app/home/home_app.c:22:12: warning: 'home_counter' defined but not used [-Wunused-variable]
+   22 | static int home_counter = 0; // Example background data (replace with real data/event logic)
+      |            ^~~~~~~~~~~~
+[27/53] Completed 'bootloader'
+[28/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/mqtt_manager.c.obj
+[29/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/power_manager.c.obj
+[30/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/lvgl_manager.c.obj
+[31/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/touch_manager.c.obj
+[32/53] Building C object esp-idf/clock/CMakeFiles/__idf_clock.dir/clock_app.c.obj
+[33/53] Building C object esp-idf/i2c_bsp/CMakeFiles/__idf_i2c_bsp.dir/i2c_bsp.c.obj
+[34/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/provisioning_server.c.obj
+[35/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/wifi_manager.c.obj
+[36/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/time_manager.c.obj
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/components/managers/time_manager.c: In function 'time_manager_init':
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/components/managers/time_manager.c:79:9: warning: 'sntp_setoperatingmode' is deprecated: use esp_sntp_setoperatingmode() instead [-Wdeprecated-declarations]
+   79 |         sntp_setoperatingmode(SNTP_OPMODE_POLL);
+      |         ^~~~~~~~~~~~~~~~~~~~~
+In file included from C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/components/managers/time_manager.c:9:
+C:/Espressif/frameworks/esp-idf-v5.5.1/components/lwip/include/apps/esp_sntp.h:249:6: note: declared here
+  249 | void sntp_setoperatingmode(u8_t operating_mode)
+      |      ^~~~~~~~~~~~~~~~~~~~~
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/components/managers/time_manager.c:80:9: warning: 'sntp_setservername' is deprecated: use esp_sntp_setservername() instead [-Wdeprecated-declarations]
+   80 |         sntp_setservername(0, "pool.ntp.org");
+      |         ^~~~~~~~~~~~~~~~~~
+C:/Espressif/frameworks/esp-idf-v5.5.1/components/lwip/include/apps/esp_sntp.h:263:6: note: declared here
+  263 | void sntp_setservername(u8_t idx, const char *server)
+      |      ^~~~~~~~~~~~~~~~~~
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/components/managers/time_manager.c:82:9: warning: 'sntp_init' is deprecated: use esp_sntp_init() instead [-Wdeprecated-declarations]
+   82 |         sntp_init();
+      |         ^~~~~~~~~
+C:/Espressif/frameworks/esp-idf-v5.5.1/components/lwip/include/apps/esp_sntp.h:269:6: note: declared here
+  269 | void sntp_init(void)
+      |      ^~~~~~~~~
+[37/53] Building C object esp-idf/managers/CMakeFiles/__idf_managers.dir/app_manager.c.obj
+[38/53] Building C object esp-idf/main/CMakeFiles/__idf_main.dir/main.c.obj
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/main/main.c:210:10: warning: 'app_manager_register_all' defined but not used [-Wunused-function]
+  210 |     void app_manager_register_all(void) {
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~
+[39/53] Linking C static library esp-idf\main\libmain.a
+[40/53] Linking C static library esp-idf\lcd_bl_pwm_bsp\liblcd_bl_pwm_bsp.a
+[41/53] Linking C static library esp-idf\weather\libweather.a
+[42/53] Linking C static library esp-idf\settings\libsettings.a
+[43/53] Linking C static library esp-idf\home\libhome.a
+[44/53] Linking C static library esp-idf\energy\libenergy.a
+[45/53] Linking C static library esp-idf\ui\libui.a
+[46/53] Linking C static library esp-idf\clock\libclock.a
+[47/53] Linking C static library esp-idf\managers\libmanagers.a
+[48/53] Linking C static library esp-idf\i2c_bsp\libi2c_bsp.a
+[49/53] Generating esp-idf/esp_system/ld/sections.ld
+[50/53] Building C object CMakeFiles/LVGL_Test.elf.dir/project_elf_src_esp32s3.c.obj
+[51/53] Linking CXX executable LVGL_Test.elf
+FAILED: LVGL_Test.elf 
+C:\WINDOWS\system32\cmd.exe /C "cd . && C:\Espressif\tools\xtensa-esp-elf\esp-14.2.0_20241119\xtensa-esp-elf\bin\xtensa-esp32s3-elf-g++.exe -mlongcalls  -fno-builtin-memcpy -fno-builtin-memset -fno-builtin-bzero -fno-builtin-stpcpy -fno-builtin-strncpy -nostartfiles    -Wl,--cref -Wl,--defsym=IDF_TARGET_ESP32S3=0 "-Wl,--Map=C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/build_new/LVGL_Test.map" -Wl,--no-warn-rwx-segments -Wl,--orphan-handling=warn -fno-rtti -fno-lto -Wl,--gc-sections -Wl,--warn-common -T esp32s3.peripherals.ld -T esp32s3.rom.ld -T esp32s3.rom.api.ld -T esp32s3.rom.bt_funcs.ld -T esp32s3.rom.libgcc.ld -T esp32s3.rom.wdt.ld -T esp32s3.rom.version.ld -T esp32s3.rom.ble_master.ld -T esp32s3.rom.ble_50.ld -T esp32s3.rom.ble_smp.ld -T esp32s3.rom.ble_dtm.ld -T esp32s3.rom.ble_test.ld -T esp32s3.rom.ble_scan.ld -T esp32s3.rom.libc.ld -T esp32s3.rom.newlib.ld -T memory.ld -T sections.ld @CMakeFiles\LVGL_Test.elf.rsp -o LVGL_Test.elf && cd ."
+C:/Espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld.exe: esp-idf/managers/libmanagers.a(app_manager.c.obj):(.literal.app_manager_init+0x10): undefined reference to `app_manager_register_all'
+C:/Espressif/tools/xtensa-esp-elf/esp-14.2.0_20241119/xtensa-esp-elf/bin/../lib/gcc/xtensa-esp-elf/14.2.0/../../../../xtensa-esp-elf/bin/ld.exe: esp-idf/managers/libmanagers.a(app_manager.c.obj): in function `app_manager_init':
+C:/Users/paul.tindall/OneDrive - TTPGroup/Documents/lgvl_dev/components/managers/app_manager.c:37:(.text.app_manager_init+0x16): undefined reference to `app_manager_register_all'
+collect2.exe: error: ld returned 1 exit status
+ninja: build stopped: subcommand failed.

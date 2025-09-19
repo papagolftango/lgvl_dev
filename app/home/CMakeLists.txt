@@ -1,4 +1,5 @@
 idf_component_register(
-    SRCS "home_controller.c" "home_app.c"
-    INCLUDE_DIRS "." "../../components/managers" "../../components/ui/screens"
+    SRCS "home_app.c" "home_controller.c"
+    INCLUDE_DIRS "."
+    REQUIRES managers ui
 )

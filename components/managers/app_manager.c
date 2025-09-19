@@ -9,81 +9,17 @@
 
 #include "lvgl_manager.h"
 
-#include "energy/energy_app.h"
-#include "home/home_app.h"
-#include "clock/clock_app.h"
-#include "settings/settings_app.h"
-#include "weather/weather_app.h"
-
-#include "screens/energy_screen.h"
-#include "screens/home_screen.h"
-#include "screens/settings_screen.h"
-#include "screens/weather_screen.h"
-#include "screens/clock_screen.h"
-
 #include "screens/error_screen.h"
-
-#include "energy/energy_controller.h"
-#include "home/home_controller.h"
-#include "settings/settings_controller.h"
-#include "weather/weather_controller.h"
-#include "clock/clock_controller.h"
 #include "managers/touch_manager.h"
 #include "managers/encoder_manager.h"
 
 static const char *APP_MANAGER_TAG = "app_manager";
 
 static SemaphoreHandle_t app_manager_mutex = NULL;
+// Weak stub; application may override to register apps
+__attribute__((weak)) void app_manager_register_all(void) {}
 
-static const app_descriptor_t app_table[APP_ID_COUNT] = {
-    {
-        .name = "Energy",
-        .app_init = energy_app_init,
-        .controller_init = energy_controller_init,
-        .controller_cleanup = energy_controller_cleanup,
-        .tick = energy_controller_tick,
-        .get_root = energy_screen_get_root,
-        .create_root = energy_screen_create,
-    },
-
-    {
-        .name = "Clock",
-        .app_init = clock_app_init,
-        .controller_init = clock_controller_init,
-        .controller_cleanup = clock_controller_cleanup,
-        .tick = clock_controller_tick,
-        .get_root = clock_screen_get_root,
-        .create_root = clock_screen_create,
-    },
-
-    {
-        .name = "Home",
-        .app_init = home_app_init,
-        .controller_init = home_controller_init,
-        .controller_cleanup = home_controller_cleanup,
-        .tick = home_controller_tick,
-        .get_root = home_screen_get_root,
-        .create_root = home_screen_create,
-    },
- {
-        .name = "Settings",
-        .app_init = settings_app_init,
-        .controller_init = settings_controller_init,
-        .controller_cleanup = settings_controller_cleanup,
-        .tick = settings_controller_tick,
-     .get_root = settings_screen_get_root,
-     .create_root = settings_screen_create,
-    },
-    {
-        .name = "Weather",
-        .app_init = weather_app_init,
-        .controller_init = weather_controller_init,
-        .controller_cleanup = weather_controller_cleanup,
-        .tick = weather_controller_tick,
-        .get_root = weather_screen_get_root,
-        .create_root = weather_screen_create,
-    } 
-};
+static app_descriptor_t app_table[APP_ID_COUNT] = {0};
 
 static app_id_t current_app = APP_ID_ENERGY;
 static void app_manager_on_encoder(encoder_event_t evt);
@@ -99,7 +35,9 @@ void app_manager_init(void) {
         app_manager_mutex = xSemaphoreCreateMutex();
     }
 
-    // Initialize all apps (model/controller/view)
+    // Allow application to register apps before init (weak stub if not provided by app)
+    app_manager_register_all();
+    // Initialize all registered apps (model/controller/view)
     for (int i = 0; i < APP_ID_COUNT; ++i) {
         if (app_table[i].app_init)
             app_table[i].app_init();
@@ -163,6 +101,12 @@ app_id_t app_manager_get_active(void) {
 const app_descriptor_t *app_manager_get_descriptor(app_id_t app_id) {
     if (app_id >= APP_ID_COUNT) return NULL;
     return &app_table[app_id];
+}
+
+void app_manager_register(app_id_t app_id, const app_descriptor_t *desc) {
+    if (!desc) return;
+    if (app_id >= APP_ID_COUNT) return;
+    app_table[app_id] = *desc;
 }
 
 void app_manager_tick(void) {

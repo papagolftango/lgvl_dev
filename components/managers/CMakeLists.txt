@@ -15,8 +15,8 @@ idf_component_register(
 	   "touch_manager.c"
 	   "wifi_manager.c"
    INCLUDE_DIRS "." "../../drivers"
-	PRIV_REQUIRES lvgl nvs_flash esp_http_server esp_event esp_wifi freertos lcd_touch_bsp
-	REQUIRES main i2c_bsp
+    PRIV_REQUIRES lvgl nvs_flash esp_http_server esp_event esp_wifi freertos lcd_touch_bsp esp_lcd
+	REQUIRES ui i2c_bsp mqtt
 )
 
 

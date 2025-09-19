@@ -1,8 +1,7 @@
 #include "clock_screen.h"
 #include <stdio.h>
 
-// Optional: forward declare controller toggle for click
-void clock_controller_touch(void);
+// Note: controller-specific actions are handled by the clock app/controller via their own event callbacks.
 
 static lv_obj_t *clock_root = NULL;
 static lv_obj_t *clock_label = NULL;
@@ -20,10 +19,7 @@ static void date_hide_timer_cb(lv_timer_t *t) {
 
 static void clock_event_cb(lv_event_t *e) {
     lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_LONG_PRESSED) {
-        // Respond immediately on touch
-        clock_controller_touch();
-    } else if (code == LV_EVENT_PRESSED) {
+    if (code == LV_EVENT_PRESSED || code == LV_EVENT_LONG_PRESSED) {
         // Show date for 3 seconds, then auto-hide
         if (date_label) lv_obj_clear_flag(date_label, LV_OBJ_FLAG_HIDDEN);
         if (date_hide_timer) {
