@@ -53,8 +53,10 @@ static lv_obj_t *energy_root = NULL;
 // New labels for central balance value and its title
 static lv_obj_t *balance_value_label = NULL;
 static lv_obj_t *balance_title_label = NULL;
+static lv_obj_t *balance_symbol_label = NULL;
 static lv_style_t style_balance_value_label;
 static lv_style_t style_balance_title_label;
+static lv_style_t style_balance_symbol_label;
 static bool balance_label_styles_initialized = false;
 // Units label placed next to the center numeric value
 // Removed small center-units label beside numeric
@@ -113,28 +115,59 @@ static void format_with_thousands(int v, char *out, size_t outsz) {
 }
 
 static void refresh_center_display(void) {
-    if (!balance_value_label || !balance_title_label) return;
+    if (!balance_value_label || !balance_title_label || !balance_symbol_label) return;
     const char *title = "";
+    const char *symbol = "";
     float value = 0.0f;
     switch (current_center_mode) {
-        case CENTER_BALANCE:    title = "Balance";    value = last_balance_val;    break;
-        case CENTER_SOLAR:      title = "Solar";      value = last_solar_val;      break;
-    case CENTER_USED:       title = "Using";      value = last_used_val;       break;
-        case CENTER_PEAK_SOLAR: title = "Peak Solar"; value = last_peak_solar_val; break;
-        case CENTER_PEAK_USED:  title = "Peak Used";  value = last_peak_used_val;  break;
-        default:                title = "";          value = 0.0f;                break;
+        case CENTER_BALANCE:    title = "Balance";    value = last_balance_val;    
+            // Simplified symbol logic: green tick for export balance, red X for import balance
+            if (value < -100) {
+                symbol = "✓";  // Green tick for export (good)
+            } else if (value > 100) {
+                symbol = "✗";  // Red X for import (warning)  
+            } else {
+                symbol = "";  // No symbol for balanced
+            }
+            break;
+        case CENTER_SOLAR:      title = "Solar";      value = last_solar_val;      
+            symbol = "";  // No symbol for other modes
+            break;
+        case CENTER_USED:       title = "Using";      value = last_used_val;       
+            symbol = "";  // No symbol for other modes
+            break;
+        case CENTER_PEAK_SOLAR: title = "Peak Solar"; value = last_peak_solar_val; 
+            symbol = "";  // No symbol for other modes
+            break;
+        case CENTER_PEAK_USED:  title = "Peak Used";  value = last_peak_used_val;  
+            symbol = "";  // No symbol for other modes
+            break;
+        default:                title = "";          value = 0.0f;   symbol = "";  break;
     }
     lv_label_set_text(balance_title_label, title);
+    lv_label_set_text(balance_symbol_label, symbol);
 
     char num[24];
     // Integer display with thousands separators
     format_with_thousands((int)lroundf(value), num, sizeof(num));
     lv_label_set_text(balance_value_label, num);
 
-    lv_color_t c = color_for_value(value);
+    lv_color_t c;
+    // Solar and peak solar are always green; others use standard color logic
+    if (current_center_mode == CENTER_SOLAR || current_center_mode == CENTER_PEAK_SOLAR) {
+        c = lv_color_hex(0x40FF6D); // green for solar
+    } else {
+        c = color_for_value(value);
+    }
     lv_obj_set_style_text_color(balance_value_label, c, LV_PART_MAIN);
     // Match the title color to the numeric value color
     lv_obj_set_style_text_color(balance_title_label, c, LV_PART_MAIN);
+    // Symbol color: green for tick, red for X, no color needed for empty symbol
+    if (strcmp(symbol, "✓") == 0) {
+        lv_obj_set_style_text_color(balance_symbol_label, lv_color_hex(0x40FF6D), LV_PART_MAIN);  // green
+    } else if (strcmp(symbol, "✗") == 0) {
+        lv_obj_set_style_text_color(balance_symbol_label, lv_color_hex(0xFF3B30), LV_PART_MAIN);  // red
+    }
 }
 
 static void cycle_center_mode(void) {
@@ -206,7 +239,7 @@ static void draw_peak_marker_arc(lv_obj_t **arc_obj, float value, bool invert, l
     const int base_top = 270; // LVGL angle for top
     float a = energy_value_to_angle(invert ? -value : value);
     int center_deg = base_top + (int)lroundf(a);
-    const int seg_span = 8; // degrees
+    const int seg_span = 4; // degrees (reduced from 8 for narrower markers)
     int seg_start = center_deg - (seg_span / 2);
     int seg_end   = center_deg + (seg_span / 2);
 
@@ -398,6 +431,34 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     lv_style_set_text_font(&style_balance_value_label, &lv_font_montserrat_20);
 #endif
     lv_style_set_text_opa(&style_balance_value_label, LV_OPA_100);
+
+    lv_style_init(&style_balance_symbol_label);
+// Large font for prominent status symbols
+#if LV_FONT_MONTSERRAT_48
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_48);
+#elif LV_FONT_MONTSERRAT_42
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_42);
+#elif LV_FONT_MONTSERRAT_36
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_36);
+#elif LV_FONT_MONTSERRAT_34
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_34);
+#elif LV_FONT_MONTSERRAT_32
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_32);
+#elif LV_FONT_MONTSERRAT_30
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_30);
+#elif LV_FONT_MONTSERRAT_28
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_28);
+#elif LV_FONT_MONTSERRAT_26
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_26);
+#elif LV_FONT_MONTSERRAT_24
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_24);
+#elif LV_FONT_MONTSERRAT_22
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_22);
+#elif LV_FONT_MONTSERRAT_20
+    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_20);
+#endif
+    lv_style_set_text_opa(&style_balance_symbol_label, LV_OPA_100);
+
     balance_label_styles_initialized = true;
     }
 
@@ -408,10 +469,16 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     balance_value_label = lv_label_create(energy_root);
     lv_label_set_text(balance_value_label, "0");
     lv_obj_add_style(balance_value_label, &style_balance_value_label, LV_PART_MAIN);
-    // Center the numeric value exactly in the middle
-    lv_obj_align(balance_value_label, LV_ALIGN_CENTER, 0, 0);
+    // Center the numeric value 10px above the middle
+    lv_obj_align(balance_value_label, LV_ALIGN_CENTER, 0, -10);
     // Place the title above the number with a 10px gap
     lv_obj_align_to(balance_title_label, balance_value_label, LV_ALIGN_OUT_TOP_MID, 0, -10);
+
+    balance_symbol_label = lv_label_create(energy_root);
+    lv_label_set_text(balance_symbol_label, "—");
+    lv_obj_add_style(balance_symbol_label, &style_balance_symbol_label, LV_PART_MAIN);
+    // Place the symbol much lower below the number for better visibility
+    lv_obj_align_to(balance_symbol_label, balance_value_label, LV_ALIGN_OUT_BOTTOM_MID, 0, 30);
 
     // Removed center-units label creation
 
