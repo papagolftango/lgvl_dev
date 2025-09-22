@@ -4,6 +4,8 @@
 #include "energy_screen.h"
 #include "lvgl.h"
 extern const lv_img_dsc_t ui_img_rect1_png;
+extern int energy_pulse_count;
+extern int cumulative_pulse;
 
 // ---- Gauge layout tuning --------------------------------------------------
 // Base logical centre of the 360x360 dial
@@ -53,11 +55,13 @@ static lv_obj_t *energy_root = NULL;
 // New labels for central balance value and its title
 static lv_obj_t *balance_value_label = NULL;
 static lv_obj_t *balance_title_label = NULL;
-static lv_obj_t *balance_symbol_label = NULL;
+static lv_obj_t *balance_status_circle = NULL;
 static lv_style_t style_balance_value_label;
 static lv_style_t style_balance_title_label;
-static lv_style_t style_balance_symbol_label;
+static lv_style_t style_balance_status_circle;
 static bool balance_label_styles_initialized = false;
+// Auto-revert timer to return to balance display after 20 seconds
+static lv_timer_t *auto_revert_timer = NULL;
 // Units label placed next to the center numeric value
 // Removed small center-units label beside numeric
 
@@ -68,6 +72,7 @@ typedef enum {
     CENTER_USED,
     CENTER_PEAK_SOLAR,
     CENTER_PEAK_USED,
+    CENTER_PULSE,
     CENTER_MODE_COUNT
 } center_mode_t;
 
@@ -79,6 +84,7 @@ static float last_solar_val = 0.0f;
 static float last_used_val = 0.0f;
 static float last_peak_solar_val = 0.0f;
 static float last_peak_used_val = 0.0f;
+static int last_pulse_count = 0;
 
 // Helper to color by power-like magnitude
 static lv_color_t color_for_value(float v) {
@@ -115,63 +121,90 @@ static void format_with_thousands(int v, char *out, size_t outsz) {
 }
 
 static void refresh_center_display(void) {
-    if (!balance_value_label || !balance_title_label || !balance_symbol_label) return;
-    const char *title = "";
-    const char *symbol = "";
+    if (!balance_value_label || !balance_title_label || !balance_status_circle) return;
+    
+    const char *title;
     float value = 0.0f;
+    
+    // Set title and value based on current display mode
     switch (current_center_mode) {
-        case CENTER_BALANCE:    title = "Balance";    value = last_balance_val;    
-            // Simplified symbol logic: green tick for export balance, red X for import balance
-            if (value < -100) {
-                symbol = "✓";  // Green tick for export (good)
-            } else if (value > 100) {
-                symbol = "✗";  // Red X for import (warning)  
-            } else {
-                symbol = "";  // No symbol for balanced
-            }
-            break;
-        case CENTER_SOLAR:      title = "Solar";      value = last_solar_val;      
-            symbol = "";  // No symbol for other modes
-            break;
-        case CENTER_USED:       title = "Using";      value = last_used_val;       
-            symbol = "";  // No symbol for other modes
-            break;
-        case CENTER_PEAK_SOLAR: title = "Peak Solar"; value = last_peak_solar_val; 
-            symbol = "";  // No symbol for other modes
-            break;
-        case CENTER_PEAK_USED:  title = "Peak Used";  value = last_peak_used_val;  
-            symbol = "";  // No symbol for other modes
-            break;
-        default:                title = "";          value = 0.0f;   symbol = "";  break;
+        case CENTER_BALANCE:    title = "Balance";    value = last_balance_val;    break;
+        case CENTER_SOLAR:      title = "Solar";      value = last_solar_val;      break;
+        case CENTER_USED:       title = "Using";      value = last_used_val;       break;
+        case CENTER_PEAK_SOLAR: title = "Peak Solar"; value = last_peak_solar_val; break;
+        case CENTER_PEAK_USED:  title = "Peak Used";  value = last_peak_used_val;  break;
+        case CENTER_PULSE:      title = "Pulse";      value = (float)last_pulse_count; break;
+        default:                title = "";          value = 0.0f;                break;
     }
     lv_label_set_text(balance_title_label, title);
-    lv_label_set_text(balance_symbol_label, symbol);
 
     char num[24];
-    // Integer display with thousands separators
-    format_with_thousands((int)lroundf(value), num, sizeof(num));
+    if (current_center_mode == CENTER_PULSE) {
+        // Display pulse in kW with 1 decimal place
+        float pulse_kw = value / 1000.0f;
+        snprintf(num, sizeof(num), "%.1f", pulse_kw);
+    } else {
+        // Integer display with thousands separators for other modes
+        format_with_thousands((int)lroundf(value), num, sizeof(num));
+    }
     lv_label_set_text(balance_value_label, num);
 
     lv_color_t c;
-    // Solar and peak solar are always green; others use standard color logic
+    // Solar and peak solar are always green; pulse is white; others use standard color logic
     if (current_center_mode == CENTER_SOLAR || current_center_mode == CENTER_PEAK_SOLAR) {
         c = lv_color_hex(0x40FF6D); // green for solar
+    } else if (current_center_mode == CENTER_PULSE) {
+        c = lv_color_hex(0xFFFFFF); // white for pulse count
     } else {
         c = color_for_value(value);
     }
     lv_obj_set_style_text_color(balance_value_label, c, LV_PART_MAIN);
     // Match the title color to the numeric value color
     lv_obj_set_style_text_color(balance_title_label, c, LV_PART_MAIN);
-    // Symbol color: green for tick, red for X, no color needed for empty symbol
-    if (strcmp(symbol, "✓") == 0) {
-        lv_obj_set_style_text_color(balance_symbol_label, lv_color_hex(0x40FF6D), LV_PART_MAIN);  // green
-    } else if (strcmp(symbol, "✗") == 0) {
-        lv_obj_set_style_text_color(balance_symbol_label, lv_color_hex(0xFF3B30), LV_PART_MAIN);  // red
+    
+    // Circle color always reflects balance state using same RAG thresholds as color_for_value
+    lv_color_t circle_color;
+    if (last_balance_val < 0) {
+        circle_color = lv_color_hex(0x40FF6D);  // green for export (negative = exporting)
+    } else if (last_balance_val <= 2000) {
+        circle_color = lv_color_hex(0xFFA500);  // orange for low import (0-2000W)
+    } else {
+        circle_color = lv_color_hex(0xFF3B30);  // red for high import (>2000W)
+    }
+    lv_obj_set_style_bg_color(balance_status_circle, circle_color, LV_PART_MAIN);
+}
+
+// Timer callback to auto-revert to balance display after 20 seconds
+static void auto_revert_timer_cb(lv_timer_t *timer) {
+    (void)timer; // unused parameter
+    current_center_mode = CENTER_BALANCE;
+    refresh_center_display();
+    // Stop and delete the timer since we've reverted
+    if (auto_revert_timer) {
+        lv_timer_del(auto_revert_timer);
+        auto_revert_timer = NULL;
     }
 }
 
 static void cycle_center_mode(void) {
     current_center_mode = (center_mode_t)((((int)current_center_mode) + 1) % CENTER_MODE_COUNT);
+    
+    // Manage auto-revert timer
+    if (current_center_mode == CENTER_BALANCE) {
+        // If we're back to balance, stop any existing timer
+        if (auto_revert_timer) {
+            lv_timer_del(auto_revert_timer);
+            auto_revert_timer = NULL;
+        }
+    } else {
+        // If we switched away from balance, start/restart the 20-second timer
+        if (auto_revert_timer) {
+            lv_timer_del(auto_revert_timer);
+        }
+        auto_revert_timer = lv_timer_create(auto_revert_timer_cb, 20000, NULL);  // 20 seconds
+        lv_timer_set_repeat_count(auto_revert_timer, 1);  // Run only once
+    }
+    
     refresh_center_display();
 }
 
@@ -181,6 +214,23 @@ void energy_screen_next_mode(void) {
 
 void energy_screen_prev_mode(void) {
     current_center_mode = (center_mode_t)((((int)current_center_mode) - 1 + CENTER_MODE_COUNT) % CENTER_MODE_COUNT);
+    
+    // Manage auto-revert timer
+    if (current_center_mode == CENTER_BALANCE) {
+        // If we're back to balance, stop any existing timer
+        if (auto_revert_timer) {
+            lv_timer_del(auto_revert_timer);
+            auto_revert_timer = NULL;
+        }
+    } else {
+        // If we switched away from balance, start/restart the 20-second timer
+        if (auto_revert_timer) {
+            lv_timer_del(auto_revert_timer);
+        }
+        auto_revert_timer = lv_timer_create(auto_revert_timer_cb, 20000, NULL);  // 20 seconds
+        lv_timer_set_repeat_count(auto_revert_timer, 1);  // Run only once
+    }
+    
     refresh_center_display();
 }
 
@@ -370,6 +420,7 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     last_used_val = curr_used;
     last_peak_solar_val = peak_solar;
     last_peak_used_val = peak_used;
+    last_pulse_count = energy_pulse_count - cumulative_pulse; // Daily pulse count
     refresh_center_display();
 }
 
@@ -432,32 +483,11 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
 #endif
     lv_style_set_text_opa(&style_balance_value_label, LV_OPA_100);
 
-    lv_style_init(&style_balance_symbol_label);
-// Large font for prominent status symbols
-#if LV_FONT_MONTSERRAT_48
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_48);
-#elif LV_FONT_MONTSERRAT_42
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_42);
-#elif LV_FONT_MONTSERRAT_36
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_36);
-#elif LV_FONT_MONTSERRAT_34
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_34);
-#elif LV_FONT_MONTSERRAT_32
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_32);
-#elif LV_FONT_MONTSERRAT_30
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_30);
-#elif LV_FONT_MONTSERRAT_28
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_28);
-#elif LV_FONT_MONTSERRAT_26
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_26);
-#elif LV_FONT_MONTSERRAT_24
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_24);
-#elif LV_FONT_MONTSERRAT_22
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_22);
-#elif LV_FONT_MONTSERRAT_20
-    lv_style_set_text_font(&style_balance_symbol_label, &lv_font_montserrat_20);
-#endif
-    lv_style_set_text_opa(&style_balance_symbol_label, LV_OPA_100);
+    lv_style_init(&style_balance_status_circle);
+    // Style for the status indicator circle
+    lv_style_set_radius(&style_balance_status_circle, LV_RADIUS_CIRCLE);
+    lv_style_set_bg_opa(&style_balance_status_circle, LV_OPA_100);
+    lv_style_set_border_width(&style_balance_status_circle, 0);
 
     balance_label_styles_initialized = true;
     }
@@ -466,19 +496,20 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
     lv_label_set_text(balance_title_label, "Balance");
     lv_obj_add_style(balance_title_label, &style_balance_title_label, LV_PART_MAIN);
 
+    // Create circle in center first (half the meter arc radius = 55px radius, 110px diameter)
+    balance_status_circle = lv_obj_create(energy_root);
+    lv_obj_add_style(balance_status_circle, &style_balance_status_circle, LV_PART_MAIN);
+    lv_obj_set_size(balance_status_circle, 110, 110);  // Diameter: 110px (half of meter arc diameter)
+    lv_obj_align(balance_status_circle, LV_ALIGN_CENTER, 0, 0);  // Center of display
+    
+    // Move text/numeric display toward bottom to avoid circle
     balance_value_label = lv_label_create(energy_root);
     lv_label_set_text(balance_value_label, "0");
     lv_obj_add_style(balance_value_label, &style_balance_value_label, LV_PART_MAIN);
-    // Center the numeric value 10px above the middle
-    lv_obj_align(balance_value_label, LV_ALIGN_CENTER, 0, -10);
-    // Place the title above the number with a 10px gap
-    lv_obj_align_to(balance_title_label, balance_value_label, LV_ALIGN_OUT_TOP_MID, 0, -10);
-
-    balance_symbol_label = lv_label_create(energy_root);
-    lv_label_set_text(balance_symbol_label, "—");
-    lv_obj_add_style(balance_symbol_label, &style_balance_symbol_label, LV_PART_MAIN);
-    // Place the symbol much lower below the number for better visibility
-    lv_obj_align_to(balance_symbol_label, balance_value_label, LV_ALIGN_OUT_BOTTOM_MID, 0, 30);
+    // Position numeric value toward bottom of display 
+    lv_obj_align(balance_value_label, LV_ALIGN_CENTER, 0, 80);
+    // Place the title below the number with a very small gap (almost touching)
+    lv_obj_align_to(balance_title_label, balance_value_label, LV_ALIGN_OUT_BOTTOM_MID, 0, -2);
 
     // Removed center-units label creation
 
@@ -491,6 +522,12 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
 }
 
 void energy_screen_destroy(void) {
+    // Clean up auto-revert timer
+    if (auto_revert_timer) {
+        lv_timer_del(auto_revert_timer);
+        auto_revert_timer = NULL;
+    }
+    
     if (energy_root) {
         lv_obj_del(energy_root);
     energy_root = NULL;

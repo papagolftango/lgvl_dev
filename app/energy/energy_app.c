@@ -21,12 +21,13 @@ static bool energy_on_encoder(encoder_event_t evt) {
 static bool screen_active = false;
 
 // Energy data variables (shared with MQTT handler)
-float energy_vrms = 0.0f;
 float energy_solar = 0.0f;
 float energy_used = 0.0f;
 float energy_balance = 0.0f;
 float energy_peak_solar = 0.0f;
 float energy_peak_used = 0.0f;
+int energy_pulse_count = 0;
+int cumulative_pulse = 0;
 
 // Forward declarations
 static void energy_daily_actions_cb(void);
@@ -36,7 +37,9 @@ extern void energy_app_mqtt_init(void);
 static void energy_daily_actions_cb(void) {
     energy_peak_solar = 0.0f;
     energy_peak_used = 0.0f;
-    ESP_LOGI(TAG, "Daily reset: peak_solar and peak_used cleared.");
+    // Latch current pulse count for daily calculation
+    cumulative_pulse = energy_pulse_count;
+    ESP_LOGI(TAG, "Daily reset: peak_solar and peak_used cleared, cumulative_pulse latched at %d", cumulative_pulse);
 }
 
 // Getter for screen_active (for controller)
@@ -78,7 +81,6 @@ void energy_app_cleanup(void) {
 void energy_app_destroy(void) {
     // Clean up model/controller/view state if needed
     // Example: set pointers to NULL, free memory, etc.
-    energy_vrms = 0.0f;
     energy_solar = 0.0f;
     energy_used = 0.0f;
     energy_balance = 0.0f;

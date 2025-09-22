@@ -4,6 +4,7 @@
 #include <math.h>
 #include "energy_app.h" // for balance variable, if needed
 #include "managers/mqtt_manager.h"
+#include "managers/power_manager.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -23,6 +24,8 @@
 // Set both main and indicator arc colors so the whole arc is the same color
 extern float energy_balance, energy_solar, energy_used;
 extern float energy_peak_solar, energy_peak_used;
+extern int energy_pulse_count;
+extern int cumulative_pulse;
 
 static volatile bool s_dirty = false; // set on MQTT data change, read/cleared in tick
 
@@ -48,10 +51,10 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
     switch (event_id) {
         case MQTT_EVENT_CONNECTED:
             ESP_LOGI(TAG, "MQTT connected (energy app)");
-            esp_mqtt_client_subscribe(event->client, "emon/emontx3/vrms", 0);
             esp_mqtt_client_subscribe(event->client, "emon/emontx3/solar", 0);
             esp_mqtt_client_subscribe(event->client, "emon/emontx3/used", 0);
             esp_mqtt_client_subscribe(event->client, "emon/emontx3/balance", 0);
+            esp_mqtt_client_subscribe(event->client, "emon/emontx3/pulse", 0);
             break;
         case MQTT_EVENT_DATA:
             if (event->topic_len && event->data_len) {
@@ -63,11 +66,8 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                 topic[tlen] = '\0';
                 strncpy(payload, event->data, dlen);
                 payload[dlen] = '\0';
-                if (strcmp(topic, "emon/emontx3/vrms") == 0) {
-                    ESP_LOGI(TAG, "Received vrms: %s", payload);
-                    energy_vrms = strtof(payload, NULL);
-                    // TODO: update VRMS value on UI here
-                } else if (strcmp(topic, "emon/emontx3/solar") == 0) {
+
+                if (strcmp(topic, "emon/emontx3/solar") == 0) {
                     float value = strtof(payload, NULL);
                     ESP_LOGI(TAG, "Processed solar: %.2f", value);
                     if (value != energy_solar) { energy_solar = value; s_dirty = true; }
@@ -92,6 +92,10 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                     ESP_LOGI(TAG, "Processed balance: %.2f", value);
                     if (value != energy_balance) { energy_balance = value; s_dirty = true; }
                     // UI update is handled in tick/UI logic
+                } else if (strcmp(topic, "emon/emontx3/pulse") == 0) {
+                    float value = strtof(payload, NULL);
+                    ESP_LOGI(TAG, "Processed pulse: %.2f", value);
+                    if (value != energy_pulse_count) { energy_pulse_count = value; s_dirty = true; }
                 }
             }
             break;
