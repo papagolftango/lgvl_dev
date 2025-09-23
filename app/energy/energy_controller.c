@@ -93,9 +93,27 @@ static void energy_app_mqtt_event_handler(void *handler_args, esp_event_base_t b
                     if (value != energy_balance) { energy_balance = value; s_dirty = true; }
                     // UI update is handled in tick/UI logic
                 } else if (strcmp(topic, "emon/emontx3/pulse") == 0) {
-                    float value = strtof(payload, NULL);
-                    ESP_LOGI(TAG, "Processed pulse: %.2f", value);
-                    if (value != energy_pulse_count) { energy_pulse_count = value; s_dirty = true; }
+                    char *endp = NULL;
+                    long n = strtol(payload, &endp, 10);
+                    if (endp == payload) {
+                        ESP_LOGW(TAG, "Invalid pulse payload: '%s'", payload);
+                        break;
+                    }
+                    if (n < 0) n = 0; // guard against negatives
+                    // Baseline handling: if meter reset or first reading after boot, rebase cumulative
+                    if (n < cumulative_pulse) {
+                        ESP_LOGW(TAG, "Pulse counter decreased (%ld < %d), rebasing cumulative to %ld", n, cumulative_pulse, n);
+                        cumulative_pulse = (int)n;
+                    } else if (cumulative_pulse == 0 && energy_pulse_count == 0 && n > 0) {
+                        // First non-zero reading after boot (no persisted baseline): set baseline to current
+                        ESP_LOGI(TAG, "Pulse baseline initialized to %ld", n);
+                        cumulative_pulse = (int)n;
+                    }
+                    if ((int)n != energy_pulse_count) {
+                        energy_pulse_count = (int)n;
+                        ESP_LOGI(TAG, "Processed pulse: %d (baseline=%d)", energy_pulse_count, cumulative_pulse);
+                        s_dirty = true;
+                    }
                 }
             }
             break;

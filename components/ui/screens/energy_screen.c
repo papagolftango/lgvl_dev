@@ -6,6 +6,7 @@
 extern const lv_img_dsc_t ui_img_rect1_png;
 extern int energy_pulse_count;
 extern int cumulative_pulse;
+extern float energy_tariff_rate_gbp_per_kwh;
 
 // ---- Gauge layout tuning --------------------------------------------------
 // Base logical centre of the 360x360 dial
@@ -72,11 +73,12 @@ typedef enum {
     CENTER_USED,
     CENTER_PEAK_SOLAR,
     CENTER_PEAK_USED,
-    CENTER_PULSE,
+    CENTER_ENERGY_KWH,
+    CENTER_COST_TODAY_GBP,
     CENTER_MODE_COUNT
 } center_mode_t;
 
-static center_mode_t current_center_mode = CENTER_BALANCE;
+static center_mode_t current_center_mode = CENTER_ENERGY_KWH;
 
 // Last-known values from controller for instant refresh on tap
 static float last_balance_val = 0.0f;
@@ -84,7 +86,7 @@ static float last_solar_val = 0.0f;
 static float last_used_val = 0.0f;
 static float last_peak_solar_val = 0.0f;
 static float last_peak_used_val = 0.0f;
-static int last_pulse_count = 0;
+static int last_pulse_count = 0; // raw pulse delta since baseline
 
 // Helper to color by power-like magnitude
 static lv_color_t color_for_value(float v) {
@@ -133,16 +135,23 @@ static void refresh_center_display(void) {
         case CENTER_USED:       title = "Using";      value = last_used_val;       break;
         case CENTER_PEAK_SOLAR: title = "Peak Solar"; value = last_peak_solar_val; break;
         case CENTER_PEAK_USED:  title = "Peak Used";  value = last_peak_used_val;  break;
-        case CENTER_PULSE:      title = "Pulse";      value = (float)last_pulse_count; break;
+        case CENTER_ENERGY_KWH: title = "kWh Today";   value = (float)last_pulse_count; break;
+        case CENTER_COST_TODAY_GBP: title = "£ Today"; value = (float)last_pulse_count; break;
         default:                title = "";          value = 0.0f;                break;
     }
     lv_label_set_text(balance_title_label, title);
 
     char num[24];
-    if (current_center_mode == CENTER_PULSE) {
-        // Display pulse in kW with 1 decimal place
-        float pulse_kw = value / 1000.0f;
-        snprintf(num, sizeof(num), "%.1f", pulse_kw);
+    if (current_center_mode == CENTER_ENERGY_KWH) {
+        // Convert pulses to kWh (assuming 1000 pulses per kWh)
+        float kwh = value / 1000.0f;
+        snprintf(num, sizeof(num), "%.2f", kwh);
+    } else if (current_center_mode == CENTER_COST_TODAY_GBP) {
+        // Cost = kWh * tariff
+        float kwh = value / 1000.0f;
+        float gbp = kwh * energy_tariff_rate_gbp_per_kwh;
+        // Format with 2 decimals; avoid trailing zeros issues
+        snprintf(num, sizeof(num), "£%.2f", gbp);
     } else {
         // Integer display with thousands separators for other modes
         format_with_thousands((int)lroundf(value), num, sizeof(num));
@@ -153,8 +162,10 @@ static void refresh_center_display(void) {
     // Solar and peak solar are always green; pulse is white; others use standard color logic
     if (current_center_mode == CENTER_SOLAR || current_center_mode == CENTER_PEAK_SOLAR) {
         c = lv_color_hex(0x40FF6D); // green for solar
-    } else if (current_center_mode == CENTER_PULSE) {
-        c = lv_color_hex(0xFFFFFF); // white for pulse count
+    } else if (current_center_mode == CENTER_ENERGY_KWH) {
+        c = lv_color_hex(0xFFFFFF); // white for energy today
+    } else if (current_center_mode == CENTER_COST_TODAY_GBP) {
+        c = lv_color_hex(0x87CEFA); // light blue for currency
     } else {
         c = color_for_value(value);
     }
@@ -177,7 +188,7 @@ static void refresh_center_display(void) {
 // Timer callback to auto-revert to balance display after 20 seconds
 static void auto_revert_timer_cb(lv_timer_t *timer) {
     (void)timer; // unused parameter
-    current_center_mode = CENTER_BALANCE;
+    current_center_mode = CENTER_ENERGY_KWH;
     refresh_center_display();
     // Stop and delete the timer since we've reverted
     if (auto_revert_timer) {
@@ -190,7 +201,7 @@ static void cycle_center_mode(void) {
     current_center_mode = (center_mode_t)((((int)current_center_mode) + 1) % CENTER_MODE_COUNT);
     
     // Manage auto-revert timer
-    if (current_center_mode == CENTER_BALANCE) {
+    if (current_center_mode == CENTER_ENERGY_KWH) {
         // If we're back to balance, stop any existing timer
         if (auto_revert_timer) {
             lv_timer_del(auto_revert_timer);
@@ -216,7 +227,7 @@ void energy_screen_prev_mode(void) {
     current_center_mode = (center_mode_t)((((int)current_center_mode) - 1 + CENTER_MODE_COUNT) % CENTER_MODE_COUNT);
     
     // Manage auto-revert timer
-    if (current_center_mode == CENTER_BALANCE) {
+    if (current_center_mode == CENTER_ENERGY_KWH) {
         // If we're back to balance, stop any existing timer
         if (auto_revert_timer) {
             lv_timer_del(auto_revert_timer);
@@ -234,12 +245,7 @@ void energy_screen_prev_mode(void) {
     refresh_center_display();
 }
 
-static void energy_root_event_cb(lv_event_t *e) {
-    lv_event_code_t code = lv_event_get_code(e);
-    if (code == LV_EVENT_RELEASED) {
-        cycle_center_mode();
-    }
-}
+// Touch on this screen should not change modes; app navigation is handled globally.
 
 
 // Helper to map a value to an angle (deg) for the gauge
@@ -420,7 +426,10 @@ void draw_pointer_and_peaks(float energy_balance, float peak_solar, float peak_u
     last_used_val = curr_used;
     last_peak_solar_val = peak_solar;
     last_peak_used_val = peak_used;
-    last_pulse_count = energy_pulse_count - cumulative_pulse; // Daily pulse count
+    // Daily pulse count; guard against counter resets below baseline
+    int delta = energy_pulse_count - cumulative_pulse;
+    if (delta < 0) delta = 0;
+    last_pulse_count = delta;
     refresh_center_display();
 }
 
@@ -513,9 +522,7 @@ lv_obj_t *energy_screen_create(lv_obj_t *parent) {
 
     // Removed center-units label creation
 
-    // Make the whole screen react to taps to cycle center display
-    lv_obj_add_flag(energy_root, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(energy_root, energy_root_event_cb, LV_EVENT_RELEASED, NULL);
+    // Do not react to taps: touch is reserved for switching screens globally; rotary changes modes
 
     // Add more UI elements as needed
     return energy_root;

@@ -28,6 +28,8 @@ float energy_peak_solar = 0.0f;
 float energy_peak_used = 0.0f;
 int energy_pulse_count = 0;
 int cumulative_pulse = 0;
+// Default tariff rate: 0.55 GBP per kWh (adjust as needed or make configurable later)
+float energy_tariff_rate_gbp_per_kwh = 0.55f;
 
 // Forward declarations
 static void energy_daily_actions_cb(void);

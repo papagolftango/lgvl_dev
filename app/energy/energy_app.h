@@ -12,6 +12,10 @@ extern float energy_used;
 extern float energy_balance;
 extern float energy_peak_solar;
 extern float energy_peak_used;
+extern int energy_pulse_count;
+extern int cumulative_pulse;
+// Tariff rate in GBP per kWh (used to compute cost today from pulses)
+extern float energy_tariff_rate_gbp_per_kwh;
 
 
 void energy_app_init(void);
