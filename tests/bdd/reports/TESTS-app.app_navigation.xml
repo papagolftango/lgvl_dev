@@ -1,0 +1,60 @@
+<testsuite name="app.app_navigation.App navigation via touch" tests="4" errors="0" failures="0" skipped="0" time="0.005969" timestamp="2025-09-25T17:05:39.126657" hostname="DT-6M22WV3-PT"><testcase classname="app.app_navigation.App navigation via touch" name="Default app is Energy" status="passed" time="0.000983"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @app @nav
+  Scenario: Default app is Energy
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the device is reset ... passed in 0.001s
+    Then the active app is "Energy" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.app_navigation.App navigation via touch" name="Touch switches to next app" status="passed" time="0.001989"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @app @nav
+  Scenario: Touch switches to next app
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
+    When I tap the screen ... passed in 0.001s
+    Then the active app is "Clock" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.app_navigation.App navigation via touch" name="Frequent taps wrap to the beginning" status="passed" time="0.0"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @app @nav
+  Scenario: Frequent taps wrap to the beginning
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the active app is "Weather" ... passed in 0.000s
+    When I tap the screen ... passed in 0.000s
+    Then the active app is "Energy" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.app_navigation.App navigation via touch" name="Touch wakes device but does not switch apps" status="passed" time="0.002997"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @app @nav @wakeup
+  Scenario: Touch wakes device but does not switch apps
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the system is IDLE with backlight off ... passed in 0.000s
+    When I tap the screen ... passed in 0.001s
+    Then the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

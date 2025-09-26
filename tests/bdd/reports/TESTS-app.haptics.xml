@@ -1,0 +1,31 @@
+<testsuite name="app.haptics.Haptic feedback on valid touch" tests="2" errors="0" failures="0" skipped="0" time="0.010587" timestamp="2025-09-25T17:04:36.881928" hostname="DT-6M22WV3-PT"><testcase classname="app.haptics.Haptic feedback on valid touch" name="Haptic pulse on app switch" status="passed" time="0.005064"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @haptics
+  Scenario: Haptic pulse on app switch
+    Given haptics are enabled ... passed in 0.001s
+    Given the active app is "Energy" ... passed in 0.001s
+    When I tap the screen ... passed in 0.001s
+    Then a short haptic pulse is emitted ... passed in 0.001s
+    And the active app is "Clock" ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.haptics.Haptic feedback on valid touch" name="No haptics on wake touch (policy)" status="passed" time="0.005523"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @haptics @wakeup
+  Scenario: No haptics on wake touch (policy)
+    Given haptics are enabled ... passed in 0.002s
+    Given the system is IDLE ... passed in 0.001s
+    When I tap the screen ... passed in 0.001s
+    Then the system is ACTIVE ... passed in 0.001s
+    And no haptic pulse is emitted ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

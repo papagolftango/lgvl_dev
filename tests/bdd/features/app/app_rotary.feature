@@ -13,6 +13,13 @@ Feature: Per-app rotary behavior
     Then the Energy mode becomes the next mode
     And no other app receives the encoder event
 
+  @app @rotary
+  Scenario: Rotary LEFT cycles modes backwards
+    Given the active app is "Energy"
+    Given the Energy mode is "kWh Today"
+    When I rotate the encoder LEFT
+    Then the Energy mode becomes the next mode
+
   @app @rotary @wakeup
   Scenario: Rotary wakes first, acts second
     Given the system is IDLE

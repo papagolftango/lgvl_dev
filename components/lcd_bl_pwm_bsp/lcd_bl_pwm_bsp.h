@@ -29,6 +29,9 @@ void lcd_bl_pwm_bsp_fade_to(uint16_t duty, uint32_t duration_ms);
 // Fade to target duty, optionally waiting for completion (true = block until done)
 void lcd_bl_pwm_bsp_fade_to_wait(uint16_t duty, uint32_t duration_ms, bool wait);
 
+// Query current backlight duty (0-255). Useful for tests/telemetry.
+uint16_t lcd_bl_pwm_bsp_get_duty(void);
+
 #ifdef __cplusplus
 }
 #endif

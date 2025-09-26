@@ -6,10 +6,24 @@
 #include "nvs_flash.h"
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "app_manager.h"
+#include "power_manager.h"
+#include "touch_manager.h"
+#include "encoder_manager.h"
+#include "lcd_bl_pwm_bsp.h"
+#include "haptic_manager.h"
+#include "energy_controller.h"
 
 static const char *TAG = "provisioning_server";
 static httpd_handle_t server = NULL;
 static provisioning_server_credentials_cb_t credentials_cb = NULL;
+// Test-mode only: track last rotary target app name when rotating while ACTIVE
+#ifdef CONFIG_TEST_MODE
+static char s_last_rotary_target[16] = {0};
+#endif
 
 void provisioning_server_set_callback(provisioning_server_credentials_cb_t cb) {
     credentials_cb = cb;
@@ -132,6 +146,250 @@ void provisioning_server_start(void) {
     ESP_ERROR_CHECK(httpd_start(&server, &config));
     httpd_register_uri_handler(server, &root);
     httpd_register_uri_handler(server, &submit);
+
+#ifdef CONFIG_TEST_MODE
+    // Minimal JSON helper
+    static esp_err_t send_json(httpd_req_t *req, const char *json){
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, json);
+        return ESP_OK;
+    }
+
+    // GET /test/app/active -> returns current app name as text or JSON
+    static esp_err_t test_get_active_app(httpd_req_t *req){
+        app_id_t id = app_manager_get_active();
+        const app_descriptor_t *desc = app_manager_get_descriptor(id);
+        const char *name = desc && desc->name ? desc->name : "Unknown";
+        httpd_resp_set_type(req, "text/plain");
+        return httpd_resp_sendstr(req, name);
+    }
+    static httpd_uri_t uri_get_active_app = {
+        .uri = "/test/app/active",
+        .method = HTTP_GET,
+        .handler = test_get_active_app
+    };
+
+    // POST /test/app/active {"name":"Energy"}
+    static esp_err_t test_post_active_app(httpd_req_t *req){
+        char buf[64] = {0};
+        int r = httpd_req_recv(req, buf, sizeof(buf)-1);
+        if (r <= 0) return httpd_resp_send_500(req);
+        // naive parse for name
+        char *p = strstr(buf, "\"name\"");
+        if (p){
+            p = strchr(p, ':');
+            if (p){
+                while (*p && (*p == ':' || *p == ' ' || *p == '\"')) p++;
+                char name[32] = {0};
+                int i=0; while (*p && *p!='\"' && i < (int)sizeof(name)-1){ name[i++] = *p++; }
+                // map string to app_id
+                for (int id=0; id<APP_ID_COUNT; ++id){
+                    const app_descriptor_t *d = app_manager_get_descriptor((app_id_t)id);
+                    if (d && d->name && strcmp(d->name, name) == 0){ app_manager_set_active((app_id_t)id); break; }
+                }
+            }
+        }
+        httpd_resp_set_type(req, "application/json");
+        return httpd_resp_sendstr(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_active_app = {
+        .uri = "/test/app/active",
+        .method = HTTP_POST,
+        .handler = test_post_active_app
+    };
+
+    // POST /test/input/tap -> simulate a touch (app cycle). For wake semantics, notify power.
+    static esp_err_t test_post_input_tap(httpd_req_t *req){
+        bool was_idle = power_manager_is_idle();
+        power_manager_notify_activity();
+        if (!was_idle){
+            app_manager_next_app();
+        }
+        httpd_resp_set_type(req, "application/json");
+        return httpd_resp_sendstr(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_input_tap = {
+        .uri = "/test/input/tap",
+        .method = HTTP_POST,
+        .handler = test_post_input_tap
+    };
+
+    // POST /test/input/rotate {"dir":"LEFT|RIGHT"}
+    static esp_err_t test_post_input_rotate(httpd_req_t *req){
+        char buf[64] = {0};
+        int r = httpd_req_recv(req, buf, sizeof(buf)-1);
+        if (r <= 0) return httpd_resp_send_500(req);
+        bool was_idle = power_manager_is_idle();
+        power_manager_notify_activity();
+        if (!was_idle){
+            if (strstr(buf, "LEFT")) {
+                extern void app_manager_register_encoder_cb(app_id_t app, app_encoder_cb_t cb);
+                // Directly notify active app's encoder through app_manager handler
+                // Expose the static handler via a stub: simulate by calling global callback through encoder_manager
+                extern void encoder_manager_register_user_cb(encoder_user_cb_t cb);
+                // Call app_manager's on-encoder path
+                // Since app_manager_on_encoder is static, replicate minimal logic here:
+                app_id_t cur = app_manager_get_active();
+                const app_descriptor_t *d = app_manager_get_descriptor(cur);
+                // Use registered per-app encoder callback table (not exposed). Fallback: switch on app ID to call known handlers where available.
+                // For Energy app, simulate by posting LEFT/RIGHT via its public controller APIs.
+                if (d && d->name && strcmp(d->name, "Energy") == 0){
+                    extern void energy_controller_prev_mode(void);
+                    energy_controller_prev_mode();
+                    strncpy(s_last_rotary_target, d->name, sizeof(s_last_rotary_target)-1);
+                    s_last_rotary_target[sizeof(s_last_rotary_target)-1] = '\0';
+                }
+            } else {
+                app_id_t cur = app_manager_get_active();
+                const app_descriptor_t *d = app_manager_get_descriptor(cur);
+                if (d && d->name && strcmp(d->name, "Energy") == 0){
+                    extern void energy_controller_next_mode(void);
+                    energy_controller_next_mode();
+                    strncpy(s_last_rotary_target, d->name, sizeof(s_last_rotary_target)-1);
+                    s_last_rotary_target[sizeof(s_last_rotary_target)-1] = '\0';
+                }
+            }
+        }
+        httpd_resp_set_type(req, "application/json");
+        return httpd_resp_sendstr(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_input_rotate = {
+        .uri = "/test/input/rotate",
+        .method = HTTP_POST,
+        .handler = test_post_input_rotate
+    };
+
+    // POST /test/power/timeout {"seconds":N}
+    static esp_err_t test_post_power_timeout(httpd_req_t *req){
+        char buf[64] = {0};
+        int r = httpd_req_recv(req, buf, sizeof(buf)-1);
+        if (r <= 0) return httpd_resp_send_500(req);
+        int sec = 0;
+        char *p = strstr(buf, "seconds");
+        if (p){ p = strchr(p, ':'); if (p) sec = atoi(p+1); }
+        if (sec > 0) power_manager_set_timeout((uint32_t)sec);
+        return send_json(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_power_timeout = {
+        .uri = "/test/power/timeout",
+        .method = HTTP_POST,
+        .handler = test_post_power_timeout
+    };
+
+    // GET /test/power/state -> ACTIVE|IDLE
+    static esp_err_t test_get_power_state(httpd_req_t *req){
+        httpd_resp_set_type(req, "text/plain");
+        return httpd_resp_sendstr(req, power_manager_is_idle() ? "IDLE" : "ACTIVE");
+    }
+    static httpd_uri_t uri_get_power_state = {
+        .uri = "/test/power/state",
+        .method = HTTP_GET,
+        .handler = test_get_power_state
+    };
+
+    // POST /test/power/state {"state":"ACTIVE|IDLE"}
+    static esp_err_t test_post_power_state(httpd_req_t *req){
+        char buf[64] = {0};
+        int r = httpd_req_recv(req, buf, sizeof(buf)-1);
+        if (r <= 0) return httpd_resp_send_500(req);
+        if (strstr(buf, "IDLE")){
+            // Force IDLE by setting a tiny timeout and not notifying; also fade backlight to 0
+            power_manager_set_timeout(1);
+            // Let timer worker handle the state; but we can nudge immediately by setting backlight
+            lcd_bl_pwm_bsp_fade_to_wait(LCD_PWM_MODE_0, 0, true);
+        } else {
+            // ACTIVE: notify activity and restore backlight
+            power_manager_notify_activity();
+            lcd_bl_pwm_bsp_fade_to_wait(LCD_PWM_MODE_50, 0, true);
+        }
+        return send_json(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_power_state = {
+        .uri = "/test/power/state",
+        .method = HTTP_POST,
+        .handler = test_post_power_state
+    };
+
+    // GET /test/power/backlight -> numeric duty (0-255)
+    static esp_err_t test_get_power_backlight(httpd_req_t *req){
+        char out[16];
+        snprintf(out, sizeof(out), "%u", (unsigned)lcd_bl_pwm_bsp_get_duty());
+        httpd_resp_set_type(req, "text/plain");
+        return httpd_resp_sendstr(req, out);
+    }
+    static httpd_uri_t uri_get_power_backlight = {
+        .uri = "/test/power/backlight",
+        .method = HTTP_GET,
+        .handler = test_get_power_backlight
+    };
+
+    // GET /test/haptics/last -> return empty for now (global haptics not tracked)
+    static esp_err_t test_get_haptics_last(httpd_req_t *req){
+        uint8_t eff = haptic_manager_get_last_and_clear();
+        const char *name = (eff == 1) ? "short" : "";
+        httpd_resp_set_type(req, "text/plain");
+        return httpd_resp_sendstr(req, name);
+    }
+    static httpd_uri_t uri_get_haptics_last = {
+        .uri = "/test/haptics/last",
+        .method = HTTP_GET,
+        .handler = test_get_haptics_last
+    };
+
+    // GET /test/energy/viewmodel -> minimal JSON stub
+    static esp_err_t test_get_energy_vm(httpd_req_t *req){
+        // For now, respond with mode unknown; can be wired to energy_screen state later
+        return send_json(req, "{\"mode\":\"unknown\"}");
+    }
+    static httpd_uri_t uri_get_energy_vm = {
+        .uri = "/test/energy/viewmodel",
+        .method = HTTP_GET,
+        .handler = test_get_energy_vm
+    };
+
+    // POST /test/reset -> restore to known state
+    static esp_err_t test_post_reset(httpd_req_t *req){
+        // Active app to Energy
+        app_manager_set_active(APP_ID_ENERGY);
+        // Power ACTIVE and backlight mid
+        power_manager_notify_activity();
+        lcd_bl_pwm_bsp_fade_to_wait(LCD_PWM_MODE_50, 0, true);
+        // Timeout 120s
+        power_manager_set_timeout(120);
+        // Clear any pending haptic by reading
+        (void)haptic_manager_get_last_and_clear();
+        return send_json(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_reset = {
+        .uri = "/test/reset",
+        .method = HTTP_POST,
+        .handler = test_post_reset
+    };
+
+    // GET /test/input/last_rotary_target
+    static esp_err_t test_get_last_rotary_target(httpd_req_t *req){
+        httpd_resp_set_type(req, "text/plain");
+        return httpd_resp_sendstr(req, s_last_rotary_target);
+    }
+    static httpd_uri_t uri_get_last_rotary_target = {
+        .uri = "/test/input/last_rotary_target",
+        .method = HTTP_GET,
+        .handler = test_get_last_rotary_target
+    };
+
+    httpd_register_uri_handler(server, &uri_get_active_app);
+    httpd_register_uri_handler(server, &uri_post_active_app);
+    httpd_register_uri_handler(server, &uri_post_input_tap);
+    httpd_register_uri_handler(server, &uri_post_input_rotate);
+    httpd_register_uri_handler(server, &uri_post_power_timeout);
+    httpd_register_uri_handler(server, &uri_get_power_state);
+    httpd_register_uri_handler(server, &uri_post_power_state);
+    httpd_register_uri_handler(server, &uri_get_power_backlight);
+    httpd_register_uri_handler(server, &uri_get_haptics_last);
+    httpd_register_uri_handler(server, &uri_get_energy_vm);
+    httpd_register_uri_handler(server, &uri_post_reset);
+    httpd_register_uri_handler(server, &uri_get_last_rotary_target);
+#endif // CONFIG_TEST_MODE
     ESP_LOGI(TAG, "Provisioning web server started.");
 }
 

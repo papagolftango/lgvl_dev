@@ -35,14 +35,17 @@ static void lvgl_touch_cb(lv_indev_drv_t *drv, lv_indev_data_t *data)
         if (data->point.y > LCD_V_RES) data->point.y = LCD_V_RES;
         data->state = LV_INDEV_STATE_PRESSED;
         ESP_LOGI("TP", "Touch detected: (%d, %d)", data->point.x, data->point.y);
-        haptic_click();
         bool was_idle = power_manager_is_idle();
         power_manager_notify_activity();
-        if (was_idle) {
+        if (!was_idle) {
+            // Only emit haptic on meaningful (non-wake) touch
+            haptic_click();
+        } else {
             // Consume wakeup press: do not forward this gesture to app_manager; suppress until release
             s_ignore_until_release = true;
             ESP_LOGI("TP", "Woke from IDLE via touch; consuming press and suppressing until release");
-        } else if (user_cb && !s_ignore_until_release) {
+        }
+        if (user_cb && !s_ignore_until_release) {
             user_cb(drv, data);
         }
     } else {

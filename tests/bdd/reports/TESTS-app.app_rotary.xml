@@ -1,0 +1,48 @@
+<testsuite name="app.app_rotary.Per-app rotary behavior" tests="3" errors="0" failures="0" skipped="0" time="0.009996" timestamp="2025-09-25T17:05:39.150658" hostname="DT-6M22WV3-PT"><testcase classname="app.app_rotary.Per-app rotary behavior" name="Rotary affects only the active app" status="passed" time="0.002999"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @app @rotary
+  Scenario: Rotary affects only the active app
+    Given the active app is "Energy" ... passed in 0.001s
+    Given the Energy mode is "kWh Today" ... passed in 0.001s
+    When I rotate the encoder RIGHT ... passed in 0.000s
+    Then the Energy mode becomes the next mode ... passed in 0.000s
+    And no other app receives the encoder event ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.app_rotary.Per-app rotary behavior" name="Rotary LEFT cycles modes backwards" status="passed" time="0.003994"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @app @rotary
+  Scenario: Rotary LEFT cycles modes backwards
+    Given the active app is "Energy" ... passed in 0.001s
+    Given the active app is "Energy" ... passed in 0.001s
+    Given the Energy mode is "kWh Today" ... passed in 0.000s
+    When I rotate the encoder LEFT ... passed in 0.001s
+    Then the Energy mode becomes the next mode ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.app_rotary.Per-app rotary behavior" name="Rotary wakes first, acts second" status="passed" time="0.003003"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @app @rotary @wakeup
+  Scenario: Rotary wakes first, acts second
+    Given the active app is "Energy" ... passed in 0.000s
+    Given the system is IDLE ... passed in 0.000s
+    When I rotate the encoder RIGHT ... passed in 0.001s
+    Then the system is ACTIVE ... passed in 0.001s
+    And the Energy mode remains unchanged ... passed in 0.001s
+    When I rotate the encoder RIGHT again ... passed in 0.000s
+    Then the Energy mode becomes the next mode ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

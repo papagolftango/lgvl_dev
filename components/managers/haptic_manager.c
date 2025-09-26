@@ -21,6 +21,9 @@ static uint8_t wr(uint8_t reg, uint8_t val){
     return i2c_write_buff(drv2605_dev_handle, reg, &val, 1);
 }
 
+// Track the last effect played for test inspection
+static volatile uint8_t s_last_effect = 0;
+
 esp_err_t haptic_manager_init(void){
     // drv2605_dev_handle is created by i2c_master_Init() using default addr 0x5A
     if(drv2605_dev_handle == NULL){
@@ -40,5 +43,12 @@ esp_err_t haptic_manager_play(uint8_t effect){
     if(effect == 0) return ESP_ERR_INVALID_ARG;
     wr(REG_WAVESEQ1, effect);
     wr(REG_GO, 1);
+    s_last_effect = effect;
     return ESP_OK;
+}
+
+uint8_t haptic_manager_get_last_and_clear(void){
+    uint8_t v = s_last_effect;
+    s_last_effect = 0;
+    return v;
 }

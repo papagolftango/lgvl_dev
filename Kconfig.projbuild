@@ -1,0 +1,11 @@
+menu "Project Test Options"
+
+config TEST_MODE
+    bool "Enable HTTP/Serial test bridge endpoints"
+    default n
+    help
+        When enabled, exposes /test/* HTTP endpoints (and future serial commands)
+        for BDD test automation (app navigation, power state, haptics, etc.).
+        Disable for production builds.
+
+endmenu

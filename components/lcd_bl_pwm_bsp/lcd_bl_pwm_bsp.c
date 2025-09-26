@@ -10,6 +10,8 @@
 static SemaphoreHandle_t s_fade_mutex = NULL;
 // Track LEDC init state (must be declared before first use)
 static bool s_ledc_inited = false;
+// Track current backlight duty (0-255) for queries
+static uint16_t s_current_duty = 0;
 
 void gpio_init(void)
 {
@@ -55,12 +57,14 @@ void lcd_bl_pwm_bsp_init(uint16_t duty)
   if (s_fade_mutex == NULL) {
     s_fade_mutex = xSemaphoreCreateMutex();
   }
+  s_current_duty = duty;
 }
 
 void setUpduty(uint16_t duty)
 {
   ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, duty));
   ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1));
+  s_current_duty = duty;
 }
 
 void lcd_bl_pwm_bsp_fade_to(uint16_t duty, uint32_t duration_ms)
@@ -86,4 +90,10 @@ void lcd_bl_pwm_bsp_fade_to_wait(uint16_t duty, uint32_t duration_ms, bool wait)
     ESP_ERROR_CHECK_WITHOUT_ABORT(ledc_fade_start(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL_1, wait ? LEDC_FADE_WAIT_DONE : LEDC_FADE_NO_WAIT));
   }
   if (s_fade_mutex) { xSemaphoreGive(s_fade_mutex); }
+  s_current_duty = duty;
+}
+
+uint16_t lcd_bl_pwm_bsp_get_duty(void)
+{
+  return s_current_duty;
 }

@@ -1,0 +1,69 @@
+Feature: App navigation via touch # features/app/app_navigation.feature:1
+  As a user
+  I want touch to switch apps
+  So I can move between screens easily
+  Background:   # features/app/app_navigation.feature:6
+
+  @app @nav
+  Scenario: Default app is Energy   # features/app/app_navigation.feature:11
+    Given the system is ACTIVE      # features/steps/app_steps.py:9
+    And the active app is "Energy"  # features/steps/app_steps.py:22
+    Given the device is reset       # features/steps/app_steps.py:114
+    Then the active app is "Energy" # features/steps/app_steps.py:55
+
+  @app @nav
+  Scenario: Touch switches to next app  # features/app/app_navigation.feature:16
+    Given the system is ACTIVE          # features/steps/app_steps.py:9
+    And the active app is "Energy"      # features/steps/app_steps.py:22
+    When I tap the screen               # features/steps/app_steps.py:40
+    Then the active app is "Clock"      # features/steps/app_steps.py:55
+
+  @app @nav
+  Scenario: Frequent taps wrap to the beginning  # features/app/app_navigation.feature:21
+    Given the system is ACTIVE                   # features/steps/app_steps.py:9
+    And the active app is "Energy"               # features/steps/app_steps.py:22
+    Given the active app is "Weather"            # features/steps/app_steps.py:22
+    When I tap the screen                        # features/steps/app_steps.py:40
+    Then the active app is "Energy"              # features/steps/app_steps.py:55
+
+  @app @nav @wakeup
+  Scenario: Touch wakes device but does not switch apps  # features/app/app_navigation.feature:27
+    Given the system is ACTIVE                           # features/steps/app_steps.py:9
+    And the active app is "Energy"                       # features/steps/app_steps.py:22
+    Given the system is IDLE with backlight off          # features/steps/app_steps.py:15
+    When I tap the screen                                # features/steps/app_steps.py:40
+    Then the system is ACTIVE                            # features/steps/app_steps.py:67
+    And the active app is "Energy"                       # features/steps/app_steps.py:55
+
+Feature: Per-app rotary behavior # features/app/app_rotary.feature:1
+  As a user
+  I want the rotary to control the current app
+  So I can change in-app modes without affecting others
+  Background:   # features/app/app_rotary.feature:6
+
+  @app @rotary
+  Scenario: Rotary affects only the active app  # features/app/app_rotary.feature:10
+    Given the active app is "Energy"            # features/steps/app_steps.py:22
+    Given the Energy mode is "kWh Today"        # features/steps/app_steps.py:97
+    When I rotate the encoder RIGHT             # features/steps/app_steps.py:47
+    Then the Energy mode becomes the next mode  # features/steps/app_steps.py:97
+    And no other app receives the encoder event # features/steps/app_steps.py:105
+
+  @app @rotary
+  Scenario: Rotary LEFT cycles modes backwards  # features/app/app_rotary.feature:17
+    Given the active app is "Energy"            # features/steps/app_steps.py:22
+    Given the active app is "Energy"            # features/steps/app_steps.py:22
+    Given the Energy mode is "kWh Today"        # features/steps/app_steps.py:97
+    When I rotate the encoder LEFT              # features/steps/app_steps.py:47
+    Then the Energy mode becomes the next mode  # features/steps/app_steps.py:97
+
+  @app @rotary @wakeup
+  Scenario: Rotary wakes first, acts second    # features/app/app_rotary.feature:24
+    Given the active app is "Energy"           # features/steps/app_steps.py:22
+    Given the system is IDLE                   # features/steps/app_steps.py:15
+    When I rotate the encoder RIGHT            # features/steps/app_steps.py:47
+    Then the system is ACTIVE                  # features/steps/app_steps.py:67
+    And the Energy mode remains unchanged      # features/steps/app_steps.py:97
+    When I rotate the encoder RIGHT again      # features/steps/app_steps.py:47
+    Then the Energy mode becomes the next mode # features/steps/app_steps.py:97
+

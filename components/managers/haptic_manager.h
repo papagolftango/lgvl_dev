@@ -17,6 +17,9 @@ static inline void haptic_click(void){ haptic_manager_play(1); }       // short 
 static inline void haptic_confirm(void){ haptic_manager_play(15); }    // confirm pulse
 static inline void haptic_alert(void){ haptic_manager_play(47); }      // ramp
 
+// For testing: get the last effect played (0 if none since last read) and clear it.
+uint8_t haptic_manager_get_last_and_clear(void);
+
 #ifdef __cplusplus
 }
 #endif

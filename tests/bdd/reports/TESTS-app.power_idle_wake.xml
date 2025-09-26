@@ -1,0 +1,50 @@
+<testsuite name="app.power_idle_wake.Power idle and wake transitions" tests="3" errors="0" failures="0" skipped="0" time="0.013974" timestamp="2025-09-25T17:04:36.915604" hostname="DT-6M22WV3-PT"><testcase classname="app.power_idle_wake.Power idle and wake transitions" name="Idle after inactivity" status="passed" time="0.002428"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @power
+  Scenario: Idle after inactivity
+    Given the inactivity timeout is 120 seconds ... passed in 0.000s
+    Given the system is ACTIVE ... passed in 0.001s
+    When no input occurs for 120 seconds ... passed in 0.001s
+    Then the system is IDLE ... passed in 0.000s
+    And the backlight level is 0 ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.power_idle_wake.Power idle and wake transitions" name="Wake on touch with consumed event" status="passed" time="0.003552"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @power @wakeup
+  Scenario: Wake on touch with consumed event
+    Given the inactivity timeout is 120 seconds ... passed in 0.001s
+    Given the system is IDLE ... passed in 0.002s
+    When I tap the screen ... passed in 0.001s
+    Then the system is ACTIVE ... passed in 0.000s
+    And the active app is unchanged ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.power_idle_wake.Power idle and wake transitions" name="Any interaction resets the power timer" status="passed" time="0.007995"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @power
+  Scenario: Any interaction resets the power timer
+    Given the inactivity timeout is 120 seconds ... passed in 0.000s
+    Given the inactivity timeout is 120 seconds ... passed in 0.000s
+    And the system is ACTIVE ... passed in 0.001s
+    When I tap the screen ... passed in 0.002s
+    And no input occurs for 110 seconds ... passed in 0.001s
+    Then the system is ACTIVE ... passed in 0.000s
+    When I rotate the encoder RIGHT ... passed in 0.002s
+    And no input occurs for 110 seconds ... passed in 0.001s
+    Then the system is ACTIVE ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>
