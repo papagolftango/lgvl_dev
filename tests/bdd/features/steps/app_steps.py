@@ -42,6 +42,8 @@ def step_tap(context):
     # capture pre-action app for 'unchanged' checks
     context._pre_action_app = _ctx_bridge(context).get_active_app()
     _ctx_bridge(context).tap()
+    # If Clock app active and simulation helper exists, allow separate display cycling via dedicated step only.
+    # (No automatic cycling here to avoid mixing semantics.)
 
 
 @when('I rotate the encoder {direction}')

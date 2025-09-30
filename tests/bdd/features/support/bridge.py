@@ -83,6 +83,13 @@ class MockBridge(Bridge):
         self._pulses = 0
         self._baseline = 0
         self._tariff = 0.55
+        # Energy live metrics + auto-revert tracking
+        self._center_elapsed = 0  # seconds since switching away from kWh Today
+        self._balance = 0
+        self._solar = 0
+        self._used = 0
+        self._peak_solar = 0
+        self._peak_used = 0
 
     def close(self):
         pass
@@ -143,17 +150,30 @@ class MockBridge(Bridge):
         return val
 
     def get_energy_viewmodel(self):
+        bal = self._balance
+        colour_state = "Exporting" if bal < 0 else ("Low Import" if bal <= 2000 else "High Import")
         return {
             "mode": self._energy_modes[self._energy_mode_index],
             "pulses": self._pulses,
             "baseline": self._baseline,
             "tariff": self._tariff,
+            "balance": self._balance,
+            "solar": self._solar,
+            "used": self._used,
+            "peak_solar": self._peak_solar,
+            "peak_used": self._peak_used,
+            "status_color_state": colour_state,
         }
 
     # Test helpers for energy
     def set_energy_mode(self, name: str):
         if name in self._energy_modes:
             self._energy_mode_index = self._energy_modes.index(name)
+            # Reset auto-revert timer if leaving or entering kWh Today
+            if self._energy_modes[self._energy_mode_index] == "kWh Today":
+                self._center_elapsed = 0
+            else:
+                self._center_elapsed = 0
 
     def get_energy_mode_order(self):
         return list(self._energy_modes)
@@ -167,6 +187,34 @@ class MockBridge(Bridge):
     def set_energy_pulses(self, pulses: int):
         self._pulses = pulses
 
+    # New helper to bulk update live metrics (affects peaks)
+    def update_energy_metrics(self, balance=None, solar=None, used=None, pulses=None):
+        if balance is not None:
+            self._balance = balance
+        if solar is not None:
+            self._solar = solar
+            if solar > self._peak_solar:
+                self._peak_solar = solar
+        if used is not None:
+            self._used = used
+            if used > self._peak_used:
+                self._peak_used = used
+        if pulses is not None:
+            self._pulses = pulses
+
+    def new_day(self):
+        self._peak_solar = 0
+        self._peak_used = 0
+        self._baseline = self._pulses
+
+    def advance_time(self, seconds: int):
+        # Auto-revert after 20s away from kWh Today
+        if self._energy_modes[self._energy_mode_index] != "kWh Today":
+            self._center_elapsed += seconds
+            if self._center_elapsed >= 20:
+                self._energy_mode_index = self._energy_modes.index("kWh Today")
+                self._center_elapsed = 0
+
     def no_input_for(self, seconds: int) -> None:
         # Simulate inactivity triggering IDLE when threshold reached and currently ACTIVE
         if self.power_state == "ACTIVE":
@@ -175,6 +223,8 @@ class MockBridge(Bridge):
                 self.power_state = "IDLE"
                 self.backlight = 0
                 self._elapsed_since_input = 0
+        # Also process center auto-revert timer progression
+        self.advance_time(seconds)
 
     def get_last_rotary_target_app(self) -> Optional[str]:
         return self._last_rotary_target_app
@@ -241,6 +291,25 @@ class HttpBridge(Bridge):
 
     def set_energy_pulses(self, pulses: int):
         self._post('/test/energy/viewmodel', {"pulses": pulses})
+
+    def update_energy_metrics(self, balance=None, solar=None, used=None, pulses=None):
+        payload = {}
+        if balance is not None: payload['balance'] = balance
+        if solar is not None: payload['solar'] = solar
+        if used is not None: payload['used'] = used
+        if pulses is not None: payload['pulses'] = pulses
+        if payload:
+            self._post('/test/energy/update', payload)
+
+    def new_day(self):
+        self._post('/test/energy/new_day')
+
+    def advance_time(self, seconds: int):
+        self._post('/test/time/advance', {"seconds": seconds})
+
+    def no_input_for(self, seconds: int) -> None:
+        # Use time advancement to trigger timers (auto-revert, idle etc.)
+        self.advance_time(seconds)
 
     def get_energy_mode_order(self):
         # Static order aligned with firmware (mirror of enum)

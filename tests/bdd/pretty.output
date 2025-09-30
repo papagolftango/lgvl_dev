@@ -1,75 +1,149 @@
-Feature: Energy app overview and behaviour # features/app/energy_app.feature:1
-  A simple, readable description of what the Energy app shows and how a person uses it.
-  This file is intentionally written so a non-technical reader can skim it and understand
-  what the dial, centre number, coloured circle, and mode cycling mean.
-  Background:   # features/app/energy_app.feature:36
+Feature: Clock App Core Behaviour # features/app/clock_app.feature:1
+  The Clock app shows the current local time (timezone-adjusted via the time manager) and the date
+  where applicable. It updates once per second and updates the date when a new minute begins.
+  The user can: (a) cycle between three display types (Digital, Analogue, Nixie simulation) by tapping,
+  (b) temporarily toggle 12/24-hour format (future: persist this), and (c) briefly reveal the date.
+  No alarm/chime functionality exists (removed). Persistence of format and display type is future work.
+  @clock @time @tick
+  Scenario: Time label updates every second  # features/app/clock_app.feature:12
+    Given the system time is 12:00:05        # features/steps/clock_steps.py:37
+    And the active app is "Clock"            # features/steps/app_steps.py:22
+    When one second elapses                  # features/steps/clock_steps.py:50
+    Then the clock shows time "12:00:06"     # features/steps/clock_steps.py:76
+    When one more second elapses             # features/steps/clock_steps.py:56
+    Then the clock shows time "12:00:07"     # features/steps/clock_steps.py:76
 
-  @energy @modes
-  Scenario: The Energy app provides a set of readable modes  # features/app/energy_app.feature:44
-    Given the system is ACTIVE                               # features/steps/app_steps.py:9
-    And the active app is "Energy"                           # features/steps/app_steps.py:22
-    Then the Energy modes are in this order                  # features/steps/energy_steps.py:10
-      | Balance    |
-      | Solar      |
-      | Using      |
-      | Peak Solar |
-      | Peak Used  |
-      | kWh Today  |
-      | £ Today    |
-    And the initial Energy mode is "kWh Today"               # features/steps/energy_steps.py:23
+  @clock @date @minute
+  Scenario: Date label updates when minute changes               # features/app/clock_app.feature:24
+    Given the detailed system time is Monday 2025-09-29 12:34:55 # features/steps/clock_steps.py:44
+    And the active app is "Clock"                                # features/steps/app_steps.py:22
+    And the date label is currently hidden                       # features/steps/clock_steps.py:108
+    When 10 seconds elapse                                       # features/steps/clock_steps.py:62
+    And one more second elapses (minute rollover)                # features/steps/clock_steps.py:167
+    Then the date label text becomes "Mon 29 Sep"                # features/steps/clock_steps.py:145
 
-  @energy @modes
-  Scenario: Rotating RIGHT moves to the next mode  # features/app/energy_app.feature:56
-    Given the system is ACTIVE                     # features/steps/app_steps.py:9
-    And the active app is "Energy"                 # features/steps/app_steps.py:22
-    Given the Energy mode is "kWh Today"           # features/steps/energy_steps.py:23
-    When I rotate the encoder RIGHT                # features/steps/app_steps.py:47
-    Then the Energy mode becomes the next mode     # features/steps/energy_steps.py:52
+  @clock @format @encoder
+  Scenario: Rotating encoder LEFT toggles format  # features/app/clock_app.feature:38
+    Given the system time is 21:09:59             # features/steps/clock_steps.py:37
+    And the active app is "Clock"                 # features/steps/app_steps.py:22
+    And the clock format is 24h                   # features/steps/clock_steps.py:80
+    When I rotate LEFT on the encoder             # features/steps/clock_steps.py:92
+    Then the clock shows time "09:09:59"          # features/steps/clock_steps.py:76
 
-  @energy @modes
-  Scenario: Rotating LEFT moves backwards          # features/app/energy_app.feature:62
-    Given the system is ACTIVE                     # features/steps/app_steps.py:9
-    And the active app is "Energy"                 # features/steps/app_steps.py:22
-    Given the Energy mode is "kWh Today"           # features/steps/energy_steps.py:23
-    When I rotate the encoder LEFT                 # features/steps/app_steps.py:47
-    Then the Energy mode becomes the previous mode # features/steps/energy_steps.py:61
+  @clock @date @popup
+  Scenario: Encoder RIGHT shows date for 3 seconds then hides     # features/app/clock_app.feature:49
+    Given the detailed system time is Tuesday 2025-09-30 08:15:10 # features/steps/clock_steps.py:44
+    And the active app is "Clock"                                 # features/steps/app_steps.py:22
+    And the date label is hidden                                  # features/steps/clock_steps.py:108
+    When I rotate RIGHT on the encoder                            # features/steps/clock_steps.py:125
+    Then the date label is visible                                # features/steps/clock_steps.py:113
+    When 2 seconds elapse                                         # features/steps/clock_steps.py:62
+    Then the date label is still visible                          # features/steps/clock_steps.py:117
+    When 1 more second elapses                                    # features/steps/clock_steps.py:56
+    Then the date label is hidden again                           # features/steps/clock_steps.py:121
 
-  @energy @modes
-  Scenario: Mode cycling wraps around at the ends  # features/app/energy_app.feature:68
-    Given the system is ACTIVE                     # features/steps/app_steps.py:9
-    And the active app is "Energy"                 # features/steps/app_steps.py:22
-    Given the Energy mode is "£ Today"             # features/steps/energy_steps.py:23
-    When I rotate the encoder RIGHT                # features/steps/app_steps.py:47
-    Then the Energy mode is "Balance"              # features/steps/energy_steps.py:37
-    When I rotate the encoder LEFT                 # features/steps/app_steps.py:47
-    Then the Energy mode is "£ Today"              # features/steps/energy_steps.py:37
+  @clock @power @wip
+  Scenario: Clock stops updating when device is IDLE  # features/app/clock_app.feature:64
+    Given the system time is 10:00:00                 # features/steps/clock_steps.py:37
+    And the active app is "Clock"                     # features/steps/app_steps.py:22
+    And the device enters IDLE power state            # features/steps/clock_steps.py:200
+      Traceback (most recent call last):
+        File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\model.py", line 1329, in run
+          match.run(runner.context)
+        File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\matchers.py", line 98, in run
+          self.func(context, *args, **kwargs)
+        File "features\steps\clock_steps.py", line 202, in step_device_idle
+          raise NotImplementedError('Power state integration pending')
+      NotImplementedError: Power state integration pending
 
-  @energy @pulses @kwh
-  Scenario: Converting pulses to kWh Today  # features/app/energy_app.feature:129
-    Given the system is ACTIVE              # features/steps/app_steps.py:9
-    And the active app is "Energy"          # features/steps/app_steps.py:22
-    Given the pulse baseline is 1000        # features/steps/energy_steps.py:72
-    And the current pulse counter is 2500   # features/steps/energy_steps.py:79
-    When the Energy mode is "kWh Today"     # features/steps/energy_steps.py:37
-    Then the center value shows 1.50 kWh    # features/steps/energy_steps.py:105
+    When 5 seconds elapse                             # None
+    Then the clock still shows time "10:00:00"        # None
+    When the device returns to ACTIVE                 # None
+    And one second elapses                            # None
+    Then the clock shows time "10:00:01"              # None
 
-  @energy @pulses @baseline @kwh
-  Scenario: Pulse counter drop rebases baseline safely  # features/app/energy_app.feature:137
-    Given the system is ACTIVE                          # features/steps/app_steps.py:9
-    And the active app is "Energy"                      # features/steps/app_steps.py:22
-    Given the pulse baseline is 5000                    # features/steps/energy_steps.py:72
-    And the current pulse counter is 5200               # features/steps/energy_steps.py:79
-    When the pulse counter jumps down to 300            # features/steps/energy_steps.py:90
-    Then the baseline is reset to 300                   # features/steps/energy_steps.py:99
-    And kWh Today is 0.00 kWh                           # features/steps/energy_steps.py:105
+  @clock @sync @wip
+  Scenario: Time jump causes immediate display update  # features/app/clock_app.feature:78
+    Given the system time is 11:59:58                  # features/steps/clock_steps.py:37
+    And the active app is "Clock"                      # features/steps/app_steps.py:22
+    When the system time jumps to 12:10:00             # features/steps/clock_steps.py:70
+    Then the clock shows time "12:10:00"               # features/steps/clock_steps.py:76
 
-  @energy @cost @tariff
-  Scenario: Converting pulses to cost (£ Today)  # features/app/energy_app.feature:146
-    Given the system is ACTIVE                   # features/steps/app_steps.py:9
-    And the active app is "Energy"               # features/steps/app_steps.py:22
-    Given the tariff rate is 0.55 GBP per kWh    # features/steps/energy_steps.py:123
-    And the pulse baseline is 2000               # features/steps/energy_steps.py:72
-    And the current pulse counter is 2600        # features/steps/energy_steps.py:79
-    When the Energy mode is "£ Today"            # features/steps/energy_steps.py:37
-    Then the center value shows £0.33            # features/steps/energy_steps.py:130
+  @clock @display @cycle
+  Scenario: Tap cycles display type forward  # features/app/clock_app.feature:89
+    Given the system time is 12:00:00        # features/steps/clock_steps.py:37
+    And the active app is "Clock"            # features/steps/app_steps.py:22
+    And the display type is Digital          # features/steps/clock_steps.py:88
+    When I tap the clock display             # features/steps/clock_steps.py:102
+    Then the display type is Analogue        # features/steps/clock_steps.py:98
+    When I tap the clock display             # features/steps/clock_steps.py:102
+    Then the display type is Nixie           # features/steps/clock_steps.py:98
+    When I tap the clock display             # features/steps/clock_steps.py:102
+    Then the display type is Digital         # features/steps/clock_steps.py:98
+
+  @clock @display @wip
+  Scenario: Display type persists across restart (future)  # features/app/clock_app.feature:101
+    Given the display type is Nixie                        # features/steps/clock_steps.py:88
+    And the app is restarted                               # features/steps/clock_steps.py:180
+    Then the display type is Nixie                         # features/steps/clock_steps.py:98
+
+  @clock @date @display
+  Scenario: Date available on Digital display  # features/app/clock_app.feature:111
+    Given the system time is 13:10:05          # features/steps/clock_steps.py:37
+    And the active app is "Clock"              # features/steps/app_steps.py:22
+    And the display type is Digital            # features/steps/clock_steps.py:88
+    When I rotate RIGHT on the encoder         # features/steps/clock_steps.py:125
+    Then the date label is visible             # features/steps/clock_steps.py:113
+
+  @clock @date @display
+  Scenario: Date available on Analogue display  # features/app/clock_app.feature:119
+    Given the system time is 13:10:05           # features/steps/clock_steps.py:37
+    And the active app is "Clock"               # features/steps/app_steps.py:22
+    And the display type is Analogue            # features/steps/clock_steps.py:88
+    When I rotate RIGHT on the encoder          # features/steps/clock_steps.py:125
+    Then the date label is visible              # features/steps/clock_steps.py:113
+
+  @clock @date @display
+  Scenario: Date hidden on Nixie display  # features/app/clock_app.feature:127
+    Given the system time is 13:10:05     # features/steps/clock_steps.py:37
+    And the active app is "Clock"         # features/steps/app_steps.py:22
+    And the display type is Nixie         # features/steps/clock_steps.py:88
+    When I rotate RIGHT on the encoder    # features/steps/clock_steps.py:125
+    Then the date label is hidden again   # features/steps/clock_steps.py:121
+
+  @clock @sync
+  Scenario: Time jump from time manager updates immediately  # features/app/clock_app.feature:138
+    Given the system time is 11:59:58                        # features/steps/clock_steps.py:37
+    And the active app is "Clock"                            # features/steps/app_steps.py:22
+    When the system time jumps to 12:10:00                   # features/steps/clock_steps.py:70
+    Then the clock shows time "12:10:00"                     # features/steps/clock_steps.py:76
+
+  @clock @timezone @wip
+  Scenario: Timezone change triggers redisplay  # features/app/clock_app.feature:145
+    Given the system time is 08:00:00           # features/steps/clock_steps.py:37
+    And the active app is "Clock"               # features/steps/app_steps.py:22
+    And the timezone is UTC                     # features/steps/clock_steps.py:153
+    When the timezone changes to Europe/London  # features/steps/clock_steps.py:157
+    Then the clock shows adjusted local time    # features/steps/clock_steps.py:162
+
+  @clock @navigation @wip
+  Scenario: Leaving and returning preserves display type and format  # features/app/clock_app.feature:156
+    Given the system time is 16:00:05                                # features/steps/clock_steps.py:37
+    And the active app is "Clock"                                    # features/steps/app_steps.py:22
+    And the clock format is 12h                                      # features/steps/clock_steps.py:84
+    And the display type is Analogue                                 # features/steps/clock_steps.py:88
+    When I switch to the "Energy" app                                # features/steps/clock_steps.py:208
+      Traceback (most recent call last):
+        File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\model.py", line 1329, in run
+          match.run(runner.context)
+        File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\matchers.py", line 98, in run
+          self.func(context, *args, **kwargs)
+        File "features\steps\clock_steps.py", line 210, in step_switch_app
+          raise NotImplementedError('App switching pending')
+      NotImplementedError: App switching pending
+
+    And 5 seconds elapse                                             # None
+    And I switch back to the "Clock" app                             # None
+    Then the clock shows time "04:00:10"                             # None
+    And the display type is Analogue                                 # None
 

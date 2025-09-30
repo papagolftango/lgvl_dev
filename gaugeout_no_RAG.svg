@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='utf-8'?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:ns1="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:ns2="http://www.inkscape.org/namespaces/inkscape" width="840" height="840" viewBox="0 0 840 840" version="1.1" id="svg183" ns1:docname="gaugeout.svg" ns2:version="1.4.2 (f4327f4, 2025-05-13)">
+  <defs id="defs183" />
+  <ns1:namedview id="namedview183" pagecolor="#ffffff" bordercolor="#000000" borderopacity="0.25" ns2:showpageshadow="2" ns2:pageopacity="0.0" ns2:pagecheckerboard="0" ns2:deskcolor="#d1d1d1" ns2:zoom="0.875" ns2:cx="418.85714" ns2:cy="416.57143" ns2:window-width="1920" ns2:window-height="1009" ns2:window-x="1912" ns2:window-y="-8" ns2:window-maximized="1" ns2:current-layer="NUMS_outward" />
+  <rect x="0" y="0" width="840" height="840" fill="#000000" id="rect1" ns2:export-filename="rect1.png" ns2:export-xdpi="41.142857" ns2:export-ydpi="41.142857" />
+  <circle cx="420.0" cy="420.0" r="394.0" fill="none" stroke="#e5e7eb" stroke-width="6" id="circle1" />
+  <circle cx="420.0" cy="420.0" r="384.0" fill="none" stroke="#6b7280" stroke-width="2" id="circle2" />
+  <line x1="169.684" y1="670.316" x2="155.542" y2="684.458" stroke="#ffffff" stroke-width="4" id="line122" />
+  <line x1="104.341" y1="580.236" x2="86.507" y2="589.289" stroke="#ffffff" stroke-width="4" id="line123" />
+  <line x1="67.606" y1="453.680" x2="47.697" y2="455.583" stroke="#ffffff" stroke-width="4" id="line124" />
+  <line x1="92.947" y1="284.530" x2="74.469" y2="276.876" stroke="#ffffff" stroke-width="4" id="line125" />
+  <line x1="420.000" y1="66.000" x2="420.000" y2="46.000" stroke="#ffffff" stroke-width="4" id="line126" />
+  <line x1="710.382" y1="217.529" x2="726.787" y2="206.090" stroke="#ffffff" stroke-width="4" id="line127" />
+  <line x1="766.190" y1="346.051" x2="785.749" y2="341.873" stroke="#ffffff" stroke-width="4" id="line128" />
+  <line x1="772.394" y1="453.680" x2="792.303" y2="455.583" stroke="#ffffff" stroke-width="4" id="line129" />
+  <line x1="752.169" y1="542.392" x2="770.935" y2="549.307" stroke="#ffffff" stroke-width="4" id="line130" />
+  <line x1="716.087" y1="614.032" x2="732.815" y2="624.994" stroke="#ffffff" stroke-width="4" id="line131" />
+  <line x1="670.316" y1="670.316" x2="684.458" y2="684.458" stroke="#ffffff" stroke-width="4" id="line132" />
+  <line x1="149.220" y1="660.255" x2="140.244" y2="668.219" stroke="#ffffff" stroke-width="2.5" id="line133" />
+  <line x1="135.021" y1="643.229" x2="125.575" y2="650.629" stroke="#ffffff" stroke-width="2.5" id="line134" />
+  <line x1="121.537" y1="624.851" x2="111.643" y2="631.641" stroke="#ffffff" stroke-width="2.5" id="line135" />
+  <line x1="108.887" y1="605.075" x2="98.574" y2="611.211" stroke="#ffffff" stroke-width="2.5" id="line136" />
+  <line x1="86.652" y1="561.149" x2="75.602" y2="565.828" stroke="#ffffff" stroke-width="2.5" id="line137" />
+  <line x1="77.395" y1="536.902" x2="66.038" y2="540.777" stroke="#ffffff" stroke-width="2.5" id="line138" />
+  <line x1="69.642" y1="511.069" x2="58.028" y2="514.088" stroke="#ffffff" stroke-width="2.5" id="line139" />
+  <line x1="63.631" y1="483.599" x2="51.817" y2="485.707" stroke="#ffffff" stroke-width="2.5" id="line140" />
+  <line x1="58.017" y1="423.543" x2="46.018" y2="423.660" stroke="#ffffff" stroke-width="2.5" id="line141" />
+  <line x1="59.175" y1="390.851" x2="47.214" y2="389.885" stroke="#ffffff" stroke-width="2.5" id="line142" />
+  <line x1="63.646" y1="356.312" x2="51.834" y2="354.201" stroke="#ffffff" stroke-width="2.5" id="line143" />
+  <line x1="72.123" y1="319.870" x2="60.592" y2="316.551" stroke="#ffffff" stroke-width="2.5" id="line144" />
+  <line x1="105.325" y1="241.049" x2="94.893" y2="235.117" stroke="#ffffff" stroke-width="2.5" id="line145" />
+  <line x1="133.634" y1="198.554" x2="124.141" y2="191.213" stroke="#ffffff" stroke-width="2.5" id="line146" />
+  <line x1="174.549" y1="153.921" x2="166.413" y2="145.101" stroke="#ffffff" stroke-width="2.5" id="line147" />
+  <line x1="237.978" y1="107.091" x2="231.944" y2="96.718" stroke="#ffffff" stroke-width="2.5" id="line148" />
+  <line x1="570.967" y1="90.982" x2="575.971" y2="80.075" stroke="#ffffff" stroke-width="2.5" id="line149" />
+  <line x1="626.893" y1="122.949" x2="633.751" y2="113.102" stroke="#ffffff" stroke-width="2.5" id="line150" />
+  <line x1="665.451" y1="153.921" x2="673.587" y2="145.101" stroke="#ffffff" stroke-width="2.5" id="line151" />
+  <line x1="694.424" y1="183.917" x2="703.521" y2="176.091" stroke="#ffffff" stroke-width="2.5" id="line152" />
+  <line x1="734.675" y1="241.049" x2="745.107" y2="235.117" stroke="#ffffff" stroke-width="2.5" id="line153" />
+  <line x1="748.645" y1="268.223" x2="759.539" y2="263.191" stroke="#ffffff" stroke-width="2.5" id="line154" />
+  <line x1="759.546" y1="294.490" x2="770.801" y2="290.330" stroke="#ffffff" stroke-width="2.5" id="line155" />
+  <line x1="767.877" y1="319.870" x2="779.408" y2="316.551" stroke="#ffffff" stroke-width="2.5" id="line156" />
+  <line x1="778.251" y1="368.034" x2="790.126" y2="366.312" stroke="#ffffff" stroke-width="2.5" id="line157" />
+  <line x1="780.825" y1="390.851" x2="792.786" y2="389.885" stroke="#ffffff" stroke-width="2.5" id="line158" />
+  <line x1="781.929" y1="412.848" x2="793.927" y2="412.611" stroke="#ffffff" stroke-width="2.5" id="line159" />
+  <line x1="781.728" y1="434.039" x2="793.719" y2="434.504" stroke="#ffffff" stroke-width="2.5" id="line160" />
+  <line x1="777.939" y1="474.070" x2="789.805" y2="475.862" stroke="#ffffff" stroke-width="2.5" id="line161" />
+  <line x1="774.575" y1="492.941" x2="786.329" y2="495.359" stroke="#ffffff" stroke-width="2.5" id="line162" />
+  <line x1="770.358" y1="511.069" x2="781.972" y2="514.088" stroke="#ffffff" stroke-width="2.5" id="line163" />
+  <line x1="765.367" y1="528.470" x2="776.815" y2="532.066" stroke="#ffffff" stroke-width="2.5" id="line164" />
+  <line x1="753.348" y1="561.149" x2="764.398" y2="565.828" stroke="#ffffff" stroke-width="2.5" id="line165" />
+  <line x1="746.444" y1="576.455" x2="757.265" y2="581.642" stroke="#ffffff" stroke-width="2.5" id="line166" />
+  <line x1="739.016" y1="591.093" x2="749.591" y2="596.765" stroke="#ffffff" stroke-width="2.5" id="line167" />
+  <line x1="731.113" y1="605.075" x2="741.426" y2="611.211" stroke="#ffffff" stroke-width="2.5" id="line168" />
+  <line x1="714.055" y1="631.130" x2="723.802" y2="638.129" stroke="#ffffff" stroke-width="2.5" id="line169" />
+  <line x1="704.979" y1="643.229" x2="714.425" y2="650.629" stroke="#ffffff" stroke-width="2.5" id="line170" />
+  <line x1="695.585" y1="654.727" x2="704.721" y2="662.508" stroke="#ffffff" stroke-width="2.5" id="line171" />
+  <line x1="685.907" y1="665.637" x2="694.721" y2="673.780" stroke="#ffffff" stroke-width="2.5" id="line172" />
+  <text x="425.71429" y="730.40002" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26px" fill="#f3f4f6" letter-spacing="2" id="text172">POWER</text>
+  <text x="504.64044" y="651.31696" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="26.1269px" fill="#f3f4f6" id="text173" transform="scale(0.84903231,1.1778115)" style="stroke-width:1.45149">kW</text>
+  <g id="NUMS_outward" transform="translate(420.0,420.0) scale(1.15) translate(-420.0,-420.0)">
+    <text x="235.27003" y="616.72998" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text122">-4</text>
+    <text x="180.6506" y="550.14587" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text123">-3</text>
+    <text x="155.01349" y="448.15848" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text124">-2</text>
+    <text x="173.42793" y="317.81699" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text125">-1</text>
+    <text x="422.98135" y="157.72049" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text126">0</text>
+    <text x="642.46521" y="268.83249" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text127">1</text>
+    <text x="682.98529" y="360.42673" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text128">2</text>
+    <text x="691.98029" y="455.11499" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text129">3</text>
+    <text x="676.65381" y="519.63013" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text130">4</text>
+    <text x="652.54987" y="570.39832" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text131">5</text>
+    <text x="610.71759" y="614.75482" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="48px" fill="#ffffff" id="text132">6</text>
+    <text x="527.02014" y="172.12718" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text174">0.2</text>
+    <text x="284.03577" y="188.06506" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text175">-0.2</text>
+    <text x="574.92487" y="197.04097" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text176">0.4</text>
+    <text x="234.15588" y="222.97885" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text177">-0.4</text>
+    <text x="599.59088" y="222.38661" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text178">0.6</text>
+    <text x="209.41528" y="253.39282" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text179">-0.6</text>
+    <text x="619.15179" y="243.20387" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text180">0.8</text>
+    <text x="189.89166" y="283.22873" font-size="24px" text-anchor="middle" dominant-baseline="middle" fill="#cbd5e1" id="text181">-0.8</text>
+  </g>
+</svg>

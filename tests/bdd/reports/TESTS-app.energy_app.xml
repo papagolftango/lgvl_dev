@@ -1,4 +1,4 @@
-<testsuite name="app.energy_app.Energy app overview and behaviour" tests="7" errors="0" failures="0" skipped="0" time="0.030379" timestamp="2025-09-26T16:33:42.157974" hostname="DT-6M22WV3-PT"><testcase classname="app.energy_app.Energy app overview and behaviour" name="The Energy app provides a set of readable modes" status="passed" time="0.000944"><system-out>
+<testsuite name="app.energy_app.Energy app overview and behaviour" tests="21" errors="0" failures="0" skipped="0" time="0.057908" timestamp="2025-09-30T13:42:39.821392" hostname="DT-6M22WV3-PT"><testcase classname="app.energy_app.Energy app overview and behaviour" name="The Energy app provides a set of readable modes" status="passed" time="0.000996"><system-out>
 <![CDATA[
 @scenario.begin
 
@@ -19,37 +19,37 @@
 @scenario.end
 --------------------------------------------------------------------------------
 ]]>
-</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Rotating RIGHT moves to the next mode" status="passed" time="0.004998"><system-out>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Rotating RIGHT moves to the next mode" status="passed" time="0.0"><system-out>
 <![CDATA[
 @scenario.begin
 
   @energy @modes
   Scenario: Rotating RIGHT moves to the next mode
-    Given the system is ACTIVE ... passed in 0.001s
-    And the active app is "Energy" ... passed in 0.001s
-    Given the Energy mode is "kWh Today" ... passed in 0.001s
-    When I rotate the encoder RIGHT ... passed in 0.001s
-    Then the Energy mode becomes the next mode ... passed in 0.001s
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the Energy mode is "kWh Today" ... passed in 0.000s
+    When I rotate the encoder RIGHT ... passed in 0.000s
+    Then the Energy mode becomes the next mode ... passed in 0.000s
 
 @scenario.end
 --------------------------------------------------------------------------------
 ]]>
-</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Rotating LEFT moves backwards" status="passed" time="0.002023"><system-out>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Rotating LEFT moves backwards" status="passed" time="0.000995"><system-out>
 <![CDATA[
 @scenario.begin
 
   @energy @modes
   Scenario: Rotating LEFT moves backwards
-    Given the system is ACTIVE ... passed in 0.000s
-    And the active app is "Energy" ... passed in 0.001s
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
     Given the Energy mode is "kWh Today" ... passed in 0.000s
     When I rotate the encoder LEFT ... passed in 0.000s
-    Then the Energy mode becomes the previous mode ... passed in 0.001s
+    Then the Energy mode becomes the previous mode ... passed in 0.000s
 
 @scenario.end
 --------------------------------------------------------------------------------
 ]]>
-</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Mode cycling wraps around at the ends" status="passed" time="0.005522"><system-out>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Mode cycling wraps around at the ends" status="passed" time="0.002996"><system-out>
 <![CDATA[
 @scenario.begin
 
@@ -57,61 +57,336 @@
   Scenario: Mode cycling wraps around at the ends
     Given the system is ACTIVE ... passed in 0.000s
     And the active app is "Energy" ... passed in 0.001s
-    Given the Energy mode is "£ Today" ... passed in 0.001s
-    When I rotate the encoder RIGHT ... passed in 0.002s
+    Given the Energy mode is "£ Today" ... passed in 0.000s
+    When I rotate the encoder RIGHT ... passed in 0.001s
     Then the Energy mode is "Balance" ... passed in 0.000s
-    When I rotate the encoder LEFT ... passed in 0.001s
+    When I rotate the encoder LEFT ... passed in 0.000s
     Then the Energy mode is "£ Today" ... passed in 0.001s
 
 @scenario.end
 --------------------------------------------------------------------------------
 ]]>
-</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Converting pulses to kWh Today" status="passed" time="0.00589"><system-out>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Leaving the default view temporarily" status="passed" time="0.001022"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @autorevert
+  Scenario: Leaving the default view temporarily
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the Energy mode is "Balance" ... passed in 0.000s
+    When no input occurs for 20 seconds ... passed in 0.000s
+    Then the Energy mode is "kWh Today" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Peaks record highest solar and usage reached today" status="passed" time="0.006014"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @peaks
+  Scenario: Peaks record highest solar and usage reached today
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the peak solar is 0 W ... passed in 0.000s
+    And the peak usage is 0 W ... passed in 0.000s
+    When new solar data arrives with value 1800 W ... passed in 0.001s
+    And new usage data arrives with value 2500 W ... passed in 0.000s
+    Then the peak solar is 1800 W ... passed in 0.001s
+    And the peak usage is 2500 W ... passed in 0.001s
+    When new usage data arrives with value 2400 W ... passed in 0.001s
+    Then the peak usage remains 2500 W ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Daily reset clears peaks and latches pulse baseline" status="passed" time="0.005003"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @peaks @dailyreset
+  Scenario: Daily reset clears peaks and latches pulse baseline
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the peak solar is 3000 W ... passed in 0.001s
+    And the peak usage is 4500 W ... passed in 0.001s
+    And the pulse count since baseline is 500 ... passed in 0.000s
+    When a new day starts ... passed in 0.001s
+    Then the peak solar is 0 W ... passed in 0.000s
+    And the peak usage is 0 W ... passed in 0.001s
+    And the pulse baseline is latched to the current raw meter value ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Status circle colour reflects current balance -- @1.1 " status="passed" time="0.001998"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @balance @colour
+  Scenario Outline: Status circle colour reflects current balance -- @1.1 
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the balance value is -500 ... passed in 0.000s
+    When the Energy screen updates ... passed in 0.001s
+    Then the status circle colour state is Exporting ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Status circle colour reflects current balance -- @1.2 " status="passed" time="0.003014"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @balance @colour
+  Scenario Outline: Status circle colour reflects current balance -- @1.2 
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the balance value is 0 ... passed in 0.001s
+    When the Energy screen updates ... passed in 0.001s
+    Then the status circle colour state is Low Import ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Status circle colour reflects current balance -- @1.3 " status="passed" time="0.003999"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @balance @colour
+  Scenario Outline: Status circle colour reflects current balance -- @1.3 
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the balance value is 1500 ... passed in 0.001s
+    When the Energy screen updates ... passed in 0.000s
+    Then the status circle colour state is Low Import ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Status circle colour reflects current balance -- @1.4 " status="passed" time="0.002015"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @balance @colour
+  Scenario Outline: Status circle colour reflects current balance -- @1.4 
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the balance value is 2500 ... passed in 0.000s
+    When the Energy screen updates ... passed in 0.001s
+    Then the status circle colour state is High Import ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Converting pulses to kWh Today" status="passed" time="0.001995"><system-out>
 <![CDATA[
 @scenario.begin
 
   @energy @pulses @kwh
   Scenario: Converting pulses to kWh Today
-    Given the system is ACTIVE ... passed in 0.002s
-    And the active app is "Energy" ... passed in 0.001s
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.000s
     Given the pulse baseline is 1000 ... passed in 0.001s
-    And the current pulse counter is 2500 ... passed in 0.001s
+    And the current pulse counter is 2500 ... passed in 0.000s
     When the Energy mode is "kWh Today" ... passed in 0.001s
     Then the center value shows 1.50 kWh ... passed in 0.000s
 
 @scenario.end
 --------------------------------------------------------------------------------
 ]]>
-</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Pulse counter drop rebases baseline safely" status="passed" time="0.006002"><system-out>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Pulse counter drop rebases baseline safely" status="passed" time="0.004016"><system-out>
 <![CDATA[
 @scenario.begin
 
   @energy @pulses @baseline @kwh
   Scenario: Pulse counter drop rebases baseline safely
     Given the system is ACTIVE ... passed in 0.000s
-    And the active app is "Energy" ... passed in 0.001s
-    Given the pulse baseline is 5000 ... passed in 0.001s
-    And the current pulse counter is 5200 ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the pulse baseline is 5000 ... passed in 0.000s
+    And the current pulse counter is 5200 ... passed in 0.000s
     When the pulse counter jumps down to 300 ... passed in 0.001s
     Then the baseline is reset to 300 ... passed in 0.001s
-    And kWh Today is 0.00 kWh ... passed in 0.001s
+    And kWh Today is 0.00 kWh ... passed in 0.002s
 
 @scenario.end
 --------------------------------------------------------------------------------
 ]]>
-</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Converting pulses to cost (£ Today)" status="passed" time="0.005"><system-out>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Converting pulses to cost (£ Today)" status="passed" time="0.001991"><system-out>
 <![CDATA[
 @scenario.begin
 
   @energy @cost @tariff
   Scenario: Converting pulses to cost (£ Today)
-    Given the system is ACTIVE ... passed in 0.001s
-    And the active app is "Energy" ... passed in 0.001s
-    Given the tariff rate is 0.55 GBP per kWh ... passed in 0.000s
-    And the pulse baseline is 2000 ... passed in 0.001s
-    And the current pulse counter is 2600 ... passed in 0.001s
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the tariff rate is 0.55 GBP per kWh ... passed in 0.001s
+    And the pulse baseline is 2000 ... passed in 0.000s
+    And the current pulse counter is 2600 ... passed in 0.000s
     When the Energy mode is "£ Today" ... passed in 0.001s
     Then the center value shows £0.33 ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Center display meaning in each mode -- @1.1 " status="passed" time="0.001993"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes @display
+  Scenario Outline: Center display meaning in each mode -- @1.1 
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the last known values are ... passed in 0.001s
+      | Balance    | -350 |
+      | Solar      | 1800 |
+      | Using      | 2200 |
+      | Peak Solar | 2500 |
+      | Peak Used  | 4000 |
+      | Pulses     | 4800 |
+      | Baseline   | 4000 |
+    When I set the Energy mode to Balance ... passed in 0.000s
+    Then the center title is Balance ... passed in 0.001s
+    And the center number reflects the current net power (negative=export) ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Center display meaning in each mode -- @1.2 " status="passed" time="0.00291"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes @display
+  Scenario Outline: Center display meaning in each mode -- @1.2 
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the last known values are ... passed in 0.000s
+      | Balance    | -350 |
+      | Solar      | 1800 |
+      | Using      | 2200 |
+      | Peak Solar | 2500 |
+      | Peak Used  | 4000 |
+      | Pulses     | 4800 |
+      | Baseline   | 4000 |
+    When I set the Energy mode to Solar ... passed in 0.000s
+    Then the center title is Solar ... passed in 0.001s
+    And the center number reflects the current solar generation ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Center display meaning in each mode -- @1.3 " status="passed" time="0.002057"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes @display
+  Scenario Outline: Center display meaning in each mode -- @1.3 
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the last known values are ... passed in 0.000s
+      | Balance    | -350 |
+      | Solar      | 1800 |
+      | Using      | 2200 |
+      | Peak Solar | 2500 |
+      | Peak Used  | 4000 |
+      | Pulses     | 4800 |
+      | Baseline   | 4000 |
+    When I set the Energy mode to Using ... passed in 0.001s
+    Then the center title is Using ... passed in 0.000s
+    And the center number reflects the current household usage ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Center display meaning in each mode -- @1.4 " status="passed" time="0.004944"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes @display
+  Scenario Outline: Center display meaning in each mode -- @1.4 
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the last known values are ... passed in 0.001s
+      | Balance    | -350 |
+      | Solar      | 1800 |
+      | Using      | 2200 |
+      | Peak Solar | 2500 |
+      | Peak Used  | 4000 |
+      | Pulses     | 4800 |
+      | Baseline   | 4000 |
+    When I set the Energy mode to Peak Solar ... passed in 0.001s
+    Then the center title is Peak Solar ... passed in 0.000s
+    And the center number reflects the highest solar so far today ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Center display meaning in each mode -- @1.5 " status="passed" time="0.003996"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes @display
+  Scenario Outline: Center display meaning in each mode -- @1.5 
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the last known values are ... passed in 0.001s
+      | Balance    | -350 |
+      | Solar      | 1800 |
+      | Using      | 2200 |
+      | Peak Solar | 2500 |
+      | Peak Used  | 4000 |
+      | Pulses     | 4800 |
+      | Baseline   | 4000 |
+    When I set the Energy mode to Peak Used ... passed in 0.000s
+    Then the center title is Peak Used ... passed in 0.001s
+    And the center number reflects the highest usage so far today ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Center display meaning in each mode -- @1.6 " status="passed" time="0.002998"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes @display
+  Scenario Outline: Center display meaning in each mode -- @1.6 
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the last known values are ... passed in 0.000s
+      | Balance    | -350 |
+      | Solar      | 1800 |
+      | Using      | 2200 |
+      | Peak Solar | 2500 |
+      | Peak Used  | 4000 |
+      | Pulses     | 4800 |
+      | Baseline   | 4000 |
+    When I set the Energy mode to kWh Today ... passed in 0.000s
+    Then the center title is kWh Today ... passed in 0.001s
+    And the center number reflects the pulses delta / 1000 ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Center display meaning in each mode -- @1.7 " status="passed" time="0.002955"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes @display
+  Scenario Outline: Center display meaning in each mode -- @1.7 
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
+    Given the last known values are ... passed in 0.001s
+      | Balance    | -350 |
+      | Solar      | 1800 |
+      | Using      | 2200 |
+      | Peak Solar | 2500 |
+      | Peak Used  | 4000 |
+      | Pulses     | 4800 |
+      | Baseline   | 4000 |
+    When I set the Energy mode to £ Today ... passed in 0.000s
+    Then the center title is £ Today ... passed in 0.000s
+    And the center number reflects the (pulses delta / 1000) * tariff rate ... passed in 0.001s
 
 @scenario.end
 --------------------------------------------------------------------------------

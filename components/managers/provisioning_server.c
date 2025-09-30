@@ -350,11 +350,12 @@ void provisioning_server_start(void) {
 #endif
         int delta = energy_pulse_count - cumulative_pulse;
         if (delta < 0) delta = 0;
-        char buf[384];
-        // Note: balance/solar/used and peaks as integers (rounded) for simplicity
+        const char *colour_state = (energy_balance < 0) ? "Exporting" : (energy_balance <= 2000 ? "Low Import" : "High Import");
+        char buf[448];
+        // Note: balance/solar/used and peaks as integers (rounded) for simplicity; include derived colour state
         snprintf(buf, sizeof(buf),
-            "{\"mode\":\"%s\",\"balance\":%.0f,\"solar\":%.0f,\"used\":%.0f,\"peak_solar\":%.0f,\"peak_used\":%.0f,\"pulses\":%d,\"baseline\":%d,\"tariff\":%.3f}",
-            mode, energy_balance, energy_solar, energy_used, energy_peak_solar, energy_peak_used, energy_pulse_count, cumulative_pulse, energy_tariff_rate_gbp_per_kwh);
+            "{\"mode\":\"%s\",\"balance\":%.0f,\"solar\":%.0f,\"used\":%.0f,\"peak_solar\":%.0f,\"peak_used\":%.0f,\"pulses\":%d,\"baseline\":%d,\"tariff\":%.3f,\"status_color_state\":\"%s\"}",
+            mode, energy_balance, energy_solar, energy_used, energy_peak_solar, energy_peak_used, energy_pulse_count, cumulative_pulse, energy_tariff_rate_gbp_per_kwh, colour_state);
         return send_json(req, buf);
     }
     static httpd_uri_t uri_get_energy_vm = {
@@ -415,6 +416,66 @@ void provisioning_server_start(void) {
         .handler = test_post_energy_vm
     };
 
+    // POST /test/energy/update -> mutate live metrics (balance, solar, used, pulses) & update peaks
+    static esp_err_t test_post_energy_update(httpd_req_t *req){
+        extern float energy_balance, energy_solar, energy_used;
+        extern float energy_peak_solar, energy_peak_used;
+        extern int energy_pulse_count;
+        char content[160];
+        int len = httpd_req_recv(req, content, sizeof(content)-1);
+        if (len < 0) return ESP_FAIL;
+        content[len] = '\0';
+        const char *p;
+        p = strstr(content, "\"balance\""); if (p){ const char *c = strchr(p, ':'); if (c) energy_balance = (float)atof(c+1); }
+        p = strstr(content, "\"solar\"");   if (p){ const char *c = strchr(p, ':'); if (c) { float v=(float)atof(c+1); energy_solar = v; if (v > energy_peak_solar) energy_peak_solar = v; } }
+        p = strstr(content, "\"used\"");    if (p){ const char *c = strchr(p, ':'); if (c) { float v=(float)atof(c+1); energy_used = v; if (v > energy_peak_used) energy_peak_used = v; } }
+        p = strstr(content, "\"pulses\"");  if (p){ const char *c = strchr(p, ':'); if (c) { energy_pulse_count = atoi(c+1); } }
+        return send_json(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_energy_update = {
+        .uri = "/test/energy/update",
+        .method = HTTP_POST,
+        .handler = test_post_energy_update
+    };
+
+    // POST /test/energy/new_day -> simulate daily reset (peaks cleared, baseline latched)
+    static esp_err_t test_post_energy_new_day(httpd_req_t *req){
+        extern float energy_peak_solar, energy_peak_used;
+        extern int cumulative_pulse, energy_pulse_count;
+        energy_peak_solar = 0.0f;
+        energy_peak_used = 0.0f;
+        cumulative_pulse = energy_pulse_count;
+        return send_json(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_energy_new_day = {
+        .uri = "/test/energy/new_day",
+        .method = HTTP_POST,
+        .handler = test_post_energy_new_day
+    };
+
+    // POST /test/time/advance {"seconds":N} -> advance LVGL timers to trigger auto-revert
+    static esp_err_t test_post_time_advance(httpd_req_t *req){
+        char content[64];
+        int len = httpd_req_recv(req, content, sizeof(content)-1);
+        if (len < 0) return ESP_FAIL;
+        content[len] = '\0';
+        int seconds = 0;
+        const char *p = strstr(content, "seconds");
+        if (p){ const char *c = strchr(p, ':'); if (c) seconds = atoi(c+1); }
+        if (seconds < 0) seconds = 0;
+        // Crude: call lv_timer_handler in a tight loop approximating ms progression
+        // Assuming lv_timer_handler processes based on system tick, here we just call multiple times.
+        for (int i=0;i<seconds*50;i++){ // 20ms * 50 = 1s approx
+            lv_timer_handler();
+        }
+        return send_json(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_time_advance = {
+        .uri = "/test/time/advance",
+        .method = HTTP_POST,
+        .handler = test_post_time_advance
+    };
+
     // POST /test/reset -> restore to known state
     static esp_err_t test_post_reset(httpd_req_t *req){
         // Active app to Energy
@@ -456,6 +517,9 @@ void provisioning_server_start(void) {
     httpd_register_uri_handler(server, &uri_get_haptics_last);
     httpd_register_uri_handler(server, &uri_get_energy_vm);
     httpd_register_uri_handler(server, &uri_post_energy_vm);
+    httpd_register_uri_handler(server, &uri_post_energy_update);
+    httpd_register_uri_handler(server, &uri_post_energy_new_day);
+    httpd_register_uri_handler(server, &uri_post_time_advance);
     httpd_register_uri_handler(server, &uri_post_reset);
     httpd_register_uri_handler(server, &uri_get_last_rotary_target);
 #endif // CONFIG_TEST_MODE

@@ -75,7 +75,7 @@ Feature: Energy app overview and behaviour
   # ---------------------------------------------------------------------------
   # AUTO REVERT (returns user gently to daily energy view)
   # ---------------------------------------------------------------------------
-  @energy @autorevert @wip
+  @energy @autorevert
   Scenario: Leaving the default view temporarily
     Given the Energy mode is "Balance"
     When no input occurs for 20 seconds
@@ -85,7 +85,7 @@ Feature: Energy app overview and behaviour
   # ---------------------------------------------------------------------------
   # PEAKS & CURRENT MARKERS
   # ---------------------------------------------------------------------------
-  @energy @peaks @wip
+  @energy @peaks
   Scenario: Peaks record highest solar and usage reached today
     Given the peak solar is 0 W
     And the peak usage is 0 W
@@ -96,7 +96,7 @@ Feature: Energy app overview and behaviour
     When new usage data arrives with value 2400 W
     Then the peak usage remains 2500 W
 
-  @energy @peaks @dailyreset @wip
+  @energy @peaks @dailyreset
   Scenario: Daily reset clears peaks and latches pulse baseline
     Given the peak solar is 3000 W
     And the peak usage is 4500 W
@@ -109,7 +109,7 @@ Feature: Energy app overview and behaviour
   # ---------------------------------------------------------------------------
   # BALANCE & STATUS COLOUR
   # ---------------------------------------------------------------------------
-  @energy @balance @colour @wip
+  @energy @balance @colour
   Scenario Outline: Status circle colour reflects current balance
     Given the balance value is <balance>
     When the Energy screen updates
@@ -154,7 +154,7 @@ Feature: Energy app overview and behaviour
   # ---------------------------------------------------------------------------
   # DATA DISPLAY PER MODE
   # ---------------------------------------------------------------------------
-  @energy @modes @display @wip
+  @energy @modes @display
   Scenario Outline: Center display meaning in each mode
     Given the last known values are:
       | Balance    | -350  |

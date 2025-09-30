@@ -1,0 +1,250 @@
+<testsuite name="app.clock_app.Clock App Core Behaviour" tests="14" errors="2" failures="0" skipped="0" time="0.049853" timestamp="2025-09-30T16:13:35.716165" hostname="DT-6M22WV3-PT"><testcase classname="app.clock_app.Clock App Core Behaviour" name="Time label updates every second" status="passed" time="0.008003"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @time @tick
+  Scenario: Time label updates every second
+    Given the system time is 12:00:05 ... passed in 0.005s
+    And the active app is "Clock" ... passed in 0.001s
+    When one second elapses ... passed in 0.001s
+    Then the clock shows time "12:00:06" ... passed in 0.001s
+    When one more second elapses ... passed in 0.000s
+    Then the clock shows time "12:00:07" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Date label updates when minute changes" status="passed" time="0.001966"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @date @minute
+  Scenario: Date label updates when minute changes
+    Given the detailed system time is Monday 2025-09-29 12:34:55 ... passed in 0.001s
+    And the active app is "Clock" ... passed in 0.001s
+    And the date label is currently hidden ... passed in 0.000s
+    When 10 seconds elapse ... passed in 0.000s
+    And one more second elapses (minute rollover) ... passed in 0.000s
+    Then the date label text becomes "Mon 29 Sep" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Rotating encoder LEFT toggles format" status="passed" time="0.002007"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @format @encoder
+  Scenario: Rotating encoder LEFT toggles format
+    Given the system time is 21:09:59 ... passed in 0.000s
+    And the active app is "Clock" ... passed in 0.001s
+    And the clock format is 24h ... passed in 0.000s
+    When I rotate LEFT on the encoder ... passed in 0.001s
+    Then the clock shows time "09:09:59" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Encoder RIGHT shows date for 3 seconds then hides" status="passed" time="0.005006"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @date @popup
+  Scenario: Encoder RIGHT shows date for 3 seconds then hides
+    Given the detailed system time is Tuesday 2025-09-30 08:15:10 ... passed in 0.001s
+    And the active app is "Clock" ... passed in 0.001s
+    And the date label is hidden ... passed in 0.001s
+    When I rotate RIGHT on the encoder ... passed in 0.000s
+    Then the date label is visible ... passed in 0.000s
+    When 2 seconds elapse ... passed in 0.001s
+    Then the date label is still visible ... passed in 0.000s
+    When 1 more second elapses ... passed in 0.001s
+    Then the date label is hidden again ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Clock stops updating when device is IDLE" status="failed" time="0.004009"><error type="NotImplementedError" message="Power state integration pending">
+<![CDATA[
+Failing step: And the device enters IDLE power state ... failed in 0.004s
+Location: features/app/clock_app.feature:67
+Traceback (most recent call last):
+  File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\model.py", line 1329, in run
+    match.run(runner.context)
+  File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\matchers.py", line 98, in run
+    self.func(context, *args, **kwargs)
+  File "features\steps\clock_steps.py", line 202, in step_device_idle
+    raise NotImplementedError('Power state integration pending')
+NotImplementedError: Power state integration pending
+]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @power @wip
+  Scenario: Clock stops updating when device is IDLE
+    Given the system time is 10:00:00 ... passed in 0.000s
+    And the active app is "Clock" ... passed in 0.000s
+    And the device enters IDLE power state ... failed in 0.004s
+    When 5 seconds elapse ... skipped in 0.000s
+    Then the clock still shows time "10:00:00" ... skipped in 0.000s
+    When the device returns to ACTIVE ... skipped in 0.000s
+    And one second elapses ... skipped in 0.000s
+    Then the clock shows time "10:00:01" ... skipped in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Time jump causes immediate display update" status="passed" time="0.003058"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @sync @wip
+  Scenario: Time jump causes immediate display update
+    Given the system time is 11:59:58 ... passed in 0.001s
+    And the active app is "Clock" ... passed in 0.001s
+    When the system time jumps to 12:10:00 ... passed in 0.001s
+    Then the clock shows time "12:10:00" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Tap cycles display type forward" status="passed" time="0.002004"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @display @cycle
+  Scenario: Tap cycles display type forward
+    Given the system time is 12:00:00 ... passed in 0.000s
+    And the active app is "Clock" ... passed in 0.001s
+    And the display type is Digital ... passed in 0.000s
+    When I tap the clock display ... passed in 0.001s
+    Then the display type is Analogue ... passed in 0.000s
+    When I tap the clock display ... passed in 0.000s
+    Then the display type is Nixie ... passed in 0.000s
+    When I tap the clock display ... passed in 0.000s
+    Then the display type is Digital ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Display type persists across restart (future)" status="passed" time="0.002009"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @display @wip
+  Scenario: Display type persists across restart (future)
+    Given the display type is Nixie ... passed in 0.000s
+    And the app is restarted ... passed in 0.001s
+    Then the display type is Nixie ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Date available on Digital display" status="passed" time="0.001994"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @date @display
+  Scenario: Date available on Digital display
+    Given the system time is 13:10:05 ... passed in 0.001s
+    And the active app is "Clock" ... passed in 0.001s
+    And the display type is Digital ... passed in 0.000s
+    When I rotate RIGHT on the encoder ... passed in 0.000s
+    Then the date label is visible ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Date available on Analogue display" status="passed" time="0.003534"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @date @display
+  Scenario: Date available on Analogue display
+    Given the system time is 13:10:05 ... passed in 0.000s
+    And the active app is "Clock" ... passed in 0.001s
+    And the display type is Analogue ... passed in 0.000s
+    When I rotate RIGHT on the encoder ... passed in 0.002s
+    Then the date label is visible ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Date hidden on Nixie display" status="passed" time="0.004005"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @date @display
+  Scenario: Date hidden on Nixie display
+    Given the system time is 13:10:05 ... passed in 0.000s
+    And the active app is "Clock" ... passed in 0.000s
+    And the display type is Nixie ... passed in 0.001s
+    When I rotate RIGHT on the encoder ... passed in 0.001s
+    Then the date label is hidden again ... passed in 0.002s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Time jump from time manager updates immediately" status="passed" time="0.003526"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @sync
+  Scenario: Time jump from time manager updates immediately
+    Given the system time is 11:59:58 ... passed in 0.002s
+    And the active app is "Clock" ... passed in 0.001s
+    When the system time jumps to 12:10:00 ... passed in 0.000s
+    Then the clock shows time "12:10:00" ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Timezone change triggers redisplay" status="passed" time="0.003"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @timezone @wip
+  Scenario: Timezone change triggers redisplay
+    Given the system time is 08:00:00 ... passed in 0.000s
+    And the active app is "Clock" ... passed in 0.001s
+    And the timezone is UTC ... passed in 0.001s
+    When the timezone changes to Europe/London ... passed in 0.001s
+    Then the clock shows adjusted local time ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.clock_app.Clock App Core Behaviour" name="Leaving and returning preserves display type and format" status="failed" time="0.005731"><error type="NotImplementedError" message="App switching pending">
+<![CDATA[
+Failing step: When I switch to the "Energy" app ... failed in 0.001s
+Location: features/app/clock_app.feature:161
+Traceback (most recent call last):
+  File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\model.py", line 1329, in run
+    match.run(runner.context)
+  File "C:\Users\paul.tindall\AppData\Local\Programs\Python\Python311\Lib\site-packages\behave\matchers.py", line 98, in run
+    self.func(context, *args, **kwargs)
+  File "features\steps\clock_steps.py", line 210, in step_switch_app
+    raise NotImplementedError('App switching pending')
+NotImplementedError: App switching pending
+]]>
+</error><system-out>
+<![CDATA[
+@scenario.begin
+
+  @clock @navigation @wip
+  Scenario: Leaving and returning preserves display type and format
+    Given the system time is 16:00:05 ... passed in 0.002s
+    And the active app is "Clock" ... passed in 0.001s
+    And the clock format is 12h ... passed in 0.001s
+    And the display type is Analogue ... passed in 0.001s
+    When I switch to the "Energy" app ... failed in 0.001s
+    And 5 seconds elapse ... skipped in 0.000s
+    And I switch back to the "Clock" app ... skipped in 0.000s
+    Then the clock shows time "04:00:10" ... skipped in 0.000s
+    And the display type is Analogue ... skipped in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>
