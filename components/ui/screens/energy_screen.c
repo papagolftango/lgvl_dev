@@ -30,7 +30,7 @@ extern float energy_tariff_rate_gbp_per_kwh;
 
 // Balance arc diameter (pixels). Reduce to make the arc radius smaller.
 #ifndef BALANCE_ARC_DIAMETER
-#define BALANCE_ARC_DIAMETER 220
+#define BALANCE_ARC_DIAMETER 305 /*220*/
 #endif
 
 // Single arc: balance only
@@ -136,7 +136,7 @@ static void refresh_center_display(void) {
         case CENTER_PEAK_SOLAR: title = "Peak Solar"; value = last_peak_solar_val; break;
         case CENTER_PEAK_USED:  title = "Peak Used";  value = last_peak_used_val;  break;
         case CENTER_ENERGY_KWH: title = "kWh Today";   value = (float)last_pulse_count; break;
-        case CENTER_COST_TODAY_GBP: title = "£ Today"; value = (float)last_pulse_count; break;
+        case CENTER_COST_TODAY_GBP: title = "Today"; value = (float)last_pulse_count; break;
         default:                title = "";          value = 0.0f;                break;
     }
     lv_label_set_text(balance_title_label, title);
@@ -151,7 +151,7 @@ static void refresh_center_display(void) {
         float kwh = value / 1000.0f;
         float gbp = kwh * energy_tariff_rate_gbp_per_kwh;
         // Format with 2 decimals; avoid trailing zeros issues
-        snprintf(num, sizeof(num), "£%.2f", gbp);
+        snprintf(num, sizeof(num), "%.2fp", gbp);
     } else {
         // Integer display with thousands separators for other modes
         format_with_thousands((int)lroundf(value), num, sizeof(num));
@@ -384,8 +384,8 @@ static void ensure_arcs_created(lv_obj_t *parent) {
         // Background span of gauge: -135..+135 around top => 135 -> 45 (wrap)
         lv_arc_set_bg_angles(arc_balance, 135, 45);
         // Thicker balance arc
-    lv_obj_set_style_arc_width(arc_balance, 18, LV_PART_MAIN);       // track
-    lv_obj_set_style_arc_width(arc_balance, 18, LV_PART_INDICATOR);  // indicator
+    lv_obj_set_style_arc_width(arc_balance, 9, LV_PART_MAIN);       // track
+    lv_obj_set_style_arc_width(arc_balance, 9, LV_PART_INDICATOR);  // indicator
     // Flat ends: remove rounded caps
     lv_obj_set_style_arc_rounded(arc_balance, 0, LV_PART_MAIN);
     lv_obj_set_style_arc_rounded(arc_balance, 0, LV_PART_INDICATOR);
