@@ -19,16 +19,16 @@ class SettingsModel:
             {"name": "Default View", "type": "item", "value": "Hourly"},
             {"name": "Units", "type": "item", "value": "C", "wip": True},
             {"name": "System Settings", "type": "group"},
-            {"name": "WiFi SSID", "type": "item", "value": "MyWiFi"},
-            {"name": "WiFi Password", "type": "item", "value": "secret", "sensitive": True},
             {"name": "Time Zone", "type": "item", "value": "UTC"},
             {"name": "Brightness Level", "type": "item", "value": 80},
             {"name": "Sleep Timeout", "type": "item", "value": 120},
             {"name": "Firmware Update Channel", "type": "item", "value": "Stable", "wip": True},
+            {"name": "Re-Provision Device", "type": "action", "action": "reprovision"},
         ]
         self.index = 0
         self.last_index = 0
         self.app_open = False
+        self.reprovision_flag = False
 
     def current(self):
         return self.sequence[self.index]
@@ -117,7 +117,14 @@ def step_impl(context):
 
 @when('I begin editing the setting')
 def step_impl(context):
-    raise AssertionError('Editing mode not implemented')
+    # For action entries we treat begin editing as 'arm' phase
+    m = get_settings(context)
+    cur = m.current()
+    if cur.get('type') == 'action' and cur.get('action') == 'reprovision':
+        # mark a transient armed state
+        cur['armed'] = True
+    else:
+        raise AssertionError('Editing mode not implemented')
 
 @when('I rotate the dial +{steps:d} steps')
 def step_impl(context, steps):
@@ -125,7 +132,12 @@ def step_impl(context, steps):
 
 @when('I tap to confirm the setting')
 def step_impl(context):
-    raise AssertionError('Confirm edit not implemented')
+    m = get_settings(context)
+    cur = m.current()
+    if cur.get('type') == 'action' and cur.get('action') == 'reprovision' and cur.get('armed'):
+        m.reprovision_flag = True
+    else:
+        raise AssertionError('Confirm edit not implemented')
 
 @when('I close the Settings app')
 def step_impl(context):
@@ -186,5 +198,10 @@ def step_impl(context):
 @then('the setting "{name}" new value is persisted')
 def step_impl(context, name):
     raise AssertionError('Persistence not implemented')
+
+@then('the device reprovision flag is set')
+def step_impl(context):
+    m = get_settings(context)
+    assert m.reprovision_flag, 'Reprovision flag was not set'
 
 ## Removed specific item name assertions to avoid ambiguity with generic matcher.

@@ -18,12 +18,11 @@ Feature: Settings App Navigation and Editing
       - Default View (Hourly/Multi-day)
       - Units (Celsius/Fahrenheit) @wip
     System Settings:
-      - WiFi SSID
-      - WiFi Password (obscured) @wip
       - Time Zone
       - Brightness Level
       - Sleep Timeout (seconds)
       - Firmware Update Channel (Stable/Beta) @wip
+      - Re-Provision Device (action)
 
   # Core navigation semantics:
   # - First entering Settings shows the first group header (Energy App Settings)
@@ -41,13 +40,13 @@ Feature: Settings App Navigation and Editing
   @settings @cycle @core
   Scenario: Tapping cycles through first group items then next group header
     Given I open the Settings app
-  When I tap within settings
+    When I tap within settings
     Then the settings current item name is "Tariff Rate"
-  When I tap within settings
+    When I tap within settings
     Then the settings current item name is "Currency Symbol"
-  When I tap within settings
+    When I tap within settings
     Then the settings current item name is "Daily Reset Time"
-  When I tap within settings
+    When I tap within settings
     Then the settings current group is "Clock App Settings"
     And the settings current item is group header
 
@@ -66,12 +65,14 @@ Feature: Settings App Navigation and Editing
     When I long press the screen
     Then the settings current item name is "Currency Symbol"
 
-  @settings @value @wip
-  Scenario: Sensitive values (password) show obscured placeholder
+  @settings @reprovision @wip
+  Scenario: Re-Provision Device action arms a reprovision flag
     Given I open the Settings app
     And I navigate to group "System Settings"
-    And I navigate to item "WiFi Password"
-    Then the settings value is obscured
+    And I navigate to item "Re-Provision Device"
+    When I begin editing the setting
+    And I tap to confirm the setting
+    Then the device reprovision flag is set
 
   @settings @edit @wip
   Scenario: Editing a numeric value via rotary and confirm
@@ -107,13 +108,12 @@ Feature: Settings App Navigation and Editing
       | Poll Interval              |
       | Default View               |
       | Units                      |
-      | System Settings            |
-      | WiFi SSID                  |
-      | WiFi Password              |
+  | System Settings            |
       | Time Zone                  |
       | Brightness Level           |
       | Sleep Timeout              |
       | Firmware Update Channel    |
+  | Re-Provision Device        |
 
   @settings @integrity @core
   Scenario: Group headers have no value editable state
@@ -125,7 +125,7 @@ Feature: Settings App Navigation and Editing
   @settings @advance @core
   Scenario: Advancing exactly N taps reaches expected item
     Given I open the Settings app
-  When I tap the screen 5 times
+    When I tap the screen 5 times
     Then the settings current item name is "Time Format"
 
   @settings @multi @wip

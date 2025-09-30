@@ -57,7 +57,7 @@ This document maps high-level BDD scenarios to source areas and current implemen
 | Backwards navigation (long press) | @back @wip | settings_steps.py | Pending |
 | Editing numeric value | @edit @wip | (future settings_store) | Pending |
 | Persistence of last item | @persist @wip | settings_store / NVS | Pending |
-| Sensitive value masking | @value @wip | settings_screen.c | Pending |
+| Re-Provision device action | @reprovision @wip | settings_steps.py / provisioning | Pending (action flag only) |
 
 ## Future: Persistence Layer
 Planned module: `settings_store.{c,h}` to abstract load/save via NVS (or other KV). BDD will evolve to assert persistence effects once foundation exists.
