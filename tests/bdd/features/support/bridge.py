@@ -68,7 +68,7 @@ class Bridge:
 
 class MockBridge(Bridge):
     def __init__(self):
-        self._energy_modes = ["kWh Today", "£ Today"]
+        self._energy_modes = ["Balance", "Solar", "Using", "Peak Solar", "Peak Used", "kWh Today", "£ Today"]
         self.reset()
 
     def reset(self):
@@ -80,6 +80,9 @@ class MockBridge(Bridge):
         self._energy_mode_index = 0
         self._elapsed_since_input = 0
         self._last_rotary_target_app = None
+        self._pulses = 0
+        self._baseline = 0
+        self._tariff = 0.55
 
     def close(self):
         pass
@@ -140,7 +143,29 @@ class MockBridge(Bridge):
         return val
 
     def get_energy_viewmodel(self):
-        return {"mode": self._energy_modes[self._energy_mode_index]}
+        return {
+            "mode": self._energy_modes[self._energy_mode_index],
+            "pulses": self._pulses,
+            "baseline": self._baseline,
+            "tariff": self._tariff,
+        }
+
+    # Test helpers for energy
+    def set_energy_mode(self, name: str):
+        if name in self._energy_modes:
+            self._energy_mode_index = self._energy_modes.index(name)
+
+    def get_energy_mode_order(self):
+        return list(self._energy_modes)
+
+    def set_energy_baseline(self, baseline: int):
+        self._baseline = baseline
+
+    def set_energy_tariff(self, tariff: float):
+        self._tariff = float(tariff)
+
+    def set_energy_pulses(self, pulses: int):
+        self._pulses = pulses
 
     def no_input_for(self, seconds: int) -> None:
         # Simulate inactivity triggering IDLE when threshold reached and currently ACTIVE
@@ -203,6 +228,23 @@ class HttpBridge(Bridge):
 
     def get_energy_viewmodel(self):
         return self._get('/test/energy/viewmodel')
+
+    def set_energy_mode(self, name: str):
+        # POST partial update
+        self._post('/test/energy/viewmodel', {"mode": name})
+
+    def set_energy_baseline(self, baseline: int):
+        self._post('/test/energy/viewmodel', {"baseline": baseline})
+
+    def set_energy_tariff(self, tariff: float):
+        self._post('/test/energy/viewmodel', {"tariff": tariff})
+
+    def set_energy_pulses(self, pulses: int):
+        self._post('/test/energy/viewmodel', {"pulses": pulses})
+
+    def get_energy_mode_order(self):
+        # Static order aligned with firmware (mirror of enum)
+        return ["Balance", "Solar", "Using", "Peak Solar", "Peak Used", "kWh Today", "£ Today"]
 
     def reset(self):
         self._post('/test/reset')

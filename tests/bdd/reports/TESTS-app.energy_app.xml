@@ -1,0 +1,119 @@
+<testsuite name="app.energy_app.Energy app overview and behaviour" tests="7" errors="0" failures="0" skipped="0" time="0.030379" timestamp="2025-09-26T16:33:42.157974" hostname="DT-6M22WV3-PT"><testcase classname="app.energy_app.Energy app overview and behaviour" name="The Energy app provides a set of readable modes" status="passed" time="0.000944"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes
+  Scenario: The Energy app provides a set of readable modes
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.000s
+    Then the Energy modes are in this order ... passed in 0.000s
+      | Balance    |
+      | Solar      |
+      | Using      |
+      | Peak Solar |
+      | Peak Used  |
+      | kWh Today  |
+      | £ Today    |
+    And the initial Energy mode is "kWh Today" ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Rotating RIGHT moves to the next mode" status="passed" time="0.004998"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes
+  Scenario: Rotating RIGHT moves to the next mode
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the Energy mode is "kWh Today" ... passed in 0.001s
+    When I rotate the encoder RIGHT ... passed in 0.001s
+    Then the Energy mode becomes the next mode ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Rotating LEFT moves backwards" status="passed" time="0.002023"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes
+  Scenario: Rotating LEFT moves backwards
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the Energy mode is "kWh Today" ... passed in 0.000s
+    When I rotate the encoder LEFT ... passed in 0.000s
+    Then the Energy mode becomes the previous mode ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Mode cycling wraps around at the ends" status="passed" time="0.005522"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @modes
+  Scenario: Mode cycling wraps around at the ends
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the Energy mode is "£ Today" ... passed in 0.001s
+    When I rotate the encoder RIGHT ... passed in 0.002s
+    Then the Energy mode is "Balance" ... passed in 0.000s
+    When I rotate the encoder LEFT ... passed in 0.001s
+    Then the Energy mode is "£ Today" ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Converting pulses to kWh Today" status="passed" time="0.00589"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @pulses @kwh
+  Scenario: Converting pulses to kWh Today
+    Given the system is ACTIVE ... passed in 0.002s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the pulse baseline is 1000 ... passed in 0.001s
+    And the current pulse counter is 2500 ... passed in 0.001s
+    When the Energy mode is "kWh Today" ... passed in 0.001s
+    Then the center value shows 1.50 kWh ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Pulse counter drop rebases baseline safely" status="passed" time="0.006002"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @pulses @baseline @kwh
+  Scenario: Pulse counter drop rebases baseline safely
+    Given the system is ACTIVE ... passed in 0.000s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the pulse baseline is 5000 ... passed in 0.001s
+    And the current pulse counter is 5200 ... passed in 0.001s
+    When the pulse counter jumps down to 300 ... passed in 0.001s
+    Then the baseline is reset to 300 ... passed in 0.001s
+    And kWh Today is 0.00 kWh ... passed in 0.001s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase><testcase classname="app.energy_app.Energy app overview and behaviour" name="Converting pulses to cost (£ Today)" status="passed" time="0.005"><system-out>
+<![CDATA[
+@scenario.begin
+
+  @energy @cost @tariff
+  Scenario: Converting pulses to cost (£ Today)
+    Given the system is ACTIVE ... passed in 0.001s
+    And the active app is "Energy" ... passed in 0.001s
+    Given the tariff rate is 0.55 GBP per kWh ... passed in 0.000s
+    And the pulse baseline is 2000 ... passed in 0.001s
+    And the current pulse counter is 2600 ... passed in 0.001s
+    When the Energy mode is "£ Today" ... passed in 0.001s
+    Then the center value shows £0.33 ... passed in 0.000s
+
+@scenario.end
+--------------------------------------------------------------------------------
+]]>
+</system-out></testcase></testsuite>

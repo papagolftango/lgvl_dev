@@ -336,15 +336,83 @@ void provisioning_server_start(void) {
         .handler = test_get_haptics_last
     };
 
-    // GET /test/energy/viewmodel -> minimal JSON stub
+    // GET /test/energy/viewmodel -> JSON of current energy metrics & mode
     static esp_err_t test_get_energy_vm(httpd_req_t *req){
-        // For now, respond with mode unknown; can be wired to energy_screen state later
-        return send_json(req, "{\"mode\":\"unknown\"}");
+        extern float energy_balance, energy_solar, energy_used;
+        extern float energy_peak_solar, energy_peak_used;
+        extern int energy_pulse_count, cumulative_pulse;
+        extern float energy_tariff_rate_gbp_per_kwh;
+#ifdef CONFIG_TEST_MODE
+        extern const char *energy_screen_get_mode_name(void);
+        const char *mode = energy_screen_get_mode_name();
+#else
+        const char *mode = "unknown";
+#endif
+        int delta = energy_pulse_count - cumulative_pulse;
+        if (delta < 0) delta = 0;
+        char buf[384];
+        // Note: balance/solar/used and peaks as integers (rounded) for simplicity
+        snprintf(buf, sizeof(buf),
+            "{\"mode\":\"%s\",\"balance\":%.0f,\"solar\":%.0f,\"used\":%.0f,\"peak_solar\":%.0f,\"peak_used\":%.0f,\"pulses\":%d,\"baseline\":%d,\"tariff\":%.3f}",
+            mode, energy_balance, energy_solar, energy_used, energy_peak_solar, energy_peak_used, energy_pulse_count, cumulative_pulse, energy_tariff_rate_gbp_per_kwh);
+        return send_json(req, buf);
     }
     static httpd_uri_t uri_get_energy_vm = {
         .uri = "/test/energy/viewmodel",
         .method = HTTP_GET,
         .handler = test_get_energy_vm
+    };
+
+    // POST /test/energy/viewmodel -> mutate subset: {mode:".."} or {baseline:int}
+    static esp_err_t test_post_energy_vm(httpd_req_t *req){
+        extern int cumulative_pulse, energy_pulse_count;
+        extern float energy_tariff_rate_gbp_per_kwh;
+        char content[160];
+        int len = httpd_req_recv(req, content, sizeof(content)-1);
+        if (len < 0) return ESP_FAIL;
+        content[len] = '\0';
+        // naive parsing (small payloads): look for keys
+        const char *p;
+        p = strstr(content, "\"baseline\"");
+        if (p){
+            const char *colon = strchr(p, ':');
+            if (colon){ cumulative_pulse = atoi(colon+1); }
+        }
+        p = strstr(content, "\"tariff\"");
+        if (p){
+            const char *colon = strchr(p, ':');
+            if (colon){ energy_tariff_rate_gbp_per_kwh = (float)atof(colon+1); }
+        }
+        p = strstr(content, "\"pulses\"");
+        if (p){
+            const char *colon = strchr(p, ':');
+            if (colon){ energy_pulse_count = atoi(colon+1); }
+        }
+        p = strstr(content, "\"mode\"");
+        if (p){
+            const char *colon = strchr(p, ':');
+            if (colon){
+                const char *q1 = strchr(colon, '"');
+                if (q1){ const char *q2 = strchr(q1+1, '"');
+                    if (q2 && q2 > q1+1){
+                        char name[32];
+                        size_t n = (size_t)(q2 - (q1+1));
+                        if (n >= sizeof(name)) n = sizeof(name)-1;
+                        memcpy(name, q1+1, n); name[n] = '\0';
+#ifdef CONFIG_TEST_MODE
+                        extern bool energy_screen_set_mode_name(const char*);
+                        energy_screen_set_mode_name(name);
+#endif
+                    }
+                }
+            }
+        }
+        return send_json(req, "{\"ok\":true}");
+    }
+    static httpd_uri_t uri_post_energy_vm = {
+        .uri = "/test/energy/viewmodel",
+        .method = HTTP_POST,
+        .handler = test_post_energy_vm
     };
 
     // POST /test/reset -> restore to known state
@@ -387,6 +455,7 @@ void provisioning_server_start(void) {
     httpd_register_uri_handler(server, &uri_get_power_backlight);
     httpd_register_uri_handler(server, &uri_get_haptics_last);
     httpd_register_uri_handler(server, &uri_get_energy_vm);
+    httpd_register_uri_handler(server, &uri_post_energy_vm);
     httpd_register_uri_handler(server, &uri_post_reset);
     httpd_register_uri_handler(server, &uri_get_last_rotary_target);
 #endif // CONFIG_TEST_MODE

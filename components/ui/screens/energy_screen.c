@@ -245,6 +245,44 @@ void energy_screen_prev_mode(void) {
     refresh_center_display();
 }
 
+#ifdef CONFIG_TEST_MODE
+// Internal mapping of enum to human-readable mode names used in feature files.
+static const char *s_mode_names[] = {
+    "Balance",
+    "Solar",
+    "Using",
+    "Peak Solar",
+    "Peak Used",
+    "kWh Today",
+    "£ Today"
+};
+
+const char *energy_screen_get_mode_name(void) {
+    if ((int)current_center_mode < 0 || current_center_mode >= CENTER_MODE_COUNT) return "";
+    return s_mode_names[current_center_mode];
+}
+
+bool energy_screen_set_mode_name(const char *name) {
+    if (!name) return false;
+    for (int i = 0; i < (int)CENTER_MODE_COUNT; ++i) {
+        if (strcmp(name, s_mode_names[i]) == 0) {
+            current_center_mode = (center_mode_t)i;
+            // manage auto-revert timer semantics identical to cycle functions
+            if (current_center_mode == CENTER_ENERGY_KWH) {
+                if (auto_revert_timer) { lv_timer_del(auto_revert_timer); auto_revert_timer = NULL; }
+            } else {
+                if (auto_revert_timer) lv_timer_del(auto_revert_timer);
+                auto_revert_timer = lv_timer_create(auto_revert_timer_cb, 20000, NULL);
+                lv_timer_set_repeat_count(auto_revert_timer, 1);
+            }
+            refresh_center_display();
+            return true;
+        }
+    }
+    return false;
+}
+#endif
+
 // Touch on this screen should not change modes; app navigation is handled globally.
 
 

@@ -48,6 +48,11 @@ def step_tap(context):
 def step_rotate(context, direction):
     # capture pre-action app for 'unchanged' checks
     context._pre_action_app = _ctx_bridge(context).get_active_app()
+    # capture energy mode if Energy is active
+    if context._pre_action_app == "Energy":
+        vm = _ctx_bridge(context).get_energy_viewmodel()
+        if vm:
+            context._pre_energy_mode = vm.get("mode")
     _ctx_bridge(context).rotate(direction)
 
 
@@ -94,12 +99,6 @@ def step_assert_no_haptic(context):
     assert _ctx_bridge(context).get_last_haptic() is None
 
 
-@given('the Energy mode is "kWh Today"')
-@then('the Energy mode becomes the next mode')
-@then('the Energy mode remains unchanged')
-def step_energy_mode_placeholder(context):
-    # In a future step, assert explicit mode via energy viewmodel
-    pass
 
 
 @then('no other app receives the encoder event')
