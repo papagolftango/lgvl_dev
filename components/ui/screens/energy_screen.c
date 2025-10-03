@@ -151,7 +151,7 @@ static void refresh_center_display(void) {
         float kwh = value / 1000.0f;
         float gbp = kwh * energy_tariff_rate_gbp_per_kwh;
         // Format with 2 decimals; avoid trailing zeros issues
-        snprintf(num, sizeof(num), "%.2fp", gbp);
+        snprintf(num, sizeof(num), "%.2f.   you builp", gbp);
     } else {
         // Integer display with thousands separators for other modes
         format_with_thousands((int)lroundf(value), num, sizeof(num));
